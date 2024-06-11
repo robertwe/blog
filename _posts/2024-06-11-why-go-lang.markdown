@@ -6,7 +6,7 @@ tag: ["Programming", "GoLang"]
 category: GoLang
 ---
 
-# Why I Started Dealing with GoLang
+## Why I Started Dealing with GoLang
 
 GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers 
 due to its simplicity, efficiency, and robustness. In this blog post, we will explore GoLang's best features from both performance and development perspectives, 
