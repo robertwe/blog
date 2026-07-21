@@ -4,7 +4,7 @@ title: CentOS6 "host" and "dig" commands are missing
 date: 2014-05-20 20:39:37.00 +02:00
 category: [CentOS]
 ---
-Recently I configured new machine with CentOS6.5 on the board and it looks like the $*host* command was missing.
+Recently I configured a new machine with CentOS 6.5 on board and it turned out the *host* command was missing.
 Here is a quick solution for that: <!--more-->
 yum install bind-utils
 {% highlight text %}
@@ -69,8 +69,8 @@ Complete!
 ;; WHEN: Tue May 20 18:50:16 2014
 ;; MSG SIZE  rcvd: 228
 {% endhighlight %}
-Just to keep it in one place. I always forgot which package provides it.
-If you know where exactly the executable file is placed you can use `yum provides` command like this:
+Just to keep it in one place - I always forget which package provides it.
+If you know where exactly the executable file is placed, you can use the `yum provides` command like this:
 
 {% highlight text %}
 $ yum provides /usr/bin/host
@@ -113,6 +113,6 @@ Repo        : installed
 Matched from:
 Other       : Provides-match: /usr/bin/dig
 {% endhighlight %}
-It will help you to find most of the missing packages.
+It will help you find most of the missing packages.
 
 

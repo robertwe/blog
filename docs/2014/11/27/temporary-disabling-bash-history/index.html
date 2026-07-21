@@ -10,7 +10,7 @@
   
   
   <title>Temporary Disabling Bash History</title>
-  <meta name="description" content="How to do it ? It’s actually very simple. You can achieve this by unset HISTFILE. Of course in such case we only disable history for current session. What if we want to selectively do not put some commands into bash history ?">
+  <meta name="description" content="How to do it? It’s actually very simple. You can achieve this with unset HISTFILE. Of course, in that case we only disable history for the current session. What if we want to selectively keep some commands out of the bash history?">
   
 
   <link rel="stylesheet" href="/assets/main.css">
@@ -34,30 +34,37 @@
 
 
   
+  <meta property="og:title" content="Temporary Disabling Bash History">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2014/11/27/temporary-disabling-bash-history/">
+  <meta property="og:description" content="How to do it? It’s actually very simple. You can achieve this with unset HISTFILE. Of course, in that case we only disable history for the current session. What if we want to selectively keep some commands out of the bash history?">
+  
+  
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:site" content="rweclawski">
+  
   <meta name="twitter:title" content="Temporary Disabling Bash History">
-  <meta name="twitter:description" content="How to do it ? It’s actually very simple. You can achieve this by unset HISTFILE. Of course in such case we only disable history for current session. What if we want to selectively do not put some ...">
-  
-    <meta name="twitter:creator" content="rweclawski">
+  <meta name="twitter:description" content="How to do it? It’s actually very simple. You can achieve this with unset HISTFILE. Of course, in that case we only disable history for the current session. What if we want to selectively keep some ...">
   
   
 
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css?family=Bitter:400,400i,700" rel="stylesheet">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
 
   
-  <!-- Google Analytics -->
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  
+  
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-50640818-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
+      ga('create', 'UA-50640818-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  
 
 
 </head>
@@ -133,20 +140,38 @@
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 </p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>How to do it ? It’s actually very simple.
-You can achieve this by <code class="highlighter-rouge">unset HISTFILE</code>. Of course in such case we only disable history 
-for current session. 
-What if we want to selectively do not put some commands into bash history ? 
+    <p>How to do it? It’s actually very simple.
+You can achieve this with <code class="language-plaintext highlighter-rouge">unset HISTFILE</code>. Of course, in that case we only disable history
+for the current session.
+What if we want to selectively keep some commands out of the bash history?
 <!--more-->
-We can do it via <code class="highlighter-rouge">HISTCONTROL</code> variable. From Bash man page:</p>
+We can do it via the <code class="language-plaintext highlighter-rouge">HISTCONTROL</code> variable. From the Bash man page:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>HISTCONTROL
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HISTCONTROL
     A colon-separated list of values controlling how commands are saved on the history list.    
     If the list of values includes ignorespace, lines which begin with a space character are     
     not saved  in the  history  list. A value of ignoredups causes lines matching the previous     
@@ -157,14 +182,13 @@ We can do it via <code class="highlighter-rouge">HISTCONTROL</code> variable. Fr
     read by the shell parser are saved on the history list, subject to the value of HISTIGNORE.
     The second and subsequent lines of a multi-line compound command are not tested, and are 
     added to the history regardless of the value of HISTCONTROL.
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<p>In my case I always use <code class="highlighter-rouge">export HISTCONTROL=ignoreboth:erasedups</code> and add it to <code class="highlighter-rouge">.bashrc</code> if necessary.
-After that whenever we want to exclude specific command from storing it in the bash history we call it like 
-this <code class="highlighter-rouge">&lt;space&gt;mysql -u xxxx -pxxxxx</code>. Remember about space in front of command.</p>
+<p>In my case I always use <code class="language-plaintext highlighter-rouge">export HISTCONTROL=ignoreboth:erasedups</code> and add it to <code class="language-plaintext highlighter-rouge">.bashrc</code> if necessary.
+After that, whenever we want to exclude a specific command from being stored in the bash history, we call it like
+this: <code class="language-plaintext highlighter-rouge">&lt;space&gt;mysql -u xxxx -pxxxxx</code>. Remember about the space in front of the command.</p>
 
-<p>From what I see on Ubuntu 14.04 <code class="highlighter-rouge">HISTCONTROL</code> is set to value <code class="highlighter-rouge">ignoreboth</code> by default.</p>
+<p>From what I see, on Ubuntu 14.04 <code class="language-plaintext highlighter-rouge">HISTCONTROL</code> is set to <code class="language-plaintext highlighter-rouge">ignoreboth</code> by default.</p>
 
 <p>–robert</p>
 
@@ -175,17 +199,23 @@ this <code class="highlighter-rouge">&lt;space&gt;mysql -u xxxx -pxxxxx</code>. 
       <hr />
 <h1>Comments</h1>
 
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'robertwe'; 
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
+<script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
 </script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="https://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
     </div>
   
 
@@ -203,12 +233,6 @@ this <code class="highlighter-rouge">&lt;space&gt;mysql -u xxxx -pxxxxx</code>. 
     </a>
 </div>
 
-
-<div class="footer">
-    <a href="https://twitter.com/rweclawski">
-      <i class="fa fa-twitter"></i> Twitter
-    </a>
-  </div>
 
 
 <div class="footer">

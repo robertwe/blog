@@ -3,16 +3,16 @@ layout: post
 title: Is TDD Dead ?
 date: 2014-05-09 21:24:39.000000000 +02:00
 ---
-Today I watched quite interesting hangout. It was a quick (30min) discussion.
-Attenders: 
+Today I watched a quite interesting hangout. It was a quick (30 min) discussion.
+Attendees:
 
 * Kent Beck,
 * Martin Fowler,
 * David Heinemeier Hansson
 
-Few days ago @DHH wrote some "controversial" [post](http://david.heinemeierhansson.com/2014/tdd-is-dead-long-live-testing.html) on his blog about TDD and in general presented his point of view to TDD.
-As a result of that we got a huge discussion on the Twitter about TDD. Some people says that every professional should use TDD and and so on. 
-As a result of that guys from **ThoughtWorks** organized this hangout.
+A few days ago @DHH wrote a somewhat "controversial" [post](http://david.heinemeierhansson.com/2014/tdd-is-dead-long-live-testing.html) on his blog about TDD and, in general, presented his point of view on TDD.
+As a result we got a huge discussion on Twitter about TDD. Some people say that every professional should use TDD and so on.
+In response, the guys from **ThoughtWorks** organized this hangout.
 &nbsp;
 
 

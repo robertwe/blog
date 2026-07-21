@@ -10,7 +10,7 @@
   
   
   <title>IPtables returns an error : security raw nat mangle filter FAILED</title>
-  <meta name="description" content="After set up of the “linode” on linode.com I stared configuring the firewall (iptables). After writing down all my rules and tried to restart iptables but output like this: $ service iptables restart iptables: Flushing firewall rules: [ OK ] iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter iptables: Unloading modules: [ OK ] iptables: Applying firewall rules: [ OK ]">
+  <meta name="description" content="After setting up my new “linode” on linode.com I started configuring the firewall (iptables). After writing down all my rules I tried to restart iptables, but got output like this: $ service iptables restart iptables: Flushing firewall rules: [ OK ] iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter iptables: Unloading modules: [ OK ] iptables: Applying firewall rules: [ OK ]">
   
 
   <link rel="stylesheet" href="/assets/main.css">
@@ -34,30 +34,37 @@
 
 
   
+  <meta property="og:title" content="IPtables returns an error : security raw nat mangle filter FAILED">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">
+  <meta property="og:description" content="After setting up my new “linode” on linode.com I started configuring the firewall (iptables). After writing down all my rules I tried to restart iptables, but got output like this: $ service iptables restart iptables: Flushing firewall rules: [ OK ] iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter iptables: Unloading modules: [ OK ] iptables: Applying firewall rules: [ OK ]">
+  
+  
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:site" content="rweclawski">
+  
   <meta name="twitter:title" content="IPtables returns an error : security raw nat mangle filter FAILED">
-  <meta name="twitter:description" content="After set up of the “linode” on linode.com I stared configuring the firewall (iptables). After writing down all my rules and tried to restart iptables but output like this: $ service iptables resta...">
-  
-    <meta name="twitter:creator" content="rweclawski">
+  <meta name="twitter:description" content="After setting up my new “linode” on linode.com I started configuring the firewall (iptables). After writing down all my rules I tried to restart iptables, but got output like this: $ service iptabl...">
   
   
 
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css?family=Bitter:400,400i,700" rel="stylesheet">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
 
   
-  <!-- Google Analytics -->
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  
+  
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-50640818-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
+      ga('create', 'UA-50640818-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  
 
 
 </head>
@@ -107,39 +114,39 @@
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>After set up of the “linode” on linode.com I stared configuring the firewall (iptables).
-After writing down all my rules and tried to restart iptables but output like this:</p>
+    <p>After setting up my new “linode” on linode.com I started configuring the firewall (iptables).
+After writing down all my rules I tried to restart iptables, but got output like this:</p>
 
-<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="gp">$ </span>service iptables restart
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>service iptables restart
 iptables: Flushing firewall rules:                         <span class="o">[</span>  OK  <span class="o">]</span>
 iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter
 iptables: Unloading modules:                               <span class="o">[</span>  OK  <span class="o">]</span>
 iptables: Applying firewall rules:                         <span class="o">[</span>  OK  <span class="o">]</span></code></pre></figure>
 
 <!--more-->
-<p>After I quick research (google) I found an answer for that:
+<p>After a quick research (Google) I found an answer for that:
 <a href="http://www.hostvirtual.com/kb/6383/IPtables-returns-an-error--security-raw-nat-mangle-filter-FAILED.html">here is the link</a></p>
 
-<p>Looks like you need to add this patch to iptables init script:</p>
+<p>Looks like you need to add this patch to the iptables init script:</p>
 
-<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">echo</span> -n <span class="s2">$"</span><span class="k">${</span><span class="nv">IPTABLES</span><span class="k">}</span><span class="s2">: Setting chains to policy </span><span class="nv">$policy</span><span class="s2">: "</span>
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">echo</span> <span class="nt">-n</span> <span class="s2">$"</span><span class="k">${</span><span class="nv">IPTABLES</span><span class="k">}</span><span class="s2">: Setting chains to policy </span><span class="nv">$policy</span><span class="s2">: "</span>
 <span class="nv">ret</span><span class="o">=</span>0
-<span class="k">for </span>i <span class="k">in</span> <span class="nv">$tables</span>; <span class="k">do
-    </span><span class="nb">echo</span> -n <span class="s2">"</span><span class="nv">$i</span><span class="s2"> "</span>
+<span class="k">for </span>i <span class="k">in</span> <span class="nv">$tables</span><span class="p">;</span> <span class="k">do
+    </span><span class="nb">echo</span> <span class="nt">-n</span> <span class="s2">"</span><span class="nv">$i</span><span class="s2"> "</span>
     <span class="k">case</span> <span class="s2">"</span><span class="nv">$i</span><span class="s2">"</span> <span class="k">in</span>
 +       security<span class="p">)</span>
-+           <span class="nv">$IPTABLES</span> -t filter -P INPUT <span class="nv">$policy</span> <span class="se">\</span>
-+               <span class="o">&amp;&amp;</span> <span class="nv">$IPTABLES</span> -t filter -P OUTPUT <span class="nv">$policy</span> <span class="se">\</span>
-+               <span class="o">&amp;&amp;</span> <span class="nv">$IPTABLES</span> -t filter -P FORWARD <span class="nv">$policy</span> <span class="se">\</span>
++           <span class="nv">$IPTABLES</span> <span class="nt">-t</span> filter <span class="nt">-P</span> INPUT <span class="nv">$policy</span> <span class="se">\</span>
++               <span class="o">&amp;&amp;</span> <span class="nv">$IPTABLES</span> <span class="nt">-t</span> filter <span class="nt">-P</span> OUTPUT <span class="nv">$policy</span> <span class="se">\</span>
++               <span class="o">&amp;&amp;</span> <span class="nv">$IPTABLES</span> <span class="nt">-t</span> filter <span class="nt">-P</span> FORWARD <span class="nv">$policy</span> <span class="se">\</span>
 +               <span class="o">||</span> <span class="nb">let </span>ret+<span class="o">=</span>1
 +           <span class="p">;;</span>
         raw<span class="p">)</span>
-            <span class="nv">$IPTABLES</span> -t raw -P PREROUTING <span class="nv">$policy</span> <span class="se">\</span>
-                <span class="o">&amp;&amp;</span> <span class="nv">$IPTABLES</span> -t raw -P OUTPUT <span class="nv">$policy</span> <span class="se">\</span>
+            <span class="nv">$IPTABLES</span> <span class="nt">-t</span> raw <span class="nt">-P</span> PREROUTING <span class="nv">$policy</span> <span class="se">\</span>
+                <span class="o">&amp;&amp;</span> <span class="nv">$IPTABLES</span> <span class="nt">-t</span> raw <span class="nt">-P</span> OUTPUT <span class="nv">$policy</span> <span class="se">\</span>
                 <span class="o">||</span> <span class="nb">let </span>ret+<span class="o">=</span>1
             <span class="p">;;</span></code></pre></figure>
 
-<p>Looks like this is a know bug in CentOS 6 in virtualiazed env.</p>
+<p>Looks like this is a known bug in CentOS 6 in virtualized environments.</p>
 
 <p>–robert</p>
 
@@ -151,17 +158,23 @@ iptables: Applying firewall rules:                         <span class="o">[</sp
       <hr />
 <h1>Comments</h1>
 
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'robertwe'; 
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
+<script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
 </script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="https://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
     </div>
   
 
@@ -179,12 +192,6 @@ iptables: Applying firewall rules:                         <span class="o">[</sp
     </a>
 </div>
 
-
-<div class="footer">
-    <a href="https://twitter.com/rweclawski">
-      <i class="fa fa-twitter"></i> Twitter
-    </a>
-  </div>
 
 
 <div class="footer">

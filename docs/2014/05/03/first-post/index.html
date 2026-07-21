@@ -10,7 +10,7 @@
   
   
   <title>first post</title>
-  <meta name="description" content="Let’s write it down. To be honest I don’t remember when I actually started thinking about writing down most the solutions I found over the internet or implemented myself. I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. Good is it I wrote it down somewhere, put on Gist or Pastebin but what if I did not ? Let’s say I just configured Nginx as loadbalancer and for example after a year or so I need to make something exactly the same or at last similar. What’s then ? I need to go through the NGINX’s documentation again or start searching over google. Sure in some case I remember exactly how I solved some specific problem but when it was some time ago then … This is the reason why I decided to create this simple blog. I hope it wont evolve to any unpredictable way. You can thing about this blog like a about my notebook. If somebody else will find my notes useful/helpful - even better. Let’s make this World better. Have a great day. P.S As you probably noticed Im not a native speaker, so in case you guys will find some mistakes in my post (probably more than one) please let me know ASAP. RAM vCPU Price (€) 1G 1 5 2G 2 10 4G 4 30 8G 6 60 12G 8 120 16G 10 160 24G 12 240 32G 16 320 Our universe (in SI units): def show @widget = Widget(params[:id]) respond_to do |format| format.html # show.html.erb format.json { render json: @widget } end end package interfaces import ( &quot;io&quot; &quot;os&quot; ) //PipeExample function func PipeExample() error { r, w := io.Pipe() go func() { w.Write([]byte(&quot;test\n&quot;)) w.Close() }() if _, err := io.Copy(os.Stdout, r); err != nil { return err } return nil } package interfaces import ( &quot;fmt&quot; &quot;io&quot; &quot;os&quot; ) // Copy data from std in to std out func Copy(in io.ReadSeeker, out io.Writer) error { w := io.MultiWriter(out, os.Stdout) if _, err := io.Copy(w, in); err != nil { return err } in.Seek(0, 0) buf := make([]byte, 64) if _, err := io.CopyBuffer(w, in, buf); err != nil { return err } fmt.Println() return nil } –robert">
+  <meta name="description" content="Let’s write it down. To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself. I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. It’s good if I wrote it down somewhere, put it on Gist or Pastebin, but what if I did not? Let’s say I just configured Nginx as a load balancer and, for example, after a year or so I need to make something exactly the same or at least similar. What then? I need to go through the Nginx documentation again or start searching on Google. Sure, in some cases I remember exactly how I solved a specific problem, but when it was some time ago then… This is the reason why I decided to create this simple blog. I hope it won’t evolve in any unpredictable way. You can think about this blog as my notebook. If somebody else finds my notes useful/helpful - even better. Let’s make this World better. Have a great day. P.S. As you probably noticed, I’m not a native speaker, so in case you find some mistakes in my posts (probably more than one), please let me know ASAP. RAM vCPU Price (€) 1G 1 5 2G 2 10 4G 4 30 8G 6 60 12G 8 120 16G 10 160 24G 12 240 32G 16 320 Our universe (in SI units): \[\begin{align*} \frac{\partial\mathcal{D}}{\partial t} \quad &amp;amp; = \quad \nabla\times\mathcal{H}, &amp;amp; \quad \text{(Faraday&#39;s law)} \\[5pt] \frac{\partial\mathcal{B}}{\partial t} \quad &amp;amp; = \quad -\nabla\times\mathcal{E}, &amp;amp; \quad \text{(Ampère&#39;s circuital law)} \\[5pt] \nabla\cdot\mathcal{B} \quad &amp;amp; = \quad 0, &amp;amp; \quad \text{(Gauss&#39;s law for magnetism)} \\[5pt] \nabla\cdot\mathcal{D} \quad &amp;amp; = \quad 0. &amp;amp; \quad \text{(Coulomb&#39;s Law)} \end{align*}\] \(\begin{align*} &amp;amp; \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right) = \sum_{i=1}^n \sum_{j=1}^n x_i y_j \phi(e_i, e_j) = \\ &amp;amp; (x_1, \ldots, x_n) \left( \begin{array}{ccc} \phi(e_1, e_1) &amp;amp; \cdots &amp;amp; \phi(e_1, e_n) \\ \vdots &amp;amp; \ddots &amp;amp; \vdots \\ \phi(e_n, e_1) &amp;amp; \cdots &amp;amp; \phi(e_n, e_n) \end{array} \right) \left( \begin{array}{c} y_1 \\ \vdots \\ y_n \end{array} \right) \end{align*}\) \[\begin{array}{c|lcr} n &amp;amp; \text{Left} &amp;amp; \text{Center} &amp;amp; \text{Right} \\ \hline 1 &amp;amp; 0.24 &amp;amp; 1 &amp;amp; 125 \\ 2 &amp;amp; -1 &amp;amp; 189 &amp;amp; -8 \\ 3 &amp;amp; -20 &amp;amp; 2000 &amp;amp; 1+10i \end{array}\] def show @widget = Widget(params[:id]) respond_to do |format| format.html # show.html.erb format.json { render json: @widget } end end package interfaces import ( &quot;io&quot; &quot;os&quot; ) //PipeExample function func PipeExample() error { r, w := io.Pipe() go func() { w.Write([]byte(&quot;test\n&quot;)) w.Close() }() if _, err := io.Copy(os.Stdout, r); err != nil { return err } return nil } package interfaces import ( &quot;fmt&quot; &quot;io&quot; &quot;os&quot; ) // Copy data from std in to std out func Copy(in io.ReadSeeker, out io.Writer) error { w := io.MultiWriter(out, os.Stdout) if _, err := io.Copy(w, in); err != nil { return err } in.Seek(0, 0) buf := make([]byte, 64) if _, err := io.CopyBuffer(w, in, buf); err != nil { return err } fmt.Println() return nil } –robert">
   
 
   <link rel="stylesheet" href="/assets/main.css">
@@ -34,30 +34,37 @@
 
 
   
+  <meta property="og:title" content="first post">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2014/05/03/first-post/">
+  <meta property="og:description" content="Let’s write it down. To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself. I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. It’s good if I wrote it down somewhere, put it on Gist or Pastebin, but what if I did not? Let’s say I just configured Nginx as a load balancer and, for example, after a year or so I need to make something exactly the same or at least similar. What then? I need to go through the Nginx documentation again or start searching on Google. Sure, in some cases I remember exactly how I solved a specific problem, but when it was some time ago then… This is the reason why I decided to create this simple blog. I hope it won’t evolve in any unpredictable way. You can think about this blog as my notebook. If somebody else finds my notes useful/helpful - even better. Let’s make this World better. Have a great day. P.S. As you probably noticed, I’m not a native speaker, so in case you find some mistakes in my posts (probably more than one), please let me know ASAP. RAM vCPU Price (€) 1G 1 5 2G 2 10 4G 4 30 8G 6 60 12G 8 120 16G 10 160 24G 12 240 32G 16 320 Our universe (in SI units): \[\begin{align*} \frac{\partial\mathcal{D}}{\partial t} \quad &amp;amp; = \quad \nabla\times\mathcal{H}, &amp;amp; \quad \text{(Faraday&#39;s law)} \\[5pt] \frac{\partial\mathcal{B}}{\partial t} \quad &amp;amp; = \quad -\nabla\times\mathcal{E}, &amp;amp; \quad \text{(Ampère&#39;s circuital law)} \\[5pt] \nabla\cdot\mathcal{B} \quad &amp;amp; = \quad 0, &amp;amp; \quad \text{(Gauss&#39;s law for magnetism)} \\[5pt] \nabla\cdot\mathcal{D} \quad &amp;amp; = \quad 0. &amp;amp; \quad \text{(Coulomb&#39;s Law)} \end{align*}\] \(\begin{align*} &amp;amp; \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right) = \sum_{i=1}^n \sum_{j=1}^n x_i y_j \phi(e_i, e_j) = \\ &amp;amp; (x_1, \ldots, x_n) \left( \begin{array}{ccc} \phi(e_1, e_1) &amp;amp; \cdots &amp;amp; \phi(e_1, e_n) \\ \vdots &amp;amp; \ddots &amp;amp; \vdots \\ \phi(e_n, e_1) &amp;amp; \cdots &amp;amp; \phi(e_n, e_n) \end{array} \right) \left( \begin{array}{c} y_1 \\ \vdots \\ y_n \end{array} \right) \end{align*}\) \[\begin{array}{c|lcr} n &amp;amp; \text{Left} &amp;amp; \text{Center} &amp;amp; \text{Right} \\ \hline 1 &amp;amp; 0.24 &amp;amp; 1 &amp;amp; 125 \\ 2 &amp;amp; -1 &amp;amp; 189 &amp;amp; -8 \\ 3 &amp;amp; -20 &amp;amp; 2000 &amp;amp; 1+10i \end{array}\] def show @widget = Widget(params[:id]) respond_to do |format| format.html # show.html.erb format.json { render json: @widget } end end package interfaces import ( &quot;io&quot; &quot;os&quot; ) //PipeExample function func PipeExample() error { r, w := io.Pipe() go func() { w.Write([]byte(&quot;test\n&quot;)) w.Close() }() if _, err := io.Copy(os.Stdout, r); err != nil { return err } return nil } package interfaces import ( &quot;fmt&quot; &quot;io&quot; &quot;os&quot; ) // Copy data from std in to std out func Copy(in io.ReadSeeker, out io.Writer) error { w := io.MultiWriter(out, os.Stdout) if _, err := io.Copy(w, in); err != nil { return err } in.Seek(0, 0) buf := make([]byte, 64) if _, err := io.CopyBuffer(w, in, buf); err != nil { return err } fmt.Println() return nil } –robert">
+  
+  
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:site" content="rweclawski">
+  
   <meta name="twitter:title" content="first post">
-  <meta name="twitter:description" content="Let’s write it down. To be honest I don’t remember when I actually started thinking about writing down most the solutions I found over the internet or implemented myself. I realized that from time ...">
-  
-    <meta name="twitter:creator" content="rweclawski">
+  <meta name="twitter:description" content="Let’s write it down. To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself. I realized that from tim...">
   
   
 
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css?family=Bitter:400,400i,700" rel="stylesheet">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
 
   
-  <!-- Google Analytics -->
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  
+  
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-50640818-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
+      ga('create', 'UA-50640818-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  
 
 
 </head>
@@ -133,6 +140,24 @@
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 </p>
@@ -140,14 +165,14 @@
 
   <div class="post-content" itemprop="articleBody">
     <h4 id="lets-write-it-down">Let’s write it down.</h4>
-<p>To be honest I don’t remember when I actually started thinking about writing down most the solutions I found over the internet or implemented myself.
-I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. Good is it I wrote it down somewhere, put on <a href="https://gist.github.com/robertwe">Gist</a> or <a href="http://pastebin.com/">Pastebin</a> but what if I did not ? 
-Let’s say I just configured Nginx as loadbalancer and for example after a year or so I need to make something exactly the same or at last similar. What’s then ? I need to go through the NGINX’s documentation again or start searching over google. Sure in some case I remember exactly how I solved some specific problem but when it was some time ago then …
-This is the reason why I decided to create this simple blog. I hope it wont evolve to any unpredictable way. You can thing about this blog like a about my notebook. If somebody else will find my notes useful/helpful - even better. Let’s make this World better.</p>
+<p>To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself.
+I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. It’s good if I wrote it down somewhere, put it on <a href="https://gist.github.com/robertwe">Gist</a> or <a href="http://pastebin.com/">Pastebin</a>, but what if I did not?
+Let’s say I just configured Nginx as a load balancer and, for example, after a year or so I need to make something exactly the same or at least similar. What then? I need to go through the Nginx documentation again or start searching on Google. Sure, in some cases I remember exactly how I solved a specific problem, but when it was some time ago then…
+This is the reason why I decided to create this simple blog. I hope it won’t evolve in any unpredictable way. You can think about this blog as my notebook. If somebody else finds my notes useful/helpful - even better. Let’s make this World better.</p>
 
 <p>Have a great day.</p>
 
-<p><em>P.S As you probably noticed Im not a native speaker, so in case you guys will find some mistakes in my post (probably more than one) please let me know ASAP.</em></p>
+<p><em>P.S. As you probably noticed, I’m not a native speaker, so in case you find some mistakes in my posts (probably more than one), please let me know ASAP.</em></p>
 
 <script type="text/javascript" async="" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
@@ -208,41 +233,38 @@ This is the reason why I decided to create this simple blog. I hope it wont evol
 
 <h3 id="our-universe-in-si-units">Our universe (in SI units):</h3>
 
-<script type="math/tex; mode=display">% <![CDATA[
-\begin{align*}
-  \frac{\partial\mathcal{D}}{\partial t} \quad & = \quad \nabla\times\mathcal{H},   & \quad \text{(Faraday's law)} \\[5pt]
-  \frac{\partial\mathcal{B}}{\partial t} \quad & = \quad -\nabla\times\mathcal{E},  & \quad \text{(Ampère's circuital law)}   \\[5pt]
-  \nabla\cdot\mathcal{B}                 \quad & = \quad 0,                         & \quad \text{(Gauss's law for magnetism)}   \\[5pt]
-  \nabla\cdot\mathcal{D}                 \quad & = \quad 0.                         & \quad \text{(Coulomb's Law)}
-  \end{align*} %]]></script>
+\[\begin{align*}
+  \frac{\partial\mathcal{D}}{\partial t} \quad &amp; = \quad \nabla\times\mathcal{H},   &amp; \quad \text{(Faraday's law)} \\[5pt]
+  \frac{\partial\mathcal{B}}{\partial t} \quad &amp; = \quad -\nabla\times\mathcal{E},  &amp; \quad \text{(Ampère's circuital law)}   \\[5pt]
+  \nabla\cdot\mathcal{B}                 \quad &amp; = \quad 0,                         &amp; \quad \text{(Gauss's law for magnetism)}   \\[5pt]
+  \nabla\cdot\mathcal{D}                 \quad &amp; = \quad 0.                         &amp; \quad \text{(Coulomb's Law)}
+  \end{align*}\]
 
 <hr />
 
-<p><script type="math/tex">% <![CDATA[
-\begin{align*}
-  & \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right)
+<p>\(\begin{align*}
+  &amp; \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right)
   = \sum_{i=1}^n \sum_{j=1}^n x_i y_j \phi(e_i, e_j) = \\
-  & (x_1, \ldots, x_n) \left( \begin{array}{ccc}
-      \phi(e_1, e_1) & \cdots & \phi(e_1, e_n) \\
-      \vdots & \ddots & \vdots \\
-      \phi(e_n, e_1) & \cdots & \phi(e_n, e_n)
+  &amp; (x_1, \ldots, x_n) \left( \begin{array}{ccc}
+      \phi(e_1, e_1) &amp; \cdots &amp; \phi(e_1, e_n) \\
+      \vdots &amp; \ddots &amp; \vdots \\
+      \phi(e_n, e_1) &amp; \cdots &amp; \phi(e_n, e_n)
     \end{array} \right)
   \left( \begin{array}{c}
       y_1 \\
       \vdots \\
       y_n
     \end{array} \right)
-\end{align*} %]]></script></p>
+\end{align*}\)</p>
 <hr />
 
-<script type="math/tex; mode=display">% <![CDATA[
-\begin{array}{c|lcr}
-n & \text{Left} & \text{Center} & \text{Right} \\
+\[\begin{array}{c|lcr}
+n &amp; \text{Left} &amp; \text{Center} &amp; \text{Right} \\
 \hline
-1 & 0.24 & 1 & 125 \\
-2 & -1 & 189 & -8 \\
-3 & -20 & 2000 & 1+10i
-\end{array} %]]></script>
+1 &amp; 0.24 &amp; 1 &amp; 125 \\
+2 &amp; -1 &amp; 189 &amp; -8 \\
+3 &amp; -20 &amp; 2000 &amp; 1+10i
+\end{array}\]
 
 <figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">show</span>
   <span class="vi">@widget</span> <span class="o">=</span> <span class="no">Widget</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
@@ -252,50 +274,50 @@ n & \text{Left} & \text{Center} & \text{Right} \\
   <span class="k">end</span>
 <span class="k">end</span></code></pre></figure>
 
-<figure class="highlight"><pre><code class="language-go" data-lang="go"><span class="k">package</span><span class="x"> </span><span class="n">interfaces</span><span class="x">
-</span><span class="k">import</span><span class="x"> </span><span class="p">(</span><span class="x">
-	</span><span class="s">"io"</span><span class="x">
-	</span><span class="s">"os"</span><span class="x">
-</span><span class="p">)</span><span class="x">
+<figure class="highlight"><pre><code class="language-go" data-lang="go"><span class="k">package</span> <span class="n">interfaces</span>
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"io"</span>
+	<span class="s">"os"</span>
+<span class="p">)</span>
 
-</span><span class="c">//PipeExample function</span><span class="x">
-</span><span class="k">func</span><span class="x"> </span><span class="n">PipeExample</span><span class="p">()</span><span class="x"> </span><span class="kt">error</span><span class="x"> </span><span class="p">{</span><span class="x">
-	</span><span class="n">r</span><span class="p">,</span><span class="x"> </span><span class="n">w</span><span class="x"> </span><span class="o">:=</span><span class="x"> </span><span class="n">io</span><span class="o">.</span><span class="n">Pipe</span><span class="p">()</span><span class="x">
+<span class="c">//PipeExample function</span>
+<span class="k">func</span> <span class="n">PipeExample</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="n">r</span><span class="p">,</span> <span class="n">w</span> <span class="o">:=</span> <span class="n">io</span><span class="o">.</span><span class="n">Pipe</span><span class="p">()</span>
 
-	</span><span class="k">go</span><span class="x"> </span><span class="k">func</span><span class="p">()</span><span class="x"> </span><span class="p">{</span><span class="x">
-		</span><span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"test</span><span class="se">\n</span><span class="s">"</span><span class="p">))</span><span class="x">
-		</span><span class="n">w</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span><span class="x">
-	</span><span class="p">}()</span><span class="x">
+	<span class="k">go</span> <span class="k">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">([]</span><span class="kt">byte</span><span class="p">(</span><span class="s">"test</span><span class="se">\n</span><span class="s">"</span><span class="p">))</span>
+		<span class="n">w</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+	<span class="p">}()</span>
 
-	</span><span class="k">if</span><span class="x"> </span><span class="n">_</span><span class="p">,</span><span class="x"> </span><span class="n">err</span><span class="x"> </span><span class="o">:=</span><span class="x"> </span><span class="n">io</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">Stdout</span><span class="p">,</span><span class="x"> </span><span class="n">r</span><span class="p">);</span><span class="x"> </span><span class="n">err</span><span class="x"> </span><span class="o">!=</span><span class="x"> </span><span class="no">nil</span><span class="x"> </span><span class="p">{</span><span class="x">
-		</span><span class="k">return</span><span class="x"> </span><span class="n">err</span><span class="x">
-	</span><span class="p">}</span><span class="x">
-	</span><span class="k">return</span><span class="x"> </span><span class="no">nil</span><span class="x">
-</span><span class="p">}</span></code></pre></figure>
+	<span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">io</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">Stdout</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="n">err</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="no">nil</span>
+<span class="p">}</span></code></pre></figure>
 
-<figure class="highlight"><pre><code class="language-go" data-lang="go"><span class="k">package</span><span class="x"> </span><span class="n">interfaces</span><span class="x">
+<figure class="highlight"><pre><code class="language-go" data-lang="go"><span class="k">package</span> <span class="n">interfaces</span>
 
-</span><span class="k">import</span><span class="x"> </span><span class="p">(</span><span class="x">
-	</span><span class="s">"fmt"</span><span class="x">
-	</span><span class="s">"io"</span><span class="x">
-	</span><span class="s">"os"</span><span class="x">
-</span><span class="p">)</span><span class="x">
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"fmt"</span>
+	<span class="s">"io"</span>
+	<span class="s">"os"</span>
+<span class="p">)</span>
 
-</span><span class="c">// Copy data from std in to std out</span><span class="x">
-</span><span class="k">func</span><span class="x"> </span><span class="n">Copy</span><span class="p">(</span><span class="n">in</span><span class="x"> </span><span class="n">io</span><span class="o">.</span><span class="n">ReadSeeker</span><span class="p">,</span><span class="x"> </span><span class="n">out</span><span class="x"> </span><span class="n">io</span><span class="o">.</span><span class="n">Writer</span><span class="p">)</span><span class="x"> </span><span class="kt">error</span><span class="x"> </span><span class="p">{</span><span class="x">
-	</span><span class="n">w</span><span class="x"> </span><span class="o">:=</span><span class="x"> </span><span class="n">io</span><span class="o">.</span><span class="n">MultiWriter</span><span class="p">(</span><span class="n">out</span><span class="p">,</span><span class="x"> </span><span class="n">os</span><span class="o">.</span><span class="n">Stdout</span><span class="p">)</span><span class="x">
-	</span><span class="k">if</span><span class="x"> </span><span class="n">_</span><span class="p">,</span><span class="x"> </span><span class="n">err</span><span class="x"> </span><span class="o">:=</span><span class="x"> </span><span class="n">io</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="x"> </span><span class="n">in</span><span class="p">);</span><span class="x"> </span><span class="n">err</span><span class="x"> </span><span class="o">!=</span><span class="x"> </span><span class="no">nil</span><span class="x"> </span><span class="p">{</span><span class="x">
-		</span><span class="k">return</span><span class="x"> </span><span class="n">err</span><span class="x">
-	</span><span class="p">}</span><span class="x">
-	</span><span class="n">in</span><span class="o">.</span><span class="n">Seek</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="x"> </span><span class="m">0</span><span class="p">)</span><span class="x">
-	</span><span class="n">buf</span><span class="x"> </span><span class="o">:=</span><span class="x"> </span><span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span><span class="x"> </span><span class="m">64</span><span class="p">)</span><span class="x">
-	</span><span class="k">if</span><span class="x"> </span><span class="n">_</span><span class="p">,</span><span class="x"> </span><span class="n">err</span><span class="x"> </span><span class="o">:=</span><span class="x"> </span><span class="n">io</span><span class="o">.</span><span class="n">CopyBuffer</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="x"> </span><span class="n">in</span><span class="p">,</span><span class="x"> </span><span class="n">buf</span><span class="p">);</span><span class="x"> </span><span class="n">err</span><span class="x"> </span><span class="o">!=</span><span class="x"> </span><span class="no">nil</span><span class="x"> </span><span class="p">{</span><span class="x">
-		</span><span class="k">return</span><span class="x"> </span><span class="n">err</span><span class="x">
-	</span><span class="p">}</span><span class="x">
+<span class="c">// Copy data from std in to std out</span>
+<span class="k">func</span> <span class="n">Copy</span><span class="p">(</span><span class="n">in</span> <span class="n">io</span><span class="o">.</span><span class="n">ReadSeeker</span><span class="p">,</span> <span class="n">out</span> <span class="n">io</span><span class="o">.</span><span class="n">Writer</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="n">w</span> <span class="o">:=</span> <span class="n">io</span><span class="o">.</span><span class="n">MultiWriter</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">Stdout</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">io</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">in</span><span class="p">);</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="n">err</span>
+	<span class="p">}</span>
+	<span class="n">in</span><span class="o">.</span><span class="n">Seek</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">)</span>
+	<span class="n">buf</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="m">64</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">io</span><span class="o">.</span><span class="n">CopyBuffer</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">in</span><span class="p">,</span> <span class="n">buf</span><span class="p">);</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="n">err</span>
+	<span class="p">}</span>
 
-	</span><span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">()</span><span class="x">
-	</span><span class="k">return</span><span class="x"> </span><span class="no">nil</span><span class="x">
-</span><span class="p">}</span></code></pre></figure>
+	<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">()</span>
+	<span class="k">return</span> <span class="no">nil</span>
+<span class="p">}</span></code></pre></figure>
 
 <p>–robert</p>
 
@@ -306,17 +328,23 @@ n & \text{Left} & \text{Center} & \text{Right} \\
       <hr />
 <h1>Comments</h1>
 
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'robertwe'; 
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
+<script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
 </script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="https://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
     </div>
   
 
@@ -334,12 +362,6 @@ n & \text{Left} & \text{Center} & \text{Right} \\
     </a>
 </div>
 
-
-<div class="footer">
-    <a href="https://twitter.com/rweclawski">
-      <i class="fa fa-twitter"></i> Twitter
-    </a>
-  </div>
 
 
 <div class="footer">

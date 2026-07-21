@@ -5,12 +5,12 @@ description: ""
 category: 
 tags: [bash]
 ---
-How to do it ? It's actually very simple.
-You can achieve this by `unset HISTFILE`. Of course in such case we only disable history 
-for current session. 
-What if we want to selectively do not put some commands into bash history ? 
+How to do it? It's actually very simple.
+You can achieve this with `unset HISTFILE`. Of course, in that case we only disable history
+for the current session.
+What if we want to selectively keep some commands out of the bash history?
 <!--more-->
-We can do it via `HISTCONTROL` variable. From Bash man page:
+We can do it via the `HISTCONTROL` variable. From the Bash man page:
 
     HISTCONTROL
         A colon-separated list of values controlling how commands are saved on the history list.    
@@ -25,10 +25,10 @@ We can do it via `HISTCONTROL` variable. From Bash man page:
         added to the history regardless of the value of HISTCONTROL.
 
 In my case I always use `export HISTCONTROL=ignoreboth:erasedups` and add it to `.bashrc` if necessary.
-After that whenever we want to exclude specific command from storing it in the bash history we call it like 
-this `<space>mysql -u xxxx -pxxxxx`. Remember about space in front of command. 
+After that, whenever we want to exclude a specific command from being stored in the bash history, we call it like
+this: `<space>mysql -u xxxx -pxxxxx`. Remember about the space in front of the command.
 
-From what I see on Ubuntu 14.04 `HISTCONTROL` is set to value `ignoreboth` by default.
+From what I see, on Ubuntu 14.04 `HISTCONTROL` is set to `ignoreboth` by default.
 
 
 --robert

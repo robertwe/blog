@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <generator uri="http://jekyllrb.com" version="3.5.1">Jekyll</generator>
+  <generator uri="http://jekyllrb.com" version="3.9.3">Jekyll</generator>
   
   
   <link href="https://roberts-notes.blog/feed.xml" rel="self" type="application/atom+xml" />
   <link href="https://roberts-notes.blog/" rel="alternate" type="text/html" />
-  <updated>2019-05-05T22:27:42+02:00</updated>
+  <updated>2026-07-21T19:53:24+02:00</updated>
   <id>https://roberts-notes.blog//</id>
 
   
@@ -13,11 +13,594 @@
   
 
   
-    <subtitle></subtitle>
+    <subtitle>Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.
+</subtitle>
   
 
   
 
+  
+  
+    <entry>
+      
+      <title type="html">From Terraform to OpenTofu - why and how we made the switch</title>
+      
+      
+      <link href="https://roberts-notes.blog/2026/07/21/transition-to-opentofu/" rel="alternate" type="text/html" title="From Terraform to OpenTofu - why and how we made the switch" />
+      
+      <published>2026-07-21T09:00:00+02:00</published>
+      <updated>2026-07-21T09:00:00+02:00</updated>
+      <id>https://roberts-notes.blog/2026/07/21/transition-to-opentofu</id>
+      <content type="html" xml:base="https://roberts-notes.blog/2026/07/21/transition-to-opentofu/">&lt;p&gt;I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed.
+Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem,
+and recently I went through a full migration from Terraform to &lt;a href=&quot;https://opentofu.org/&quot;&gt;OpenTofu&lt;/a&gt; in a few production environments.
+In this post I want to share why we did it, how it went, and what surprised me along the way.
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;a-bit-of-history---why-opentofu-even-exists&quot;&gt;A bit of history - why OpenTofu even exists&lt;/h2&gt;
+
+&lt;p&gt;In August 2023 HashiCorp changed the license of Terraform (and their other tools) from the open source MPL 2.0
+to the Business Source License (BSL). BSL is a source-available license, not an open source one - it restricts
+who can use the software and for what, especially if you build products that compete with HashiCorp’s offering.&lt;/p&gt;
+
+&lt;p&gt;For most end users nothing changed overnight. But the community reaction was strong, and for a good reason:
+a huge ecosystem of modules, providers and tooling was built over the years on the assumption that Terraform is
+and will stay open source. In response, a group of companies and individuals created a fork of the last MPL-licensed
+Terraform (1.5.x) called OpenTofu, which was quickly adopted by the Linux Foundation. That gives it neutral,
+community-driven governance - no single vendor can pull the same license move again.&lt;/p&gt;
+
+&lt;p&gt;Since then OpenTofu has been shipping releases at a solid pace, and it is not just a passive fork anymore.
+It has features that Terraform does not have, like native state encryption - something people were asking
+HashiCorp for literally for years.&lt;/p&gt;
+
+&lt;h2 id=&quot;why-we-decided-to-migrate&quot;&gt;Why we decided to migrate&lt;/h2&gt;
+
+&lt;p&gt;I will not name the companies I have been working with, but the motivation was pretty similar everywhere:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;License risk&lt;/strong&gt; - legal departments do not like “source available” licenses with vague boundaries.
+Even if you are 99% sure your use case is fine, that 1% is an unnecessary risk. Open source under
+the Linux Foundation umbrella is a much easier conversation,&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;State encryption&lt;/strong&gt; - with OpenTofu 1.7+ you can encrypt the state file itself. Terraform state
+contains secrets in plain text (yes, still, in 2026) and until now the only protection was encryption
+at rest on the backend side. Client-side state encryption is a real security improvement,&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Cost&lt;/strong&gt; - some teams were evaluating Terraform Cloud/HCP pricing and did not like where it was going.
+OpenTofu keeps the classic open workflow: your state backend, your CI, your rules,&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;No vendor lock-in on the tool itself&lt;/strong&gt; - the whole point of IaC is control and repeatability.
+Having the core tool governed by a foundation instead of a single vendor fits that philosophy.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;the-migration-itself---honestly-it-is-boring-and-that-is-great&quot;&gt;The migration itself - honestly, it is boring (and that is great)&lt;/h2&gt;
+
+&lt;p&gt;This was the biggest surprise. I expected a painful multi-week project. In reality, for a codebase
+that was on Terraform 1.5.x, the migration is almost a non-event, because OpenTofu started as a
+drop-in replacement.&lt;/p&gt;
+
+&lt;p&gt;The whole process looks like this:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1. Install OpenTofu&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# macOS&lt;/span&gt;
+brew &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;opentofu
+
+&lt;span class=&quot;c&quot;&gt;# or via the installer script&lt;/span&gt;
+curl &lt;span class=&quot;nt&quot;&gt;--proto&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'=https'&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--tlsv1&lt;/span&gt;.2 &lt;span class=&quot;nt&quot;&gt;-fsSL&lt;/span&gt; https://get.opentofu.org/install-opentofu.sh &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; install-opentofu.sh
+&lt;span class=&quot;nb&quot;&gt;chmod&lt;/span&gt; +x install-opentofu.sh
+./install-opentofu.sh &lt;span class=&quot;nt&quot;&gt;--install-method&lt;/span&gt; deb
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;2. Take a state backup first&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;I do not care how confident you are - back up your state before touching anything:&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;terraform state pull &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; backup-&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;date&lt;/span&gt; +%F&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;.tfstate
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;3. Re-initialize with tofu&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tofu init
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That is it for the core switch. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tofu init&lt;/code&gt; downloads providers from the OpenTofu registry
+(&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;registry.opentofu.org&lt;/code&gt;), which mirrors the providers you already use. The state format is compatible,
+so &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tofu plan&lt;/code&gt; right after the init should show &lt;strong&gt;no changes&lt;/strong&gt;. If it does not - stop and investigate,
+do not apply.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;4. Verify with a plan on every workspace/environment&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tofu plan &lt;span class=&quot;nt&quot;&gt;-detailed-exitcode&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We ran this across all environments before letting anyone apply anything. Exit code &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt; everywhere means
+you are done with the risky part.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;5. Update your CI/CD pipelines&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;This was actually most of the work - not because it is hard, but because pipelines are everywhere.
+Mostly it boils down to replacing the binary and the setup step, e.g. in GitHub Actions:&lt;/p&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;uses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;opentofu/setup-opentofu@v1&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;with&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;tofu_version&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;1.10.0&lt;/span&gt;
+
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;tofu init -input=false&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;tofu plan -input=false&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Tools around the ecosystem (Atlantis, Terragrunt, pre-commit hooks, tflint, checkov, infracost) all
+support OpenTofu these days, usually via a single configuration switch.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;6. Pin the version&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Same discipline as with Terraform - pin it:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;terraform&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;required_version&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&amp;gt;= 1.10.0&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Yes, the block is still called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;terraform&lt;/code&gt; - OpenTofu kept it for compatibility, and I think that was
+the right call.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-nice-bonus---state-encryption&quot;&gt;The nice bonus - state encryption&lt;/h2&gt;
+
+&lt;p&gt;This alone justified the migration for one security-conscious team. Example configuration with an AWS KMS key:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;terraform&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;encryption&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;key_provider&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_kms&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;main&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;kms_key_id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;arn:aws:kms:eu-west-1:111111111111:key/xxxx&quot;&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;key_spec&lt;/span&gt;   &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;AES_256&quot;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;nx&quot;&gt;method&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aes_gcm&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;main&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;keys&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;key_provider&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;aws_kms&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;main&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;nx&quot;&gt;state&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;method&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;aes_gcm&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;main&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;From that moment your state file is encrypted client-side before it ever reaches the backend.
+Anyone who ever had to explain to a security auditor why there are database passwords in plain text
+in an S3 bucket will appreciate this.&lt;/p&gt;
+
+&lt;h2 id=&quot;gotchas-we-hit&quot;&gt;Gotchas we hit&lt;/h2&gt;
+
+&lt;p&gt;Nothing dramatic, but worth mentioning:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Do the migration from Terraform &amp;lt;= 1.5.x if you can.&lt;/strong&gt; If your code already uses features from
+newer Terraform versions (post-fork), check the OpenTofu migration guide - the projects have started
+to diverge and a few features have different implementations,&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Provider versions&lt;/strong&gt; - the OpenTofu registry mirrors providers, but re-check your lock file
+(&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.terraform.lock.hcl&lt;/code&gt;) after init. We regenerated it cleanly with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tofu providers lock&lt;/code&gt;,&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Muscle memory&lt;/strong&gt; - the amount of times I typed &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;terraform plan&lt;/code&gt; in the first two weeks… a shell
+alias helps: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;alias terraform=tofu&lt;/code&gt;,&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Documentation drift&lt;/strong&gt; - internal runbooks and READMEs mention &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;terraform&lt;/code&gt; everywhere. A boring
+find-and-replace task, but if you skip it, new team members will happily install Terraform again.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;verdict&quot;&gt;Verdict&lt;/h2&gt;
+
+&lt;p&gt;The migration was one of those rare infrastructure changes where the risk/benefit ratio is clearly positive:
+a day or two of work (mostly CI plumbing and verification), and in return you get an actually open source tool,
+community governance, state encryption and no license anxiety. After several months in production across
+multiple environments I have not hit a single issue that I could attribute to OpenTofu itself.&lt;/p&gt;
+
+&lt;p&gt;If you are still on Terraform 1.5.x and wondering whether to move - in my opinion the answer is yes,
+and the best moment is now, while the drop-in compatibility window is still wide open.&lt;/p&gt;
+
+&lt;p&gt;–
+cheers&lt;/p&gt;</content>
+
+      
+      
+      
+      
+      
+
+      
+
+      
+        <category term="DevOps" />
+      
+
+      
+        <category term="DevOps" />
+      
+        <category term="Terraform" />
+      
+        <category term="OpenTofu" />
+      
+        <category term="IaC" />
+      
+
+      
+        <summary type="html">I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed. Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem, and recently I went through a full migration from Terraform to OpenTofu in a few production environments. In this post I want to share why we did it, how it went, and what surprised me along the way.</summary>
+      
+
+      
+      
+    </entry>
+  
+  
+  
+    <entry>
+      
+      <title type="html">Why GoLang</title>
+      
+      
+      <link href="https://roberts-notes.blog/2024/06/11/why-go-lang/" rel="alternate" type="text/html" title="Why GoLang" />
+      
+      <published>2024-06-11T08:30:00+02:00</published>
+      <updated>2024-06-11T08:30:00+02:00</updated>
+      <id>https://roberts-notes.blog/2024/06/11/why-go-lang</id>
+      <content type="html" xml:base="https://roberts-notes.blog/2024/06/11/why-go-lang/">&lt;p&gt;GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers 
+due to its simplicity, efficiency, and robustness. In this blog post, we will explore GoLang’s best features from both performance and development perspectives, 
+backed by comprehensive code examples to illustrate these advantages.
+&lt;!--more--&gt;&lt;/p&gt;
+&lt;h2 id=&quot;performance-perspective&quot;&gt;Performance Perspective&lt;/h2&gt;
+
+&lt;h3 id=&quot;1-concurrency-with-goroutines&quot;&gt;1. Concurrency with Goroutines&lt;/h3&gt;
+
+&lt;p&gt;One of GoLang’s standout features is its powerful concurrency model. Goroutines are lightweight threads managed by the Go runtime, allowing developers to execute 
+multiple functions simultaneously with minimal overhead.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;&quot;time&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;say&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Sleep&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;100&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Millisecond&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;say&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Hello&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;say&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;World&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In this example, the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;say&lt;/code&gt; function is run concurrently with the main function, demonstrating how simple it is to implement concurrency in Go.&lt;/p&gt;
+
+&lt;h3 id=&quot;2-efficient-memory-management&quot;&gt;2. Efficient Memory Management&lt;/h3&gt;
+
+&lt;p&gt;GoLang features an efficient garbage collector that handles memory allocation and deallocation, reducing the likelihood of memory leaks and other related issues. 
+The garbage collector is optimized to minimize pause times and improve application performance.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;m&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1000000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;test&quot;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Map filled with 1,000,000 entries.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This code demonstrates how Go handles large data structures efficiently, thanks to its optimized garbage collection mechanism.&lt;/p&gt;
+
+&lt;h3 id=&quot;3-fast-compilation&quot;&gt;3. Fast Compilation&lt;/h3&gt;
+
+&lt;p&gt;GoLang is known for its fast compilation times, which is beneficial for large projects with numerous dependencies. The language was designed to compile quickly, 
+providing immediate feedback and enhancing the development experience.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;To illustrate, consider a large Go project with multiple packages. The compilation process remains swift, allowing for rapid iterations and debugging.&lt;/p&gt;
+
+&lt;h3 id=&quot;4-static-linking&quot;&gt;4. Static Linking&lt;/h3&gt;
+
+&lt;p&gt;GoLang produces statically linked binaries, which include all necessary dependencies. This results in standalone executables that are easy to deploy and run 
+across different environments without dependency issues.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;go build &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; myapp main.go
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go build&lt;/code&gt; command compiles the code into a single executable file named &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;myapp&lt;/code&gt;, containing all required libraries.&lt;/p&gt;
+
+&lt;h2 id=&quot;development-perspective&quot;&gt;Development Perspective&lt;/h2&gt;
+
+&lt;h3 id=&quot;1-simplicity-and-readability&quot;&gt;1. Simplicity and Readability&lt;/h3&gt;
+
+&lt;p&gt;GoLang’s syntax is simple and clean, making it easy to read and write code. The language avoids complex features like inheritance (and even generics were added
+only in Go 1.18, in a deliberately minimal form), focusing instead on clarity and ease of maintenance.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Sum:&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This example demonstrates Go’s straightforward syntax, which enhances code readability.&lt;/p&gt;
+
+&lt;h3 id=&quot;2-standard-library&quot;&gt;2. Standard Library&lt;/h3&gt;
+
+&lt;p&gt;GoLang comes with a comprehensive standard library that provides a wide range of functionalities, from file handling to web servers. This reduces the need for 
+external dependencies and streamlines the development process.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;&quot;net/http&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;helloHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ResponseWriter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fprintf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Hello, World!&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HandleFunc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;helloHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ListenAndServe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;:8080&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This code sets up a simple web server using Go’s standard library, showcasing the ease of building web applications without additional frameworks.&lt;/p&gt;
+
+&lt;h3 id=&quot;3-built-in-testing&quot;&gt;3. Built-in Testing&lt;/h3&gt;
+
+&lt;p&gt;GoLang includes a robust testing framework as part of its standard library. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;testing&lt;/code&gt; package allows developers to write unit tests easily, ensuring code 
+quality and reliability.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;testing&quot;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TestAdd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testing&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;expected&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;7&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expected&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Errorf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Expected %d but got %d&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expected&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This example shows how to write a simple test for the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add&lt;/code&gt; function, highlighting Go’s focus on testing and code correctness.&lt;/p&gt;
+
+&lt;h3 id=&quot;4-tools-and-ecosystem&quot;&gt;4. Tools and Ecosystem&lt;/h3&gt;
+
+&lt;p&gt;GoLang has a rich ecosystem of tools that enhance the development experience. Tools like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gofmt&lt;/code&gt; for code formatting and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go vet&lt;/code&gt; for static analysis help 
+maintain code quality and consistency.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;gofmt &lt;span class=&quot;nt&quot;&gt;-w&lt;/span&gt; main.go
+go vet main.go
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gofmt&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go vet&lt;/code&gt; ensures that the code adheres to Go’s style guidelines and catches potential issues early in the development process.&lt;/p&gt;
+
+&lt;h3 id=&quot;5-cross-platform-development&quot;&gt;5. Cross-Platform Development&lt;/h3&gt;
+
+&lt;p&gt;GoLang supports cross-platform development, allowing developers to build applications for various operating systems from a single codebase. This feature is 
+particularly useful for creating software that needs to run on multiple platforms.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;GOOS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;linux &lt;span class=&quot;nv&quot;&gt;GOARCH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;amd64 go build &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; myapp main.go
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The above command compiles the Go application for a Linux environment with AMD64 architecture, demonstrating the ease of cross-platform compilation.&lt;/p&gt;
+
+&lt;h3 id=&quot;6-strong-community-and-support&quot;&gt;6. Strong Community and Support&lt;/h3&gt;
+
+&lt;p&gt;GoLang has a vibrant and active community that contributes to a wealth of resources, libraries, and frameworks. This strong community support helps developers 
+find solutions quickly and stay updated with best practices.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Using popular Go frameworks and libraries like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Gin&lt;/code&gt; for web development or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Gorm&lt;/code&gt; for ORM makes building robust applications more efficient.&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;&quot;github.com/gin-gonic/gin&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/ping&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;JSON&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;s&quot;&gt;&quot;message&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;pong&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This code snippet demonstrates how to create a simple web server using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Gin&lt;/code&gt; framework, illustrating the benefits of leveraging community-supported 
+libraries.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;GoLang’s best features from both performance and development perspectives make it an attractive choice for developers looking to build efficient, scalable, and 
+maintainable applications. Its concurrency model, efficient memory management, fast compilation, simplicity, comprehensive standard library, built-in testing 
+framework, and strong community support are just a few reasons why Go has become a preferred language for many developers.&lt;/p&gt;
+
+&lt;p&gt;By leveraging GoLang’s capabilities, developers can create high-performance applications with ease, ensuring a seamless development experience and robust 
+software solutions. Whether you’re building a web server, a command-line tool, or a complex distributed system, GoLang provides the tools and features necessary 
+to succeed.&lt;/p&gt;
+
+&lt;p&gt;–
+cheers&lt;/p&gt;</content>
+
+      
+      
+      
+      
+      
+
+      
+
+      
+        <category term="GoLang" />
+      
+
+      
+        <category term="Programming" />
+      
+        <category term="GoLang" />
+      
+
+      
+        <summary type="html">GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers due to its simplicity, efficiency, and robustness. In this blog post, we will explore GoLang’s best features from both performance and development perspectives, backed by comprehensive code examples to illustrate these advantages.</summary>
+      
+
+      
+      
+    </entry>
+  
+  
+  
+    <entry>
+      
+      <title type="html">Go Lang and interfaces and generics</title>
+      
+      
+      <link href="https://roberts-notes.blog/2024/06/11/go-lang-generics/" rel="alternate" type="text/html" title="Go Lang and interfaces and generics" />
+      
+      <published>2024-06-11T03:30:00+02:00</published>
+      <updated>2024-06-11T03:30:00+02:00</updated>
+      <id>https://roberts-notes.blog/2024/06/11/go-lang-generics</id>
+      <content type="html" xml:base="https://roberts-notes.blog/2024/06/11/go-lang-generics/">&lt;p&gt;Hey everyone,&lt;/p&gt;
+
+&lt;p&gt;Today, I want to dive into Go language and talk about interfaces, with a specific focus on generics.
+Generics have been one of the most highly anticipated features in Go, and they are finally here with the release of Go 1.18.
+Let’s explore how interfaces and generics work together in Go and how they can make our code more flexible and reusable.
+&lt;!--more--&gt;
+Let’s start by looking at a simple example of using interfaces in Go. Interfaces in Go provide a way to specify the behavior of an object: any type that defines the methods specified in the interface automatically implements the interface. This allows us to write code that can work with different types as long as they adhere to the interface contract.&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+	&lt;span class=&quot;s&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+	&lt;span class=&quot;s&quot;&gt;&quot;math&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;// Define the interface&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Shape&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Area&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;float64&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;// Implement the interface for a rectangle&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Rectangle&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Width&lt;/span&gt;  &lt;span class=&quot;kt&quot;&gt;float64&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Height&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;float64&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Rectangle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Area&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;float64&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Width&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Height&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;// Implement the interface for a circle&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Circle&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Radius&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;float64&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Circle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Area&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;float64&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;math&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Pi&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Radius&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Radius&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PrintArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Shape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Area:&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Area&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;rect&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Rectangle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Width&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Height&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;circle&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Circle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Radius&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;PrintArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;   &lt;span class=&quot;c&quot;&gt;// Output: Area: 12&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;PrintArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;circle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;// Output: Area: 78.53981633974483&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In this example, both the Rectangle and Circle types implement the Shape interface by providing the Area method, allowing us to use the PrintArea function with instances of both types.&lt;/p&gt;
+
+&lt;p&gt;Now, let’s see how generics enhance the use of interfaces in Go. With generics, we can create more reusable and flexible code by defining functions, types, and interfaces that can work with any data type. Here’s an example of a generic function that operates on any type that implements a given interface:&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;// A generic function that operates on any type that implements the Shape interface&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PrintAreaGeneric&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Shape&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;](&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Area:&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Area&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;rect&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Rectangle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Width&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Height&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;circle&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Circle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Radius&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;PrintAreaGeneric&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;   &lt;span class=&quot;c&quot;&gt;// Output: Area: 12&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;PrintAreaGeneric&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;circle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;// Output: Area: 78.53981633974483&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In this example, the PrintAreaGeneric function uses the generic type T, which must implement the Shape interface. This allows us to write a single function that can work with any type that fulfills the interface contract.&lt;/p&gt;
+
+&lt;p&gt;By leveraging generics, we can write more reusable and expressive code in Go, reducing duplication and improving the overall quality of our programs. With the addition of generics in Go 1.18, the language has become even more powerful and flexible.&lt;/p&gt;
+
+&lt;p&gt;I hope this post has given you a good understanding of how interfaces and generics work together in Go and how they can be used to write more flexible and reusable code. If you have any questions or want to share your own experiences with Go interfaces and generics, feel free to leave a comment below.&lt;/p&gt;
+
+&lt;p&gt;Happy coding!&lt;/p&gt;</content>
+
+      
+      
+      
+      
+      
+
+      
+
+      
+        <category term="GoLang" />
+      
+
+      
+        <category term="Programming" />
+      
+        <category term="GoLang" />
+      
+        <category term="Generics" />
+      
+
+      
+        <summary type="html">Hey everyone, Today, I want to dive into Go language and talk about interfaces, with a specific focus on generics. Generics have been one of the most highly anticipated features in Go, and they are finally here with the release of Go 1.18. Let’s explore how interfaces and generics work together in Go and how they can make our code more flexible and reusable.</summary>
+      
+
+      
+      
+    </entry>
+  
   
   
     <entry>
@@ -30,44 +613,43 @@
       <published>2016-11-05T22:30:00+01:00</published>
       <updated>2016-11-05T22:30:00+01:00</updated>
       <id>https://roberts-notes.blog/2016/11/05/introduction-to-augeas-in-puppet</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2016/11/05/introduction-to-augeas-in-puppet/">&lt;p&gt;Recently I came across an interesting problem. I had to install kernel
-from branch 3.10 on CentOS6 and there was a need to update &lt;code class=&quot;highlighter-rouge&quot;&gt;grub.conf&lt;/code&gt; - change default kernel plus add boot option.
-Both mentioned operation had to be done in Puppet 3.7 (Augeas are of course also available in the higher version of Puppet). Sounds easy right? &lt;!--more--&gt; 
+      <content type="html" xml:base="https://roberts-notes.blog/2016/11/05/introduction-to-augeas-in-puppet/">&lt;p&gt;Recently I came across an interesting problem. I had to install a kernel
+from the 3.10 branch on CentOS 6 and there was a need to update &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;grub.conf&lt;/code&gt; - change the default kernel plus add a boot option.
+Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right? &lt;!--more--&gt; 
 In the traditional approach (I saw it in many companies) I would probably
-create another template but I was wondering if there is a way to do it in a
+create another template, but I was wondering if there is a way to do it in a
 more elegant and universal way. Of course we can create another template
-and do not think about that but what if we actually do not know what we can expect
-in &lt;code class=&quot;highlighter-rouge&quot;&gt;grub.conf&lt;/code&gt;. Serving &lt;code class=&quot;highlighter-rouge&quot;&gt;grub.conf&lt;/code&gt; as a template can have bunch of other
-implication - dealing with updates, mixed versions of kernels ect.
-In other words another thing we would need to maintain and keep an eye on.
-Actually wy we should provide another template if we only want to add single value
-to lets say &lt;code class=&quot;highlighter-rouge&quot;&gt;sysctl.conf&lt;/code&gt;?&lt;/p&gt;
+and not think about it, but what if we actually do not know what to expect
+in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;grub.conf&lt;/code&gt;? Serving &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;grub.conf&lt;/code&gt; as a template can have a bunch of other
+implications - dealing with updates, mixed versions of kernels etc.
+In other words, another thing we would need to maintain and keep an eye on.
+Actually, why should we provide another template if we only want to add a single value
+to, let’s say, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sysctl.conf&lt;/code&gt;?&lt;/p&gt;
 
-&lt;p&gt;To deal with it we can execute some nasty shell command (sed,awk - you name it)
-or use more sophisticated interface to configuration files - &lt;a href=&quot;http://augeas.net/&quot;&gt;Augeas&lt;/a&gt;.
-Augeas is actually a library written in C. This library provides us an interface which treads
-configuration file as an tree. Additionally we can dynamically change every single element of this tree.
-Augeas is not a new solution and provides bindings for most of popular programming languages (Python,Ruby).
-It’s not a surprise it;s also available in Puppet by default.&lt;/p&gt;
+&lt;p&gt;To deal with it we can execute some nasty shell command (sed, awk - you name it)
+or use a more sophisticated interface to configuration files - &lt;a href=&quot;http://augeas.net/&quot;&gt;Augeas&lt;/a&gt;.
+Augeas is actually a library written in C. This library provides us an interface which treats
+a configuration file as a tree. Additionally, we can dynamically change every single element of this tree.
+Augeas is not a new solution and provides bindings for most popular programming languages (Python, Ruby).
+It’s no surprise it’s also available in Puppet by default.&lt;/p&gt;
 
-&lt;p&gt;If I want to add some value to &lt;code class=&quot;highlighter-rouge&quot;&gt;sysctl.conf&lt;/code&gt; I can do this like this:&lt;/p&gt;
+&lt;p&gt;If I want to add some value to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sysctl.conf&lt;/code&gt; I can do it like this:&lt;/p&gt;
 
-&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;augeas&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;sysctl&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;augeas&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;sysctl&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
   &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'/files/etc/sysctl.conf'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
   &lt;span class=&quot;n&quot;&gt;changes&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
     &lt;span class=&quot;s1&quot;&gt;'set kernel.keys.root_maxkeys 1000000'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;p&gt;We can execute it many times. Required entry will be added only once.
-From what I noticed this is a simplified way how we can call Augeas in puppet.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;We can execute it many times. The required entry will be added only once.
+From what I noticed, this is the simplified way of calling Augeas in Puppet.&lt;/p&gt;
 
 &lt;p&gt;For some more sophisticated configuration files there are specialized interfaces.
-In puppet we can access them by specifying something what is called &lt;code class=&quot;highlighter-rouge&quot;&gt;lens&lt;/code&gt;.
-I did not check how in works under the hood in puppet but I suspect the puppet
-select lens automatically if we do not specify any.
-Below is an example how we can make changes in &lt;code class=&quot;highlighter-rouge&quot;&gt;grub.conf&lt;/code&gt; (real world example I use in the puppet):&lt;/p&gt;
+In Puppet we can access them by specifying something called a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lens&lt;/code&gt;.
+I did not check how it works under the hood in Puppet, but I suspect Puppet
+selects the lens automatically if we do not specify any.
+Below is an example of how we can make changes in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;grub.conf&lt;/code&gt; (a real-world example I use in Puppet):&lt;/p&gt;
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;n&quot;&gt;augeas&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'grub_conf'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
   &lt;span class=&quot;n&quot;&gt;incl&lt;/span&gt;    &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'/boot/grub/grub.conf'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
@@ -82,39 +664,39 @@ Below is an example how we can make changes in &lt;code class=&quot;highlighter-
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
 &lt;dl&gt;
-  &lt;dt&gt;Lets go through it line by line:&lt;/dt&gt;
+  &lt;dt&gt;Let’s go through it line by line:&lt;/dt&gt;
   &lt;dd&gt;
     &lt;ul&gt;
-      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;inc&lt;/code&gt; - specify what configuration file we would like to change
+      &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;incl&lt;/code&gt; - specifies what configuration file we would like to change
         &lt;ul&gt;
-          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;lens&lt;/code&gt; - specify the name of the lens we would like to use&lt;/li&gt;
-          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;changes&lt;/code&gt; - defines group or single modification we would like to make&lt;/li&gt;
+          &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lens&lt;/code&gt; - specifies the name of the lens we would like to use&lt;/li&gt;
+          &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;changes&lt;/code&gt; - defines a group of modifications (or a single one) we would like to make&lt;/li&gt;
         &lt;/ul&gt;
       &lt;/li&gt;
     &lt;/ul&gt;
   &lt;/dd&gt;
-  &lt;dt&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;changes&lt;/code&gt; section support operators like:&lt;/dt&gt;
+  &lt;dt&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;changes&lt;/code&gt; section supports operators like:&lt;/dt&gt;
   &lt;dd&gt;
     &lt;ul&gt;
-      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;set&lt;/code&gt; - sets required field to specified value,    &lt;br /&gt;
-&lt;code class=&quot;highlighter-rouge&quot;&gt;set default 0&lt;/code&gt; produces &lt;code class=&quot;highlighter-rouge&quot;&gt;default=0&lt;/code&gt; in the configuration file
+      &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;set&lt;/code&gt; - sets the required field to the specified value,    &lt;br /&gt;
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;set default 0&lt;/code&gt; produces &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;default=0&lt;/code&gt; in the configuration file
         &lt;ul&gt;
-          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;setm&lt;/code&gt; - adds value to line which matches to (&lt;code class=&quot;highlighter-rouge&quot;&gt;m&lt;/code&gt; stands for multi I guess)&lt;/li&gt;
-          &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;rm&lt;/code&gt; removes value from line which matches to&lt;/li&gt;
+          &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;setm&lt;/code&gt; - adds a value to lines which match (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;m&lt;/code&gt; stands for multi, I guess)&lt;/li&gt;
+          &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;rm&lt;/code&gt; - removes a value from lines which match&lt;/li&gt;
         &lt;/ul&gt;
       &lt;/li&gt;
     &lt;/ul&gt;
   &lt;/dd&gt;
 &lt;/dl&gt;
 
-&lt;p&gt;You probably will ask - “how do I know how line I desire to change should be presented to augeas”.
-To see how defined config file looks like when Augeas converts it to tree you can use &lt;code class=&quot;highlighter-rouge&quot;&gt;augtool&lt;/code&gt;.
-It should be available in the standard CentOS repo (it’s also available on the OSX via Brew)
+&lt;p&gt;You will probably ask - “how do I know how the line I want to change is represented in Augeas?”.
+To see what a given config file looks like when Augeas converts it to a tree, you can use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;augtool&lt;/code&gt;.
+It should be available in the standard CentOS repo (it’s also available on OSX via Brew).
 It’s a command line interface for Augeas.&lt;/p&gt;
 
 &lt;h5 id=&quot;see-an-example-below&quot;&gt;See an example below:&lt;/h5&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[root@localhost ~]# augtool ls /files/boot/grub/grub.conf
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[root@localhost ~]# augtool ls /files/boot/grub/grub.conf
 #comment[1] = grub.conf generated by anaconda
 #comment[2] = Note that you do not have to rerun grub after making changes to this file
 #comment[3] = NOTICE:  You have a /boot partition.  This means that
@@ -130,10 +712,9 @@ hiddenmenu = (none)
 title[1]/ = CentOS (3.10.x86_64)
 title[2]/ = CentOS 6 (2.6.32-504.8.1.el6.x86_64)
 [root@localhost ~]#
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Some folks also figured out that Augeas in Puppet can be integrated as &lt;code class=&quot;highlighter-rouge&quot;&gt;providers&lt;/code&gt; to create even more user friendly interface.
+&lt;p&gt;Some folks also figured out that Augeas in Puppet can be integrated as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;providers&lt;/code&gt; to create an even more user friendly interface.
 You can read more about that here &lt;a href=&quot;http://augeasproviders.com/&quot;&gt;http://augeasproviders.com/&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;–
@@ -160,7 +741,7 @@ Robert&lt;/p&gt;</content>
       
 
       
-        <summary type="html">Recently I came across an interesting problem. I had to install kernel from branch 3.10 on CentOS6 and there was a need to update grub.conf - change default kernel plus add boot option. Both mentioned operation had to be done in Puppet 3.7 (Augeas are of course also available in the higher version of Puppet). Sounds easy right?</summary>
+        <summary type="html">Recently I came across an interesting problem. I had to install a kernel from the 3.10 branch on CentOS 6 and there was a need to update grub.conf - change the default kernel plus add a boot option. Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?</summary>
       
 
       
@@ -179,48 +760,46 @@ Robert&lt;/p&gt;</content>
       <published>2015-11-03T21:00:00+01:00</published>
       <updated>2015-11-03T21:00:00+01:00</updated>
       <id>https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt/">&lt;p&gt;Yesterday I faced quite interesting problem.
-In my SLS definition I was iterating over some hash of hashes and wanted to pass to Jinja template
-hash, which was present in current iteration. &lt;!--more--&gt;
-To make it more clear let show you the problem in the code:&lt;/p&gt;
+      <content type="html" xml:base="https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt/">&lt;p&gt;Yesterday I faced a quite interesting problem.
+In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash
+from the current iteration to a Jinja template. &lt;!--more--&gt;
+To make it more clear, let me show you the problem in the code:&lt;/p&gt;
 
-&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;pi&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;for vhost in pillar&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;vhosts'&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;/etc/httpd/conf.d/{{ vhost.name }}.conf&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-  &lt;span class=&quot;s&quot;&gt;file.managed&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;template&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;jinja&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;salt://httpd/files/vhost/vhost_template.conf.jinja&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;s&quot;&gt;644&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;pkg&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;httpd&lt;/span&gt;
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;pi&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;for vhost in pillar&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;vhosts'&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;/etc/httpd/conf.d/{{ vhost.name }}.conf&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;file.managed&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;template&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;jinja&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;salt://httpd/files/vhost/vhost_template.conf.jinja&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;m&quot;&gt;644&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;pkg&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;httpd&lt;/span&gt;
 &lt;span class=&quot;pi&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;endfor %&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;I simple wanted to use variable &lt;em&gt;vhost&lt;/em&gt; in my template.
-Variable &lt;em&gt;vhost&lt;/em&gt; is nothing more than just a hash with parameters for each vhost.
-We can solve this problem by using &lt;em&gt;context&lt;/em&gt; in &lt;em&gt;salt&lt;/em&gt; definition.
-Here is the final version of my sls snippet (aka solution):&lt;/p&gt;
+&lt;p&gt;I simply wanted to use the variable &lt;em&gt;vhost&lt;/em&gt; in my template.
+The variable &lt;em&gt;vhost&lt;/em&gt; is nothing more than a hash with parameters for each vhost.
+We can solve this problem by using &lt;em&gt;context&lt;/em&gt; in the &lt;em&gt;salt&lt;/em&gt; definition.
+Here is the final version of my sls snippet (aka the solution):&lt;/p&gt;
 
-&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
 &lt;span class=&quot;pi&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;for vhost in pillar&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;vhosts'&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;/etc/httpd/conf.d/{{ vhost.name }}.conf&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-  &lt;span class=&quot;s&quot;&gt;file.managed&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;template&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;jinja&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;salt://httpd/files/vhost/vhost_template.conf.jinja&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;s&quot;&gt;644&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;pkg&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;httpd&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;             &lt;span class=&quot;c1&quot;&gt;# set up context for template&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;vhost&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;{{&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;vhost&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;}}&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# it makes vhost hash available inside&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;/etc/httpd/conf.d/{{ vhost.name }}.conf&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;file.managed&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;template&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;jinja&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;salt://httpd/files/vhost/vhost_template.conf.jinja&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;m&quot;&gt;644&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;pkg&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;httpd&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;             &lt;span class=&quot;c1&quot;&gt;# set up context for template&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;vhost&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;{{&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;vhost&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;}}&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# it makes vhost hash available inside&lt;/span&gt;
                            &lt;span class=&quot;c1&quot;&gt;# Jinja template under the name vhost&lt;/span&gt;
 &lt;span class=&quot;pi&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;endfor %&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;}&lt;/span&gt;
 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;p&gt;Of course you can pass as many variables as you want via the context.&lt;/p&gt;
 
 &lt;p&gt;–robert&lt;/p&gt;</content>
@@ -240,7 +819,7 @@ Here is the final version of my sls snippet (aka solution):&lt;/p&gt;
       
 
       
-        <summary type="html">Yesterday I faced quite interesting problem. In my SLS definition I was iterating over some hash of hashes and wanted to pass to Jinja template hash, which was present in current iteration.</summary>
+        <summary type="html">Yesterday I faced a quite interesting problem. In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash from the current iteration to a Jinja template.</summary>
       
 
       
@@ -259,28 +838,26 @@ Here is the final version of my sls snippet (aka solution):&lt;/p&gt;
       <published>2015-04-30T08:00:03+02:00</published>
       <updated>2015-04-30T08:00:03+02:00</updated>
       <id>https://roberts-notes.blog/2015/04/30/add-new-key-to-apt</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2015/04/30/add-new-key-to-apt/">&lt;p&gt;One of my desktop box I recently got this message when I wanted to update it via &lt;code class=&quot;highlighter-rouge&quot;&gt;apt&lt;/code&gt; :&lt;/p&gt;
+      <content type="html" xml:base="https://roberts-notes.blog/2015/04/30/add-new-key-to-apt/">&lt;p&gt;On one of my desktop boxes I recently got this message when I wanted to update it via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apt&lt;/code&gt;:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Fetched 1448 B in 8s (180 B/s)
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Fetched 1448 B in 8s (180 B/s)
 Reading package lists... Done
 W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used.
 GPG error: http://xxxxxxx ./ Release: The following signatures couldn't be verified because
 the public key is not available: NO_PUBKEY 0000000000
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;!--more--&gt;
 
-&lt;p&gt;Solution for it is very straight forward but lets write it down here since I always forgot how to do this.
+&lt;p&gt;The solution is very straightforward, but let’s write it down here since I always forget how to do it.
 Here it is:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;gpg --keyserver subkeys.pgp.net --recv-keys keyId
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;gpg --keyserver subkeys.pgp.net --recv-keys keyId
 gpg -a --export keyId | sudo apt-key add -
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;p&gt;Of course you will need to replace &lt;code class=&quot;highlighter-rouge&quot;&gt;keyId&lt;/code&gt; with a real GPG key which is missing/uknown to APT.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Of course you will need to replace &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;keyId&lt;/code&gt; with the real GPG key which is missing/unknown to APT.&lt;/p&gt;
 
-&lt;p&gt;Additiona resources - &lt;a href=&quot;https://wiki.debian.org/SecureApt&quot;&gt;SecureApt Debian wiki page&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Additional resources - &lt;a href=&quot;https://wiki.debian.org/SecureApt&quot;&gt;SecureApt Debian wiki page&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;–robert&lt;/p&gt;</content>
 
@@ -299,7 +876,7 @@ gpg -a --export keyId | sudo apt-key add -
       
 
       
-        <summary type="html">One of my desktop box I recently got this message when I wanted to update it via apt : Fetched 1448 B in 8s (180 B/s) Reading package lists... Done W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used. GPG error: http://xxxxxxx ./ Release: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 0000000000</summary>
+        <summary type="html">On one of my desktop boxes I recently got this message when I wanted to update it via apt: Fetched 1448 B in 8s (180 B/s) Reading package lists... Done W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used. GPG error: http://xxxxxxx ./ Release: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 0000000000</summary>
       
 
       
@@ -318,15 +895,15 @@ gpg -a --export keyId | sudo apt-key add -
       <published>2015-03-19T19:46:03+01:00</published>
       <updated>2015-03-19T19:46:03+01:00</updated>
       <id>https://roberts-notes.blog/2015/03/19/why-you-shoudnt-use-kill--9</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2015/03/19/why-you-shoudnt-use-kill-9/">&lt;p&gt;I recenty found this advice given by &lt;em&gt;Randal Schwartz&lt;/em&gt;.
-I think most of programmers got some idea who he is.
-Anyway if you have not had to touch Perl here is the link to &lt;a href=&quot;https://en.wikipedia.org/wiki/Randal_L._Schwartz&quot;&gt;wiki page&lt;/a&gt;.&lt;/p&gt;
+      <content type="html" xml:base="https://roberts-notes.blog/2015/03/19/why-you-shoudnt-use-kill-9/">&lt;p&gt;I recently found this advice given by &lt;em&gt;Randal Schwartz&lt;/em&gt;.
+I think most programmers have some idea who he is.
+Anyway, if you have never had to touch Perl, here is the link to his &lt;a href=&quot;https://en.wikipedia.org/wiki/Randal_L._Schwartz&quot;&gt;wiki page&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;Here is the advice from Randal:&lt;/p&gt;
 
 &lt;!--more--&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;No no no. Don't use kill -9.    
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;No no no. Don't use kill -9.    
 It doesn't give the process a chance to cleanly:    
 1) shut down socket connections    
 2) clean up temp files    
@@ -337,10 +914,9 @@ Generally, send 15, and wait a second or two, and if that doesn't work, send 2, 
 that doesn't work, send 1. If that doesn't, REMOVE THE BINARY because the program is    
 badly behaved!    
 Don't use kill -9. Don't bring out the combine harvester just to tidy up the flower pot.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;In a short:&lt;/p&gt;
+&lt;p&gt;In short:&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;&lt;em&gt;15&lt;/em&gt; is &lt;em&gt;SIGTERM&lt;/em&gt; (terminate),&lt;/li&gt;
@@ -348,7 +924,7 @@ Don't use kill -9. Don't bring out the combine harvester just to tidy up the flo
   &lt;li&gt;&lt;em&gt;1&lt;/em&gt; is &lt;em&gt;SIGHUP&lt;/em&gt; (terminal hangup, often overloaded to keep a process running but reload the config)&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;For those who would like to have full overview to all availabe signals here is a snippet from &lt;code class=&quot;highlighter-rouge&quot;&gt;signal.h&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;For those who would like to have a full overview of all available signals, here is a snippet from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;signal.h&lt;/code&gt;:&lt;/p&gt;
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;&lt;span class=&quot;cp&quot;&gt;#define SIGHUP           1
 #define SIGINT           2
@@ -399,7 +975,7 @@ Don't use kill -9. Don't bring out the combine harvester just to tidy up the flo
       
 
       
-        <summary type="html">I recenty found this advice given by Randal Schwartz. I think most of programmers got some idea who he is. Anyway if you have not had to touch Perl here is the link to wiki page. Here is the advice from Randal:</summary>
+        <summary type="html">I recently found this advice given by Randal Schwartz. I think most programmers have some idea who he is. Anyway, if you have never had to touch Perl, here is the link to his wiki page. Here is the advice from Randal:</summary>
       
 
       
@@ -418,14 +994,14 @@ Don't use kill -9. Don't bring out the combine harvester just to tidy up the flo
       <published>2014-11-27T00:00:00+01:00</published>
       <updated>2014-11-27T00:00:00+01:00</updated>
       <id>https://roberts-notes.blog/2014/11/27/temporary-disabling-bash-history</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/11/27/temporary-disabling-bash-history/">&lt;p&gt;How to do it ? It’s actually very simple.
-You can achieve this by &lt;code class=&quot;highlighter-rouge&quot;&gt;unset HISTFILE&lt;/code&gt;. Of course in such case we only disable history 
-for current session. 
-What if we want to selectively do not put some commands into bash history ? 
+      <content type="html" xml:base="https://roberts-notes.blog/2014/11/27/temporary-disabling-bash-history/">&lt;p&gt;How to do it? It’s actually very simple.
+You can achieve this with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;unset HISTFILE&lt;/code&gt;. Of course, in that case we only disable history
+for the current session.
+What if we want to selectively keep some commands out of the bash history?
 &lt;!--more--&gt;
-We can do it via &lt;code class=&quot;highlighter-rouge&quot;&gt;HISTCONTROL&lt;/code&gt; variable. From Bash man page:&lt;/p&gt;
+We can do it via the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HISTCONTROL&lt;/code&gt; variable. From the Bash man page:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;HISTCONTROL
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;HISTCONTROL
     A colon-separated list of values controlling how commands are saved on the history list.    
     If the list of values includes ignorespace, lines which begin with a space character are     
     not saved  in the  history  list. A value of ignoredups causes lines matching the previous     
@@ -436,14 +1012,13 @@ We can do it via &lt;code class=&quot;highlighter-rouge&quot;&gt;HISTCONTROL&lt;
     read by the shell parser are saved on the history list, subject to the value of HISTIGNORE.
     The second and subsequent lines of a multi-line compound command are not tested, and are 
     added to the history regardless of the value of HISTCONTROL.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;In my case I always use &lt;code class=&quot;highlighter-rouge&quot;&gt;export HISTCONTROL=ignoreboth:erasedups&lt;/code&gt; and add it to &lt;code class=&quot;highlighter-rouge&quot;&gt;.bashrc&lt;/code&gt; if necessary.
-After that whenever we want to exclude specific command from storing it in the bash history we call it like 
-this &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;space&amp;gt;mysql -u xxxx -pxxxxx&lt;/code&gt;. Remember about space in front of command.&lt;/p&gt;
+&lt;p&gt;In my case I always use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;export HISTCONTROL=ignoreboth:erasedups&lt;/code&gt; and add it to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.bashrc&lt;/code&gt; if necessary.
+After that, whenever we want to exclude a specific command from being stored in the bash history, we call it like
+this: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;space&amp;gt;mysql -u xxxx -pxxxxx&lt;/code&gt;. Remember about the space in front of the command.&lt;/p&gt;
 
-&lt;p&gt;From what I see on Ubuntu 14.04 &lt;code class=&quot;highlighter-rouge&quot;&gt;HISTCONTROL&lt;/code&gt; is set to value &lt;code class=&quot;highlighter-rouge&quot;&gt;ignoreboth&lt;/code&gt; by default.&lt;/p&gt;
+&lt;p&gt;From what I see, on Ubuntu 14.04 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HISTCONTROL&lt;/code&gt; is set to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ignoreboth&lt;/code&gt; by default.&lt;/p&gt;
 
 &lt;p&gt;–robert&lt;/p&gt;</content>
 
@@ -462,7 +1037,7 @@ this &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;space&amp;gt;mysql 
       
 
       
-        <summary type="html">How to do it ? It’s actually very simple. You can achieve this by unset HISTFILE. Of course in such case we only disable history for current session. What if we want to selectively do not put some commands into bash history ?</summary>
+        <summary type="html">How to do it? It’s actually very simple. You can achieve this with unset HISTFILE. Of course, in that case we only disable history for the current session. What if we want to selectively keep some commands out of the bash history?</summary>
       
 
       
@@ -481,21 +1056,21 @@ this &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;space&amp;gt;mysql 
       <published>2014-07-01T08:30:46+02:00</published>
       <updated>2014-07-01T08:30:46+02:00</updated>
       <id>https://roberts-notes.blog/2014/07/01/add-timestamp-to-bash-history</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/07/01/add-timestamp-to-bash-history/">&lt;p&gt;Sometimes there is a need to add timestamp to bash history.
-At my work I found it quite useful especially when some other developers 
-got access to the same box or when you simple want to have an idea when command from history was executed.  
+      <content type="html" xml:base="https://roberts-notes.blog/2014/07/01/add-timestamp-to-bash-history/">&lt;p&gt;Sometimes there is a need to add a timestamp to bash history.
+At my work I found it quite useful, especially when some other developers
+have access to the same box or when you simply want to have an idea when a command from the history was executed.  
 This is how we can achieve this:&lt;/p&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'export HISTTIMEFORMAT=&quot;%d.%m.%y %T&quot;'&lt;/span&gt; &amp;gt;&amp;gt; ~/.profile&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'export HISTTIMEFORMAT=&quot;%d.%m.%y %T&quot;'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; ~/.profile&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;p&gt;(or &lt;code class=&quot;highlighter-rouge&quot;&gt;.bash_profile&lt;/code&gt; if you use RHEL based distro) and after that just re-login or reload your profile file.
-Time formatting is exactly the same like for &lt;code class=&quot;highlighter-rouge&quot;&gt;strftime&lt;/code&gt; please check &lt;code class=&quot;highlighter-rouge&quot;&gt;man 3 strftime&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;(or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.bash_profile&lt;/code&gt; if you use a RHEL based distro) and after that just re-login or reload your profile file.
+Time formatting is exactly the same as for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strftime&lt;/code&gt; - please check &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;man 3 strftime&lt;/code&gt;.&lt;/p&gt;
 
-&lt;p&gt;Hint: reloading profile can be done like this:
-&lt;code class=&quot;highlighter-rouge&quot;&gt;. .profile&lt;/code&gt; or &lt;code class=&quot;highlighter-rouge&quot;&gt;source .profile&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Hint: reloading the profile can be done like this:
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;. .profile&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;source .profile&lt;/code&gt;&lt;/p&gt;
 
-&lt;p&gt;–   &lt;br /&gt;
-Cheers &lt;br /&gt;
+&lt;p&gt;–
+Cheers
 Robert&lt;/p&gt;</content>
 
       
@@ -513,7 +1088,7 @@ Robert&lt;/p&gt;</content>
       
 
       
-        <summary type="html">Sometimes there is a need to add timestamp to bash history. At my work I found it quite useful especially when some other developers got access to the same box or when you simple want to have an idea when command from history was executed.   This is how we can achieve this: echo 'export HISTTIMEFORMAT=&quot;%d.%m.%y %T&quot;' &amp;gt;&amp;gt; ~/.profile (or .bash_profile if you use RHEL based distro) and after that just re-login or reload your profile file. Time formatting is exactly the same like for strftime please check man 3 strftime. Hint: reloading profile can be done like this: . .profile or source .profile – Cheers Robert</summary>
+        <summary type="html">Sometimes there is a need to add a timestamp to bash history. At my work I found it quite useful, especially when some other developers have access to the same box or when you simply want to have an idea when a command from the history was executed.   This is how we can achieve this: echo 'export HISTTIMEFORMAT=&quot;%d.%m.%y %T&quot;' &amp;gt;&amp;gt; ~/.profile (or .bash_profile if you use a RHEL based distro) and after that just re-login or reload your profile file. Time formatting is exactly the same as for strftime - please check man 3 strftime. Hint: reloading the profile can be done like this: . .profile or source .profile – Cheers Robert</summary>
       
 
       
@@ -532,39 +1107,39 @@ Robert&lt;/p&gt;</content>
       <published>2014-06-28T12:13:09+02:00</published>
       <updated>2014-06-28T12:13:09+02:00</updated>
       <id>https://roberts-notes.blog/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">&lt;p&gt;After set up of the “linode” on linode.com I stared configuring the firewall (iptables).
-After writing down all my rules and tried to restart iptables but output like this:&lt;/p&gt;
+      <content type="html" xml:base="https://roberts-notes.blog/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">&lt;p&gt;After setting up my new “linode” on linode.com I started configuring the firewall (iptables).
+After writing down all my rules I tried to restart iptables, but got output like this:&lt;/p&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;gp&quot;&gt;$ &lt;/span&gt;service iptables restart
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;service iptables restart
 iptables: Flushing firewall rules:                         &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;  OK  &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
 iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter
 iptables: Unloading modules:                               &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;  OK  &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
 iptables: Applying firewall rules:                         &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;  OK  &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
 &lt;!--more--&gt;
-&lt;p&gt;After I quick research (google) I found an answer for that:
+&lt;p&gt;After a quick research (Google) I found an answer for that:
 &lt;a href=&quot;http://www.hostvirtual.com/kb/6383/IPtables-returns-an-error--security-raw-nat-mangle-filter-FAILED.html&quot;&gt;here is the link&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;Looks like you need to add this patch to iptables init script:&lt;/p&gt;
+&lt;p&gt;Looks like you need to add this patch to the iptables init script:&lt;/p&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;$&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;IPTABLES&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;: Setting chains to policy &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;: &quot;&lt;/span&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;$&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;IPTABLES&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;: Setting chains to policy &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;: &quot;&lt;/span&gt;
 &lt;span class=&quot;nv&quot;&gt;ret&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0
-&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;i &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$tables&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;do
-    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; &quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;i &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$tables&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do
+    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; &quot;&lt;/span&gt;
     &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt;
 +       security&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-+           &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; -t filter -P INPUT &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-+               &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; -t filter -P OUTPUT &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-+               &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; -t filter -P FORWARD &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
++           &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; filter &lt;span class=&quot;nt&quot;&gt;-P&lt;/span&gt; INPUT &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
++               &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; filter &lt;span class=&quot;nt&quot;&gt;-P&lt;/span&gt; OUTPUT &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
++               &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; filter &lt;span class=&quot;nt&quot;&gt;-P&lt;/span&gt; FORWARD &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
 +               &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;let &lt;/span&gt;ret+&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
 +           &lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
         raw&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; -t raw -P PREROUTING &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-                &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; -t raw -P OUTPUT &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+            &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; raw &lt;span class=&quot;nt&quot;&gt;-P&lt;/span&gt; PREROUTING &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+                &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; raw &lt;span class=&quot;nt&quot;&gt;-P&lt;/span&gt; OUTPUT &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
                 &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;let &lt;/span&gt;ret+&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
             &lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;p&gt;Looks like this is a know bug in CentOS 6 in virtualiazed env.&lt;/p&gt;
+&lt;p&gt;Looks like this is a known bug in CentOS 6 in virtualized environments.&lt;/p&gt;
 
 &lt;p&gt;–robert&lt;/p&gt;</content>
 
@@ -581,7 +1156,7 @@ iptables: Applying firewall rules:                         &lt;span class=&quot;
       
 
       
-        <summary type="html">After set up of the “linode” on linode.com I stared configuring the firewall (iptables). After writing down all my rules and tried to restart iptables but output like this: $ service iptables restart iptables: Flushing firewall rules: [ OK ] iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter iptables: Unloading modules: [ OK ] iptables: Applying firewall rules: [ OK ]</summary>
+        <summary type="html">After setting up my new “linode” on linode.com I started configuring the firewall (iptables). After writing down all my rules I tried to restart iptables, but got output like this: $ service iptables restart iptables: Flushing firewall rules: [ OK ] iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter iptables: Unloading modules: [ OK ] iptables: Applying firewall rules: [ OK ]</summary>
       
 
       
@@ -600,41 +1175,41 @@ iptables: Applying firewall rules:                         &lt;span class=&quot;
       <published>2014-06-28T11:52:36+02:00</published>
       <updated>2014-06-28T11:52:36+02:00</updated>
       <id>https://roberts-notes.blog/2014/06/28/hosting-migration</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/06/28/hosting-migration/">&lt;p&gt;I recently noticed I actually spend a lot of money to hosting and server resources Im not using at all. 
-Such a waste. After a small research I decided to move all my Droplets from &lt;a href=&quot;https://www.digitalocean.com/&quot;&gt;DigitalOcean.com&lt;/a&gt; 
-to its competitor &amp;gt; &lt;a href=&quot;https://www.linode.com&quot;&gt;linode.com&lt;/a&gt; . I also hosted 2 sites on a separate hosting - elastichost.com 
-which is also rather expensive. 
-So at the end I sit down and calculated how much resources do I need and for how many resources I actually pay. 
-At the begining I tought that maybe the best solution would be to move everything to dedicated machine at &lt;a href=&quot;ovh.de&quot;&gt;OVH&lt;/a&gt; or 
-maybe &lt;a href=&quot;hetzner.de&quot;&gt;Hetzner&lt;/a&gt; but in both cases this is a cost ~50-70€ per month min. Quite much I think especially when my 
-sites do not have significant traffic. &lt;!--more--&gt;”
+      <content type="html" xml:base="https://roberts-notes.blog/2014/06/28/hosting-migration/">&lt;p&gt;I recently noticed I actually spend a lot of money on hosting and server resources I’m not using at all.
+Such a waste. After a small research I decided to move all my Droplets from &lt;a href=&quot;https://www.digitalocean.com/&quot;&gt;DigitalOcean.com&lt;/a&gt;
+to its competitor - &lt;a href=&quot;https://www.linode.com&quot;&gt;linode.com&lt;/a&gt;. I also hosted 2 sites on a separate hosting - elastichost.com -
+which is also rather expensive.
+So in the end I sat down and calculated how many resources I need and how many resources I actually pay for.
+At the beginning I thought that maybe the best solution would be to move everything to a dedicated machine at &lt;a href=&quot;ovh.de&quot;&gt;OVH&lt;/a&gt; or
+maybe &lt;a href=&quot;hetzner.de&quot;&gt;Hetzner&lt;/a&gt;, but in both cases the cost is ~50-70€ per month minimum. Quite a lot I think, especially when my
+sites do not have significant traffic. &lt;!--more--&gt;
 I was definitely searching for something like &lt;strong&gt;digitalocean.com&lt;/strong&gt; (DO).&lt;/p&gt;
 
-&lt;h4 id=&quot;digitalocean-very-reasonable-price-and-offers-a-bunch-of-features-i-was-looking-for-but&quot;&gt;DigitalOcean very reasonable price and offers a bunch of features I was looking for but:&lt;/h4&gt;
+&lt;h4 id=&quot;digitalocean-has-a-very-reasonable-price-and-offers-a-bunch-of-features-i-was-looking-for-but&quot;&gt;DigitalOcean has a very reasonable price and offers a bunch of features I was looking for, but:&lt;/h4&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;when somebody tries to flood(DDOS) your droplet you are actually on your own (they do not offer any type of protection). 
-Support in this case also seems to be powerless, no matter if this is a targeted attack or just a ricochet. One of my 
-client got such case and to be honest I was really disappointed when I was not able to get any help from DO Support Team,&lt;/li&gt;
-  &lt;li&gt;when you site/droplet catches some significant traffic DO got poor performance. Yes I know what Im talking about. 
-And Im not talking here about 30Mb/s traffic. I even upgraded my droplet from 2GMEM to 8GMEM it did not help me much I/O 
-was still on a low level (but still DO looks better than most of VPS hosting companies)&lt;/li&gt;
-  &lt;li&gt;it’s a pity they do not offer some more extensive monitoring out of the box&lt;/li&gt;
+  &lt;li&gt;when somebody tries to flood (DDoS) your droplet you are actually on your own (they do not offer any type of protection).
+Support in this case also seems to be powerless, no matter if this is a targeted attack or just a ricochet. One of my
+clients got such a case and, to be honest, I was really disappointed when I was not able to get any help from the DO Support Team,&lt;/li&gt;
+  &lt;li&gt;when your site/droplet catches some significant traffic, DO has poor performance. Yes, I know what I’m talking about.
+And I’m not talking here about 30Mb/s traffic. I even upgraded my droplet from 2G MEM to 8G MEM and it did not help much - I/O
+was still on a low level (but still, DO looks better than most VPS hosting companies),&lt;/li&gt;
+  &lt;li&gt;it’s a pity they do not offer some more extensive monitoring out of the box.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;####So why Linode:&lt;/p&gt;
+&lt;h4 id=&quot;so-why-linode&quot;&gt;So why Linode:&lt;/h4&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;for the same price I can get more powerful virtual machine and more disk space&lt;/li&gt;
-  &lt;li&gt;looks like they got better I/O performance (I will try to provide some stats to proof that)&lt;/li&gt;
-  &lt;li&gt;quick and helpful support - dont gent me wrong DO support is also damn quick but Linode support seems to be more tekkie oriented&lt;/li&gt;
-  &lt;li&gt;better monitoring out of the box - “LongView”&lt;/li&gt;
+  &lt;li&gt;for the same price I can get a more powerful virtual machine and more disk space,&lt;/li&gt;
+  &lt;li&gt;looks like they have better I/O performance (I will try to provide some stats to prove that),&lt;/li&gt;
+  &lt;li&gt;quick and helpful support - don’t get me wrong, DO support is also damn quick, but Linode support seems to be more techie oriented,&lt;/li&gt;
+  &lt;li&gt;better monitoring out of the box - “Longview”.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;In general I dont think DO is bad, I think it’s simple suited for other purposes like test evn or dev env.&lt;/p&gt;
+&lt;p&gt;In general I don’t think DO is bad, I think it’s simply suited for other purposes, like test or dev environments.&lt;/p&gt;
 
-&lt;p&gt;After the migration performance increased significantly. 
-It was visible quite much especially on my Redmine instance and other RoR based apps.&lt;/p&gt;
+&lt;p&gt;After the migration, performance increased significantly.
+It was quite visible, especially on my Redmine instance and other RoR based apps.&lt;/p&gt;
 
 &lt;p&gt;Peace \o/.&lt;/p&gt;</content>
 
@@ -653,7 +1228,7 @@ It was visible quite much especially on my Redmine instance and other RoR based 
       
 
       
-        <summary type="html">I recently noticed I actually spend a lot of money to hosting and server resources Im not using at all. Such a waste. After a small research I decided to move all my Droplets from DigitalOcean.com to its competitor &amp;gt; linode.com . I also hosted 2 sites on a separate hosting - elastichost.com which is also rather expensive. So at the end I sit down and calculated how much resources do I need and for how many resources I actually pay. At the begining I tought that maybe the best solution would be to move everything to dedicated machine at OVH or maybe Hetzner but in both cases this is a cost ~50-70€ per month min. Quite much I think especially when my sites do not have significant traffic.</summary>
+        <summary type="html">I recently noticed I actually spend a lot of money on hosting and server resources I’m not using at all. Such a waste. After a small research I decided to move all my Droplets from DigitalOcean.com to its competitor - linode.com. I also hosted 2 sites on a separate hosting - elastichost.com - which is also rather expensive. So in the end I sat down and calculated how many resources I need and how many resources I actually pay for. At the beginning I thought that maybe the best solution would be to move everything to a dedicated machine at OVH or maybe Hetzner, but in both cases the cost is ~50-70€ per month minimum. Quite a lot I think, especially when my sites do not have significant traffic.</summary>
       
 
       
@@ -673,10 +1248,10 @@ It was visible quite much especially on my Redmine instance and other RoR based 
       <updated>2014-06-28T11:21:42+02:00</updated>
       <id>https://roberts-notes.blog/2014/06/28/goal-for-the-next-2-3-months</id>
       <content type="html" xml:base="https://roberts-notes.blog/2014/06/28/goal-for-the-next-2-3-months/">&lt;h2 id=&quot;my-goal-for-the-next-2-or-3-months&quot;&gt;My goal for the next 2 or 3 months:&lt;/h2&gt;
-&lt;p&gt;I recently found &lt;a href=&quot;http://ejohn.org/blog/write-code-every-day/&quot;&gt;this&lt;/a&gt; blog entry over the internet. Lets see how it will go :). 
-In general I think this is quite good idea. Mainly because you adapt to a “routine” of writing a code (if you are not already addicted like mew :D). This is a definietely a good training for your brain. 
+&lt;p&gt;I recently found &lt;a href=&quot;http://ejohn.org/blog/write-code-every-day/&quot;&gt;this&lt;/a&gt; blog entry on the internet. Let’s see how it will go :).
+In general I think this is quite a good idea, mainly because you adapt to a “routine” of writing code (if you are not already addicted like me :D). This is definitely good training for your brain.
 Here is a link to my GitHub profile: https://github.com/robertwe
-So first I need to find a project :). I already contribure a little bit at Jenkins CI project but I would like to create something new.&lt;/p&gt;
+So first I need to find a project :). I already contribute a little bit to the Jenkins CI project, but I would like to create something new.&lt;/p&gt;
 
 &lt;p&gt;Have a great day.&lt;/p&gt;
 
@@ -697,7 +1272,7 @@ Robert&lt;/p&gt;</content>
       
 
       
-        <summary type="html">My goal for the next 2 or 3 months: I recently found this blog entry over the internet. Lets see how it will go :). In general I think this is quite good idea. Mainly because you adapt to a “routine” of writing a code (if you are not already addicted like mew :D). This is a definietely a good training for your brain. Here is a link to my GitHub profile: https://github.com/robertwe So first I need to find a project :). I already contribure a little bit at Jenkins CI project but I would like to create something new. Have a great day. – Regards, Robert</summary>
+        <summary type="html">My goal for the next 2 or 3 months: I recently found this blog entry on the internet. Let’s see how it will go :). In general I think this is quite a good idea, mainly because you adapt to a “routine” of writing code (if you are not already addicted like me :D). This is definitely good training for your brain. Here is a link to my GitHub profile: https://github.com/robertwe So first I need to find a project :). I already contribute a little bit to the Jenkins CI project, but I would like to create something new. Have a great day. – Regards, Robert</summary>
       
 
       
@@ -716,7 +1291,7 @@ Robert&lt;/p&gt;</content>
       <published>2014-05-20T20:39:37+02:00</published>
       <updated>2014-05-20T20:39:37+02:00</updated>
       <id>https://roberts-notes.blog/2014/05/20/centos6-host-command-is-missing</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/05/20/centos6-host-command-is-missing/">&lt;p&gt;Recently I configured new machine with CentOS6.5 on the board and it looks like the $&lt;em&gt;host&lt;/em&gt; command was missing.
+      <content type="html" xml:base="https://roberts-notes.blog/2014/05/20/centos6-host-command-is-missing/">&lt;p&gt;Recently I configured a new machine with CentOS 6.5 on board and it turned out the &lt;em&gt;host&lt;/em&gt; command was missing.
 Here is a quick solution for that: &lt;!--more--&gt;
 yum install bind-utils&lt;/p&gt;
 
@@ -781,8 +1356,8 @@ Complete!
 ;; WHEN: Tue May 20 18:50:16 2014
 ;; MSG SIZE  rcvd: 228&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;p&gt;Just to keep it in one place. I always forgot which package provides it.
-If you know where exactly the executable file is placed you can use &lt;code class=&quot;highlighter-rouge&quot;&gt;yum provides&lt;/code&gt; command like this:&lt;/p&gt;
+&lt;p&gt;Just to keep it in one place - I always forget which package provides it.
+If you know where exactly the executable file is placed, you can use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;yum provides&lt;/code&gt; command like this:&lt;/p&gt;
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;$ yum provides /usr/bin/host
 Loaded plugins: fastestmirror
@@ -824,7 +1399,7 @@ Repo        : installed
 Matched from:
 Other       : Provides-match: /usr/bin/dig&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;p&gt;It will help you to find most of the missing packages.&lt;/p&gt;</content>
+&lt;p&gt;It will help you find most of the missing packages.&lt;/p&gt;</content>
 
       
       
@@ -841,7 +1416,7 @@ Other       : Provides-match: /usr/bin/dig&lt;/code&gt;&lt;/pre&gt;&lt;/figure&g
       
 
       
-        <summary type="html">Recently I configured new machine with CentOS6.5 on the board and it looks like the $host command was missing. Here is a quick solution for that:</summary>
+        <summary type="html">Recently I configured a new machine with CentOS 6.5 on board and it turned out the host command was missing. Here is a quick solution for that:</summary>
       
 
       
@@ -860,8 +1435,8 @@ Other       : Provides-match: /usr/bin/dig&lt;/code&gt;&lt;/pre&gt;&lt;/figure&g
       <published>2014-05-09T21:24:39+02:00</published>
       <updated>2014-05-09T21:24:39+02:00</updated>
       <id>https://roberts-notes.blog/2014/05/09/is-tdd-dead</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/05/09/is-tdd-dead/">&lt;p&gt;Today I watched quite interesting hangout. It was a quick (30min) discussion.
-Attenders:&lt;/p&gt;
+      <content type="html" xml:base="https://roberts-notes.blog/2014/05/09/is-tdd-dead/">&lt;p&gt;Today I watched a quite interesting hangout. It was a quick (30 min) discussion.
+Attendees:&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Kent Beck,&lt;/li&gt;
@@ -869,9 +1444,9 @@ Attenders:&lt;/p&gt;
   &lt;li&gt;David Heinemeier Hansson&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Few days ago @DHH wrote some “controversial” &lt;a href=&quot;http://david.heinemeierhansson.com/2014/tdd-is-dead-long-live-testing.html&quot;&gt;post&lt;/a&gt; on his blog about TDD and in general presented his point of view to TDD.
-As a result of that we got a huge discussion on the Twitter about TDD. Some people says that every professional should use TDD and and so on. 
-As a result of that guys from &lt;strong&gt;ThoughtWorks&lt;/strong&gt; organized this hangout.
+&lt;p&gt;A few days ago @DHH wrote a somewhat “controversial” &lt;a href=&quot;http://david.heinemeierhansson.com/2014/tdd-is-dead-long-live-testing.html&quot;&gt;post&lt;/a&gt; on his blog about TDD and, in general, presented his point of view on TDD.
+As a result we got a huge discussion on Twitter about TDD. Some people say that every professional should use TDD and so on.
+In response, the guys from &lt;strong&gt;ThoughtWorks&lt;/strong&gt; organized this hangout.
  &lt;/p&gt;
 
 &lt;h3 id=&quot;youtube-playlist-parts-from-1-to-6&quot;&gt;Youtube playlist (Parts from 1 to 6)&lt;/h3&gt;
@@ -890,7 +1465,7 @@ As a result of that guys from &lt;strong&gt;ThoughtWorks&lt;/strong&gt; organize
       
 
       
-        <summary type="html">Today I watched quite interesting hangout. It was a quick (30min) discussion. Attenders: Kent Beck, Martin Fowler, David Heinemeier Hansson Few days ago @DHH wrote some “controversial” post on his blog about TDD and in general presented his point of view to TDD. As a result of that we got a huge discussion on the Twitter about TDD. Some people says that every professional should use TDD and and so on. As a result of that guys from ThoughtWorks organized this hangout.   Youtube playlist (Parts from 1 to 6)</summary>
+        <summary type="html">Today I watched a quite interesting hangout. It was a quick (30 min) discussion. Attendees: Kent Beck, Martin Fowler, David Heinemeier Hansson A few days ago @DHH wrote a somewhat “controversial” post on his blog about TDD and, in general, presented his point of view on TDD. As a result we got a huge discussion on Twitter about TDD. Some people say that every professional should use TDD and so on. In response, the guys from ThoughtWorks organized this hangout.   Youtube playlist (Parts from 1 to 6)</summary>
       
 
       
@@ -909,7 +1484,7 @@ As a result of that guys from &lt;strong&gt;ThoughtWorks&lt;/strong&gt; organize
       <published>2014-05-03T23:59:55+02:00</published>
       <updated>2014-05-03T23:59:55+02:00</updated>
       <id>https://roberts-notes.blog/2014/05/03/keynote-architecture-the-lost-years-by-robert-martin</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/05/03/keynote-architecture-the-lost-years-by-robert-martin/">&lt;p&gt;Here is a talk Uncle Bob gave in 2011 at &lt;strong&gt;Ruby Midewest 2011&lt;/strong&gt;. Honestly I back to this talk every two months or so. Also must to add that Im a great fun of &lt;strong&gt;Uncle Bob&lt;/strong&gt; (&lt;a href=&quot;https://twitter.com/unclebobmartin&quot;&gt;@unclebobmartin&lt;/a&gt;) It also contains some notes about MVC, what’s the true purpose of MVC and it was created and so on. Here it is (you need to click on &lt;strong&gt;Read more&lt;/strong&gt; to load the embeded youtube video):&lt;/p&gt;
+      <content type="html" xml:base="https://roberts-notes.blog/2014/05/03/keynote-architecture-the-lost-years-by-robert-martin/">&lt;p&gt;Here is a talk Uncle Bob gave in 2011 at &lt;strong&gt;Ruby Midwest 2011&lt;/strong&gt;. Honestly, I come back to this talk every two months or so. I must also add that I’m a great fan of &lt;strong&gt;Uncle Bob&lt;/strong&gt; (&lt;a href=&quot;https://twitter.com/unclebobmartin&quot;&gt;@unclebobmartin&lt;/a&gt;). It also contains some notes about MVC - what the true purpose of MVC is, why it was created and so on. Here it is (you need to click on &lt;strong&gt;Read more&lt;/strong&gt; to load the embedded YouTube video):&lt;/p&gt;
 
 &lt;iframe width=&quot;560&quot; height=&quot;315&quot; src=&quot;//www.youtube.com/embed/WpkDN78P884&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;</content>
 
@@ -926,7 +1501,7 @@ As a result of that guys from &lt;strong&gt;ThoughtWorks&lt;/strong&gt; organize
       
 
       
-        <summary type="html">Here is a talk Uncle Bob gave in 2011 at Ruby Midewest 2011. Honestly I back to this talk every two months or so. Also must to add that Im a great fun of Uncle Bob (@unclebobmartin) It also contains some notes about MVC, what’s the true purpose of MVC and it was created and so on. Here it is (you need to click on Read more to load the embeded youtube video):</summary>
+        <summary type="html">Here is a talk Uncle Bob gave in 2011 at Ruby Midwest 2011. Honestly, I come back to this talk every two months or so. I must also add that I’m a great fan of Uncle Bob (@unclebobmartin). It also contains some notes about MVC - what the true purpose of MVC is, why it was created and so on. Here it is (you need to click on Read more to load the embedded YouTube video):</summary>
       
 
       
@@ -990,14 +1565,14 @@ As a result of that guys from &lt;strong&gt;ThoughtWorks&lt;/strong&gt; organize
       <updated>2014-05-03T22:40:03+02:00</updated>
       <id>https://roberts-notes.blog/2014/05/03/first-post</id>
       <content type="html" xml:base="https://roberts-notes.blog/2014/05/03/first-post/">&lt;h4 id=&quot;lets-write-it-down&quot;&gt;Let’s write it down.&lt;/h4&gt;
-&lt;p&gt;To be honest I don’t remember when I actually started thinking about writing down most the solutions I found over the internet or implemented myself.
-I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. Good is it I wrote it down somewhere, put on &lt;a href=&quot;https://gist.github.com/robertwe&quot;&gt;Gist&lt;/a&gt; or &lt;a href=&quot;http://pastebin.com/&quot;&gt;Pastebin&lt;/a&gt; but what if I did not ? 
-Let’s say I just configured Nginx as loadbalancer and for example after a year or so I need to make something exactly the same or at last similar. What’s then ? I need to go through the NGINX’s documentation again or start searching over google. Sure in some case I remember exactly how I solved some specific problem but when it was some time ago then …
-This is the reason why I decided to create this simple blog. I hope it wont evolve to any unpredictable way. You can thing about this blog like a about my notebook. If somebody else will find my notes useful/helpful - even better. Let’s make this World better.&lt;/p&gt;
+&lt;p&gt;To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself.
+I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. It’s good if I wrote it down somewhere, put it on &lt;a href=&quot;https://gist.github.com/robertwe&quot;&gt;Gist&lt;/a&gt; or &lt;a href=&quot;http://pastebin.com/&quot;&gt;Pastebin&lt;/a&gt;, but what if I did not?
+Let’s say I just configured Nginx as a load balancer and, for example, after a year or so I need to make something exactly the same or at least similar. What then? I need to go through the Nginx documentation again or start searching on Google. Sure, in some cases I remember exactly how I solved a specific problem, but when it was some time ago then…
+This is the reason why I decided to create this simple blog. I hope it won’t evolve in any unpredictable way. You can think about this blog as my notebook. If somebody else finds my notes useful/helpful - even better. Let’s make this World better.&lt;/p&gt;
 
 &lt;p&gt;Have a great day.&lt;/p&gt;
 
-&lt;p&gt;&lt;em&gt;P.S As you probably noticed Im not a native speaker, so in case you guys will find some mistakes in my post (probably more than one) please let me know ASAP.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;P.S. As you probably noticed, I’m not a native speaker, so in case you find some mistakes in my posts (probably more than one), please let me know ASAP.&lt;/em&gt;&lt;/p&gt;
 
 &lt;script type=&quot;text/javascript&quot; async=&quot;&quot; src=&quot;https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML&quot;&gt;
 &lt;/script&gt;
@@ -1058,41 +1633,38 @@ This is the reason why I decided to create this simple blog. I hope it wont evol
 
 &lt;h3 id=&quot;our-universe-in-si-units&quot;&gt;Our universe (in SI units):&lt;/h3&gt;
 
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;% &lt;![CDATA[
-\begin{align*}
-  \frac{\partial\mathcal{D}}{\partial t} \quad &amp; = \quad \nabla\times\mathcal{H},   &amp; \quad \text{(Faraday's law)} \\[5pt]
-  \frac{\partial\mathcal{B}}{\partial t} \quad &amp; = \quad -\nabla\times\mathcal{E},  &amp; \quad \text{(Ampère's circuital law)}   \\[5pt]
-  \nabla\cdot\mathcal{B}                 \quad &amp; = \quad 0,                         &amp; \quad \text{(Gauss's law for magnetism)}   \\[5pt]
-  \nabla\cdot\mathcal{D}                 \quad &amp; = \quad 0.                         &amp; \quad \text{(Coulomb's Law)}
-  \end{align*} %]]&gt;&lt;/script&gt;
+\[\begin{align*}
+  \frac{\partial\mathcal{D}}{\partial t} \quad &amp;amp; = \quad \nabla\times\mathcal{H},   &amp;amp; \quad \text{(Faraday's law)} \\[5pt]
+  \frac{\partial\mathcal{B}}{\partial t} \quad &amp;amp; = \quad -\nabla\times\mathcal{E},  &amp;amp; \quad \text{(Ampère's circuital law)}   \\[5pt]
+  \nabla\cdot\mathcal{B}                 \quad &amp;amp; = \quad 0,                         &amp;amp; \quad \text{(Gauss's law for magnetism)}   \\[5pt]
+  \nabla\cdot\mathcal{D}                 \quad &amp;amp; = \quad 0.                         &amp;amp; \quad \text{(Coulomb's Law)}
+  \end{align*}\]
 
 &lt;hr /&gt;
 
-&lt;p&gt;&lt;script type=&quot;math/tex&quot;&gt;% &lt;![CDATA[
-\begin{align*}
-  &amp; \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right)
+&lt;p&gt;\(\begin{align*}
+  &amp;amp; \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right)
   = \sum_{i=1}^n \sum_{j=1}^n x_i y_j \phi(e_i, e_j) = \\
-  &amp; (x_1, \ldots, x_n) \left( \begin{array}{ccc}
-      \phi(e_1, e_1) &amp; \cdots &amp; \phi(e_1, e_n) \\
-      \vdots &amp; \ddots &amp; \vdots \\
-      \phi(e_n, e_1) &amp; \cdots &amp; \phi(e_n, e_n)
+  &amp;amp; (x_1, \ldots, x_n) \left( \begin{array}{ccc}
+      \phi(e_1, e_1) &amp;amp; \cdots &amp;amp; \phi(e_1, e_n) \\
+      \vdots &amp;amp; \ddots &amp;amp; \vdots \\
+      \phi(e_n, e_1) &amp;amp; \cdots &amp;amp; \phi(e_n, e_n)
     \end{array} \right)
   \left( \begin{array}{c}
       y_1 \\
       \vdots \\
       y_n
     \end{array} \right)
-\end{align*} %]]&gt;&lt;/script&gt;&lt;/p&gt;
+\end{align*}\)&lt;/p&gt;
 &lt;hr /&gt;
 
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;% &lt;![CDATA[
-\begin{array}{c|lcr}
-n &amp; \text{Left} &amp; \text{Center} &amp; \text{Right} \\
+\[\begin{array}{c|lcr}
+n &amp;amp; \text{Left} &amp;amp; \text{Center} &amp;amp; \text{Right} \\
 \hline
-1 &amp; 0.24 &amp; 1 &amp; 125 \\
-2 &amp; -1 &amp; 189 &amp; -8 \\
-3 &amp; -20 &amp; 2000 &amp; 1+10i
-\end{array} %]]&gt;&lt;/script&gt;
+1 &amp;amp; 0.24 &amp;amp; 1 &amp;amp; 125 \\
+2 &amp;amp; -1 &amp;amp; 189 &amp;amp; -8 \\
+3 &amp;amp; -20 &amp;amp; 2000 &amp;amp; 1+10i
+\end{array}\]
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;show&lt;/span&gt;
   &lt;span class=&quot;vi&quot;&gt;@widget&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Widget&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
@@ -1102,50 +1674,50 @@ n &amp; \text{Left} &amp; \text{Center} &amp; \text{Right} \\
   &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;interfaces&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;io&quot;&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;os&quot;&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;interfaces&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+	&lt;span class=&quot;s&quot;&gt;&quot;io&quot;&lt;/span&gt;
+	&lt;span class=&quot;s&quot;&gt;&quot;os&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 
-&lt;/span&gt;&lt;span class=&quot;c&quot;&gt;//PipeExample function&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PipeExample&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Pipe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
+&lt;span class=&quot;c&quot;&gt;//PipeExample function&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PipeExample&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;error&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;w&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Pipe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
 
-	&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;go&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-		&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;test&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-		&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}()&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
+	&lt;span class=&quot;k&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+		&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;test&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+		&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;}()&lt;/span&gt;
 
-	&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Stdout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-		&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Stdout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+		&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;interfaces&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;interfaces&lt;/span&gt;
 
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;fmt&quot;&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;io&quot;&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;os&quot;&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+	&lt;span class=&quot;s&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+	&lt;span class=&quot;s&quot;&gt;&quot;io&quot;&lt;/span&gt;
+	&lt;span class=&quot;s&quot;&gt;&quot;os&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 
-&lt;/span&gt;&lt;span class=&quot;c&quot;&gt;// Copy data from std in to std out&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ReadSeeker&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Writer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MultiWriter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Stdout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-		&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Seek&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;64&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CopyBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-		&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
+&lt;span class=&quot;c&quot;&gt;// Copy data from std in to std out&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ReadSeeker&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;out&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Writer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;error&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MultiWriter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Stdout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+		&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Seek&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;64&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CopyBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+		&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 
-	&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-	&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;&lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+	&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
 &lt;p&gt;–robert&lt;/p&gt;</content>
 
@@ -1164,7 +1736,7 @@ n &amp; \text{Left} &amp; \text{Center} &amp; \text{Right} \\
       
 
       
-        <summary type="html">Let’s write it down. To be honest I don’t remember when I actually started thinking about writing down most the solutions I found over the internet or implemented myself. I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. Good is it I wrote it down somewhere, put on Gist or Pastebin but what if I did not ? Let’s say I just configured Nginx as loadbalancer and for example after a year or so I need to make something exactly the same or at last similar. What’s then ? I need to go through the NGINX’s documentation again or start searching over google. Sure in some case I remember exactly how I solved some specific problem but when it was some time ago then … This is the reason why I decided to create this simple blog. I hope it wont evolve to any unpredictable way. You can thing about this blog like a about my notebook. If somebody else will find my notes useful/helpful - even better. Let’s make this World better. Have a great day. P.S As you probably noticed Im not a native speaker, so in case you guys will find some mistakes in my post (probably more than one) please let me know ASAP. RAM vCPU Price (€) 1G 1 5 2G 2 10 4G 4 30 8G 6 60 12G 8 120 16G 10 160 24G 12 240 32G 16 320 Our universe (in SI units): def show @widget = Widget(params[:id]) respond_to do |format| format.html # show.html.erb format.json { render json: @widget } end end package interfaces import ( &quot;io&quot; &quot;os&quot; ) //PipeExample function func PipeExample() error { r, w := io.Pipe() go func() { w.Write([]byte(&quot;test\n&quot;)) w.Close() }() if _, err := io.Copy(os.Stdout, r); err != nil { return err } return nil } package interfaces import ( &quot;fmt&quot; &quot;io&quot; &quot;os&quot; ) // Copy data from std in to std out func Copy(in io.ReadSeeker, out io.Writer) error { w := io.MultiWriter(out, os.Stdout) if _, err := io.Copy(w, in); err != nil { return err } in.Seek(0, 0) buf := make([]byte, 64) if _, err := io.CopyBuffer(w, in, buf); err != nil { return err } fmt.Println() return nil } –robert</summary>
+        <summary type="html">Let’s write it down. To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself. I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. It’s good if I wrote it down somewhere, put it on Gist or Pastebin, but what if I did not? Let’s say I just configured Nginx as a load balancer and, for example, after a year or so I need to make something exactly the same or at least similar. What then? I need to go through the Nginx documentation again or start searching on Google. Sure, in some cases I remember exactly how I solved a specific problem, but when it was some time ago then… This is the reason why I decided to create this simple blog. I hope it won’t evolve in any unpredictable way. You can think about this blog as my notebook. If somebody else finds my notes useful/helpful - even better. Let’s make this World better. Have a great day. P.S. As you probably noticed, I’m not a native speaker, so in case you find some mistakes in my posts (probably more than one), please let me know ASAP. RAM vCPU Price (€) 1G 1 5 2G 2 10 4G 4 30 8G 6 60 12G 8 120 16G 10 160 24G 12 240 32G 16 320 Our universe (in SI units): \[\begin{align*} \frac{\partial\mathcal{D}}{\partial t} \quad &amp;amp; = \quad \nabla\times\mathcal{H}, &amp;amp; \quad \text{(Faraday's law)} \\[5pt] \frac{\partial\mathcal{B}}{\partial t} \quad &amp;amp; = \quad -\nabla\times\mathcal{E}, &amp;amp; \quad \text{(Ampère's circuital law)} \\[5pt] \nabla\cdot\mathcal{B} \quad &amp;amp; = \quad 0, &amp;amp; \quad \text{(Gauss's law for magnetism)} \\[5pt] \nabla\cdot\mathcal{D} \quad &amp;amp; = \quad 0. &amp;amp; \quad \text{(Coulomb's Law)} \end{align*}\] \(\begin{align*} &amp;amp; \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right) = \sum_{i=1}^n \sum_{j=1}^n x_i y_j \phi(e_i, e_j) = \\ &amp;amp; (x_1, \ldots, x_n) \left( \begin{array}{ccc} \phi(e_1, e_1) &amp;amp; \cdots &amp;amp; \phi(e_1, e_n) \\ \vdots &amp;amp; \ddots &amp;amp; \vdots \\ \phi(e_n, e_1) &amp;amp; \cdots &amp;amp; \phi(e_n, e_n) \end{array} \right) \left( \begin{array}{c} y_1 \\ \vdots \\ y_n \end{array} \right) \end{align*}\) \[\begin{array}{c|lcr} n &amp;amp; \text{Left} &amp;amp; \text{Center} &amp;amp; \text{Right} \\ \hline 1 &amp;amp; 0.24 &amp;amp; 1 &amp;amp; 125 \\ 2 &amp;amp; -1 &amp;amp; 189 &amp;amp; -8 \\ 3 &amp;amp; -20 &amp;amp; 2000 &amp;amp; 1+10i \end{array}\] def show @widget = Widget(params[:id]) respond_to do |format| format.html # show.html.erb format.json { render json: @widget } end end package interfaces import ( &quot;io&quot; &quot;os&quot; ) //PipeExample function func PipeExample() error { r, w := io.Pipe() go func() { w.Write([]byte(&quot;test\n&quot;)) w.Close() }() if _, err := io.Copy(os.Stdout, r); err != nil { return err } return nil } package interfaces import ( &quot;fmt&quot; &quot;io&quot; &quot;os&quot; ) // Copy data from std in to std out func Copy(in io.ReadSeeker, out io.Writer) error { w := io.MultiWriter(out, os.Stdout) if _, err := io.Copy(w, in); err != nil { return err } in.Seek(0, 0) buf := make([]byte, 64) if _, err := io.CopyBuffer(w, in, buf); err != nil { return err } fmt.Println() return nil } –robert</summary>
       
 
       

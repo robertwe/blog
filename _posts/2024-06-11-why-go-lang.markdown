@@ -6,8 +6,6 @@ tag: ["Programming", "GoLang"]
 category: GoLang
 ---
 
-## Why I Started Dealing with GoLang
-
 GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers 
 due to its simplicity, efficiency, and robustness. In this blog post, we will explore GoLang's best features from both performance and development perspectives, 
 backed by comprehensive code examples to illustrate these advantages.
@@ -93,8 +91,8 @@ The `go build` command compiles the code into a single executable file named `my
 
 ### 1. Simplicity and Readability
 
-GoLang's syntax is simple and clean, making it easy to read and write code. The language avoids complex features like inheritance and generics, focusing instead 
-on clarity and ease of maintenance.
+GoLang's syntax is simple and clean, making it easy to read and write code. The language avoids complex features like inheritance (and even generics were added
+only in Go 1.18, in a deliberately minimal form), focusing instead on clarity and ease of maintenance.
 
 **Example:**
 

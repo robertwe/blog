@@ -10,7 +10,7 @@
   
   
   <title>Why you should not use kill -9</title>
-  <meta name="description" content="I recenty found this advice given by Randal Schwartz. I think most of programmers got some idea who he is. Anyway if you have not had to touch Perl here is the link to wiki page. Here is the advice from Randal:">
+  <meta name="description" content="I recently found this advice given by Randal Schwartz. I think most programmers have some idea who he is. Anyway, if you have never had to touch Perl, here is the link to his wiki page. Here is the advice from Randal:">
   
 
   <link rel="stylesheet" href="/assets/main.css">
@@ -34,30 +34,37 @@
 
 
   
+  <meta property="og:title" content="Why you should not use kill -9">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2015/03/19/why-you-shoudnt-use-kill-9/">
+  <meta property="og:description" content="I recently found this advice given by Randal Schwartz. I think most programmers have some idea who he is. Anyway, if you have never had to touch Perl, here is the link to his wiki page. Here is the advice from Randal:">
+  
+  
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:site" content="rweclawski">
+  
   <meta name="twitter:title" content="Why you should not use kill -9">
-  <meta name="twitter:description" content="I recenty found this advice given by Randal Schwartz. I think most of programmers got some idea who he is. Anyway if you have not had to touch Perl here is the link to wiki page. Here is the advice...">
-  
-    <meta name="twitter:creator" content="rweclawski">
+  <meta name="twitter:description" content="I recently found this advice given by Randal Schwartz. I think most programmers have some idea who he is. Anyway, if you have never had to touch Perl, here is the link to his wiki page. Here is the...">
   
   
 
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css?family=Bitter:400,400i,700" rel="stylesheet">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
 
   
-  <!-- Google Analytics -->
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  
+  
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-50640818-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
+      ga('create', 'UA-50640818-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  
 
 
 </head>
@@ -133,21 +140,39 @@
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 </p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>I recenty found this advice given by <em>Randal Schwartz</em>.
-I think most of programmers got some idea who he is.
-Anyway if you have not had to touch Perl here is the link to <a href="https://en.wikipedia.org/wiki/Randal_L._Schwartz">wiki page</a>.</p>
+    <p>I recently found this advice given by <em>Randal Schwartz</em>.
+I think most programmers have some idea who he is.
+Anyway, if you have never had to touch Perl, here is the link to his <a href="https://en.wikipedia.org/wiki/Randal_L._Schwartz">wiki page</a>.</p>
 
 <p>Here is the advice from Randal:</p>
 
 <!--more-->
 
-<div class="highlighter-rouge"><pre class="highlight"><code>No no no. Don't use kill -9.    
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>No no no. Don't use kill -9.    
 It doesn't give the process a chance to cleanly:    
 1) shut down socket connections    
 2) clean up temp files    
@@ -158,10 +183,9 @@ Generally, send 15, and wait a second or two, and if that doesn't work, send 2, 
 that doesn't work, send 1. If that doesn't, REMOVE THE BINARY because the program is    
 badly behaved!    
 Don't use kill -9. Don't bring out the combine harvester just to tidy up the flower pot.
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<p>In a short:</p>
+<p>In short:</p>
 
 <ul>
   <li><em>15</em> is <em>SIGTERM</em> (terminate),</li>
@@ -169,7 +193,7 @@ Don't use kill -9. Don't bring out the combine harvester just to tidy up the flo
   <li><em>1</em> is <em>SIGHUP</em> (terminal hangup, often overloaded to keep a process running but reload the config)</li>
 </ul>
 
-<p>For those who would like to have full overview to all availabe signals here is a snippet from <code class="highlighter-rouge">signal.h</code>:</p>
+<p>For those who would like to have a full overview of all available signals, here is a snippet from <code class="language-plaintext highlighter-rouge">signal.h</code>:</p>
 
 <figure class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#define SIGHUP           1
 #define SIGINT           2
@@ -212,17 +236,23 @@ Don't use kill -9. Don't bring out the combine harvester just to tidy up the flo
       <hr />
 <h1>Comments</h1>
 
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'robertwe'; 
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
+<script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
 </script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="https://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
     </div>
   
 
@@ -240,12 +270,6 @@ Don't use kill -9. Don't bring out the combine harvester just to tidy up the flo
     </a>
 </div>
 
-
-<div class="footer">
-    <a href="https://twitter.com/rweclawski">
-      <i class="fa fa-twitter"></i> Twitter
-    </a>
-  </div>
 
 
 <div class="footer">

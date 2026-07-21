@@ -10,7 +10,7 @@
   
   
   <title>Quick introduction to Augeas in Puppet</title>
-  <meta name="description" content="Recently I came across an interesting problem. I had to install kernel from branch 3.10 on CentOS6 and there was a need to update grub.conf - change default kernel plus add boot option. Both mentioned operation had to be done in Puppet 3.7 (Augeas are of course also available in the higher version of Puppet). Sounds easy right?">
+  <meta name="description" content="Recently I came across an interesting problem. I had to install a kernel from the 3.10 branch on CentOS 6 and there was a need to update grub.conf - change the default kernel plus add a boot option. Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?">
   
 
   <link rel="stylesheet" href="/assets/main.css">
@@ -34,30 +34,37 @@
 
 
   
+  <meta property="og:title" content="Quick introduction to Augeas in Puppet">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2016/11/05/introduction-to-augeas-in-puppet/">
+  <meta property="og:description" content="Recently I came across an interesting problem. I had to install a kernel from the 3.10 branch on CentOS 6 and there was a need to update grub.conf - change the default kernel plus add a boot option. Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?">
+  
+  
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:site" content="rweclawski">
+  
   <meta name="twitter:title" content="Quick introduction to Augeas in Puppet">
-  <meta name="twitter:description" content="Recently I came across an interesting problem. I had to install kernel from branch 3.10 on CentOS6 and there was a need to update grub.conf - change default kernel plus add boot option. Both mentio...">
-  
-    <meta name="twitter:creator" content="rweclawski">
+  <meta name="twitter:description" content="Recently I came across an interesting problem. I had to install a kernel from the 3.10 branch on CentOS 6 and there was a need to update grub.conf - change the default kernel plus add a boot option...">
   
   
 
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css?family=Bitter:400,400i,700" rel="stylesheet">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
 
   
-  <!-- Google Analytics -->
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  
+  
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-50640818-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
+      ga('create', 'UA-50640818-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  
 
 
 </head>
@@ -128,7 +135,25 @@
       
     
       
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
         <a href="/categories/automation/">Automation</a>
+      
+    
+      
+    
       
     
   
@@ -150,6 +175,24 @@
     
       
         <a href="/tags/provisioning/">Provisioning</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -189,6 +232,24 @@
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
     
     
@@ -216,50 +277,67 @@
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 </p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>Recently I came across an interesting problem. I had to install kernel
-from branch 3.10 on CentOS6 and there was a need to update <code class="highlighter-rouge">grub.conf</code> - change default kernel plus add boot option.
-Both mentioned operation had to be done in Puppet 3.7 (Augeas are of course also available in the higher version of Puppet). Sounds easy right? <!--more--> 
+    <p>Recently I came across an interesting problem. I had to install a kernel
+from the 3.10 branch on CentOS 6 and there was a need to update <code class="language-plaintext highlighter-rouge">grub.conf</code> - change the default kernel plus add a boot option.
+Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right? <!--more--> 
 In the traditional approach (I saw it in many companies) I would probably
-create another template but I was wondering if there is a way to do it in a
+create another template, but I was wondering if there is a way to do it in a
 more elegant and universal way. Of course we can create another template
-and do not think about that but what if we actually do not know what we can expect
-in <code class="highlighter-rouge">grub.conf</code>. Serving <code class="highlighter-rouge">grub.conf</code> as a template can have bunch of other
-implication - dealing with updates, mixed versions of kernels ect.
-In other words another thing we would need to maintain and keep an eye on.
-Actually wy we should provide another template if we only want to add single value
-to lets say <code class="highlighter-rouge">sysctl.conf</code>?</p>
+and not think about it, but what if we actually do not know what to expect
+in <code class="language-plaintext highlighter-rouge">grub.conf</code>? Serving <code class="language-plaintext highlighter-rouge">grub.conf</code> as a template can have a bunch of other
+implications - dealing with updates, mixed versions of kernels etc.
+In other words, another thing we would need to maintain and keep an eye on.
+Actually, why should we provide another template if we only want to add a single value
+to, let’s say, <code class="language-plaintext highlighter-rouge">sysctl.conf</code>?</p>
 
-<p>To deal with it we can execute some nasty shell command (sed,awk - you name it)
-or use more sophisticated interface to configuration files - <a href="http://augeas.net/">Augeas</a>.
-Augeas is actually a library written in C. This library provides us an interface which treads
-configuration file as an tree. Additionally we can dynamically change every single element of this tree.
-Augeas is not a new solution and provides bindings for most of popular programming languages (Python,Ruby).
-It’s not a surprise it;s also available in Puppet by default.</p>
+<p>To deal with it we can execute some nasty shell command (sed, awk - you name it)
+or use a more sophisticated interface to configuration files - <a href="http://augeas.net/">Augeas</a>.
+Augeas is actually a library written in C. This library provides us an interface which treats
+a configuration file as a tree. Additionally, we can dynamically change every single element of this tree.
+Augeas is not a new solution and provides bindings for most popular programming languages (Python, Ruby).
+It’s no surprise it’s also available in Puppet by default.</p>
 
-<p>If I want to add some value to <code class="highlighter-rouge">sysctl.conf</code> I can do this like this:</p>
+<p>If I want to add some value to <code class="language-plaintext highlighter-rouge">sysctl.conf</code> I can do it like this:</p>
 
-<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">augeas</span> <span class="p">{</span> <span class="s2">"sysctl"</span><span class="p">:</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">augeas</span> <span class="p">{</span> <span class="s2">"sysctl"</span><span class="p">:</span>
   <span class="n">context</span> <span class="o">=&gt;</span> <span class="s1">'/files/etc/sysctl.conf'</span><span class="p">,</span>
   <span class="n">changes</span> <span class="o">=&gt;</span> <span class="p">[</span>
     <span class="s1">'set kernel.keys.root_maxkeys 1000000'</span><span class="p">,</span>
   <span class="p">],</span>
 <span class="p">}</span>
-</code></pre>
-</div>
-<p>We can execute it many times. Required entry will be added only once.
-From what I noticed this is a simplified way how we can call Augeas in puppet.</p>
+</code></pre></div></div>
+<p>We can execute it many times. The required entry will be added only once.
+From what I noticed, this is the simplified way of calling Augeas in Puppet.</p>
 
 <p>For some more sophisticated configuration files there are specialized interfaces.
-In puppet we can access them by specifying something what is called <code class="highlighter-rouge">lens</code>.
-I did not check how in works under the hood in puppet but I suspect the puppet
-select lens automatically if we do not specify any.
-Below is an example how we can make changes in <code class="highlighter-rouge">grub.conf</code> (real world example I use in the puppet):</p>
+In Puppet we can access them by specifying something called a <code class="language-plaintext highlighter-rouge">lens</code>.
+I did not check how it works under the hood in Puppet, but I suspect Puppet
+selects the lens automatically if we do not specify any.
+Below is an example of how we can make changes in <code class="language-plaintext highlighter-rouge">grub.conf</code> (a real-world example I use in Puppet):</p>
 
 <figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">augeas</span> <span class="p">{</span> <span class="s1">'grub_conf'</span><span class="p">:</span>
   <span class="n">incl</span>    <span class="o">=&gt;</span> <span class="s1">'/boot/grub/grub.conf'</span><span class="p">,</span>
@@ -274,39 +352,39 @@ Below is an example how we can make changes in <code class="highlighter-rouge">g
 <span class="p">}</span></code></pre></figure>
 
 <dl>
-  <dt>Lets go through it line by line:</dt>
+  <dt>Let’s go through it line by line:</dt>
   <dd>
     <ul>
-      <li><code class="highlighter-rouge">inc</code> - specify what configuration file we would like to change
+      <li><code class="language-plaintext highlighter-rouge">incl</code> - specifies what configuration file we would like to change
         <ul>
-          <li><code class="highlighter-rouge">lens</code> - specify the name of the lens we would like to use</li>
-          <li><code class="highlighter-rouge">changes</code> - defines group or single modification we would like to make</li>
+          <li><code class="language-plaintext highlighter-rouge">lens</code> - specifies the name of the lens we would like to use</li>
+          <li><code class="language-plaintext highlighter-rouge">changes</code> - defines a group of modifications (or a single one) we would like to make</li>
         </ul>
       </li>
     </ul>
   </dd>
-  <dt><code class="highlighter-rouge">changes</code> section support operators like:</dt>
+  <dt>The <code class="language-plaintext highlighter-rouge">changes</code> section supports operators like:</dt>
   <dd>
     <ul>
-      <li><code class="highlighter-rouge">set</code> - sets required field to specified value,    <br />
-<code class="highlighter-rouge">set default 0</code> produces <code class="highlighter-rouge">default=0</code> in the configuration file
+      <li><code class="language-plaintext highlighter-rouge">set</code> - sets the required field to the specified value,    <br />
+<code class="language-plaintext highlighter-rouge">set default 0</code> produces <code class="language-plaintext highlighter-rouge">default=0</code> in the configuration file
         <ul>
-          <li><code class="highlighter-rouge">setm</code> - adds value to line which matches to (<code class="highlighter-rouge">m</code> stands for multi I guess)</li>
-          <li><code class="highlighter-rouge">rm</code> removes value from line which matches to</li>
+          <li><code class="language-plaintext highlighter-rouge">setm</code> - adds a value to lines which match (<code class="language-plaintext highlighter-rouge">m</code> stands for multi, I guess)</li>
+          <li><code class="language-plaintext highlighter-rouge">rm</code> - removes a value from lines which match</li>
         </ul>
       </li>
     </ul>
   </dd>
 </dl>
 
-<p>You probably will ask - “how do I know how line I desire to change should be presented to augeas”.
-To see how defined config file looks like when Augeas converts it to tree you can use <code class="highlighter-rouge">augtool</code>.
-It should be available in the standard CentOS repo (it’s also available on the OSX via Brew)
+<p>You will probably ask - “how do I know how the line I want to change is represented in Augeas?”.
+To see what a given config file looks like when Augeas converts it to a tree, you can use <code class="language-plaintext highlighter-rouge">augtool</code>.
+It should be available in the standard CentOS repo (it’s also available on OSX via Brew).
 It’s a command line interface for Augeas.</p>
 
 <h5 id="see-an-example-below">See an example below:</h5>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>[root@localhost ~]# augtool ls /files/boot/grub/grub.conf
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[root@localhost ~]# augtool ls /files/boot/grub/grub.conf
 #comment[1] = grub.conf generated by anaconda
 #comment[2] = Note that you do not have to rerun grub after making changes to this file
 #comment[3] = NOTICE:  You have a /boot partition.  This means that
@@ -322,10 +400,9 @@ hiddenmenu = (none)
 title[1]/ = CentOS (3.10.x86_64)
 title[2]/ = CentOS 6 (2.6.32-504.8.1.el6.x86_64)
 [root@localhost ~]#
-</code></pre>
-</div>
+</code></pre></div></div>
 
-<p>Some folks also figured out that Augeas in Puppet can be integrated as <code class="highlighter-rouge">providers</code> to create even more user friendly interface.
+<p>Some folks also figured out that Augeas in Puppet can be integrated as <code class="language-plaintext highlighter-rouge">providers</code> to create an even more user friendly interface.
 You can read more about that here <a href="http://augeasproviders.com/">http://augeasproviders.com/</a></p>
 
 <p>–
@@ -338,17 +415,23 @@ Robert</p>
       <hr />
 <h1>Comments</h1>
 
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'robertwe'; 
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
+<script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
 </script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="https://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
     </div>
   
 
@@ -366,12 +449,6 @@ Robert</p>
     </a>
 </div>
 
-
-<div class="footer">
-    <a href="https://twitter.com/rweclawski">
-      <i class="fa fa-twitter"></i> Twitter
-    </a>
-  </div>
 
 
 <div class="footer">

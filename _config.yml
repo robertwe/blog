@@ -1,11 +1,12 @@
 title: Robert's notes
 email: robert.weclawski@mykolab.com
 excerpt_separator: "<!--more-->"
-description: > 
+description: >
+  Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture -
+  written by Robert, a software developer automating things since 2011.
 
 baseurl: "/"
 url: "https://roberts-notes.blog"
-twitter_username: rweclawski
 github_username:  robertwe
 linkedin_username: robertweclawski
 stackoverflow_username: 213377
@@ -15,23 +16,15 @@ wakatime:
     - 022cbd76-226a-4505-afa7-0afb5af864c5
 
 # Exclude from processing.
-# The following items will not be processed, by default. Create a custom list
-# to override the default setting.
-# exclude:
-#   - Gemfile
-#   - Gemfile.lock
-#   - node_modules
-#   - vendor/bundle/
-#   - vendor/cache/
-#   - vendor/gems/
-#   - vendor/ruby/
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - Dockerfile
+  - nginx
+  - firebase.json
+  - node_modules
+  - vendor
 comments: true
-
-custom:
-  comments :
-    provider : disqus
-    disqus :
-      short_name : robertwe
 
 theme: jekyll-whiteglass
 

@@ -10,7 +10,7 @@
   
   
   <title>Add new key to APT AKA tell APT to trust given key</title>
-  <meta name="description" content="One of my desktop box I recently got this message when I wanted to update it via apt : Fetched 1448 B in 8s (180 B/s) Reading package lists... Done W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used. GPG error: http://xxxxxxx ./ Release: The following signatures couldn&#39;t be verified because the public key is not available: NO_PUBKEY 0000000000">
+  <meta name="description" content="On one of my desktop boxes I recently got this message when I wanted to update it via apt: Fetched 1448 B in 8s (180 B/s) Reading package lists... Done W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used. GPG error: http://xxxxxxx ./ Release: The following signatures couldn&#39;t be verified because the public key is not available: NO_PUBKEY 0000000000">
   
 
   <link rel="stylesheet" href="/assets/main.css">
@@ -34,30 +34,37 @@
 
 
   
+  <meta property="og:title" content="Add new key to APT AKA tell APT to trust given key">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2015/04/30/add-new-key-to-apt/">
+  <meta property="og:description" content="On one of my desktop boxes I recently got this message when I wanted to update it via apt: Fetched 1448 B in 8s (180 B/s) Reading package lists... Done W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used. GPG error: http://xxxxxxx ./ Release: The following signatures couldn&#39;t be verified because the public key is not available: NO_PUBKEY 0000000000">
+  
+  
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:site" content="rweclawski">
+  
   <meta name="twitter:title" content="Add new key to APT AKA tell APT to trust given key">
-  <meta name="twitter:description" content="One of my desktop box I recently got this message when I wanted to update it via apt : Fetched 1448 B in 8s (180 B/s) Reading package lists... Done W: An error occurred during the signature verific...">
-  
-    <meta name="twitter:creator" content="rweclawski">
+  <meta name="twitter:description" content="On one of my desktop boxes I recently got this message when I wanted to update it via apt: Fetched 1448 B in 8s (180 B/s) Reading package lists... Done W: An error occurred during the signature ver...">
   
   
 
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css?family=Bitter:400,400i,700" rel="stylesheet">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
 
   
-  <!-- Google Analytics -->
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  
+  
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-50640818-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
+      ga('create', 'UA-50640818-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  
 
 
 </head>
@@ -133,34 +140,50 @@
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 </p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>One of my desktop box I recently got this message when I wanted to update it via <code class="highlighter-rouge">apt</code> :</p>
+    <p>On one of my desktop boxes I recently got this message when I wanted to update it via <code class="language-plaintext highlighter-rouge">apt</code>:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>Fetched 1448 B in 8s (180 B/s)
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Fetched 1448 B in 8s (180 B/s)
 Reading package lists... Done
 W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used.
 GPG error: http://xxxxxxx ./ Release: The following signatures couldn't be verified because
 the public key is not available: NO_PUBKEY 0000000000
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <!--more-->
 
-<p>Solution for it is very straight forward but lets write it down here since I always forgot how to do this.
+<p>The solution is very straightforward, but let’s write it down here since I always forget how to do it.
 Here it is:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>gpg --keyserver subkeys.pgp.net --recv-keys keyId
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gpg --keyserver subkeys.pgp.net --recv-keys keyId
 gpg -a --export keyId | sudo apt-key add -
-</code></pre>
-</div>
-<p>Of course you will need to replace <code class="highlighter-rouge">keyId</code> with a real GPG key which is missing/uknown to APT.</p>
+</code></pre></div></div>
+<p>Of course you will need to replace <code class="language-plaintext highlighter-rouge">keyId</code> with the real GPG key which is missing/unknown to APT.</p>
 
-<p>Additiona resources - <a href="https://wiki.debian.org/SecureApt">SecureApt Debian wiki page</a></p>
+<p>Additional resources - <a href="https://wiki.debian.org/SecureApt">SecureApt Debian wiki page</a></p>
 
 <p>–robert</p>
 
@@ -171,17 +194,23 @@ gpg -a --export keyId | sudo apt-key add -
       <hr />
 <h1>Comments</h1>
 
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'robertwe'; 
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
+<script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
 </script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="https://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
     </div>
   
 
@@ -199,12 +228,6 @@ gpg -a --export keyId | sudo apt-key add -
     </a>
 </div>
 
-
-<div class="footer">
-    <a href="https://twitter.com/rweclawski">
-      <i class="fa fa-twitter"></i> Twitter
-    </a>
-  </div>
 
 
 <div class="footer">

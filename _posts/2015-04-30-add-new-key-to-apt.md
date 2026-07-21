@@ -5,7 +5,7 @@ date: 2015-04-30 08:00:03.00 +02:00
 tag: ["Linux"]
 ---
 
-One of my desktop box I recently got this message when I wanted to update it via `apt` :
+On one of my desktop boxes I recently got this message when I wanted to update it via `apt`:
 
 ```
 Fetched 1448 B in 8s (180 B/s)
@@ -17,15 +17,15 @@ the public key is not available: NO_PUBKEY 0000000000
 
 <!--more-->
 
-Solution for it is very straight forward but lets write it down here since I always forgot how to do this.
+The solution is very straightforward, but let's write it down here since I always forget how to do it.
 Here it is:
 
 ```
 gpg --keyserver subkeys.pgp.net --recv-keys keyId
 gpg -a --export keyId | sudo apt-key add -
 ```
-Of course you will need to replace `keyId` with a real GPG key which is missing/uknown to APT.
+Of course you will need to replace `keyId` with the real GPG key which is missing/unknown to APT.
 
-Additiona resources - [SecureApt Debian wiki page](https://wiki.debian.org/SecureApt)
+Additional resources - [SecureApt Debian wiki page](https://wiki.debian.org/SecureApt)
 
 --robert

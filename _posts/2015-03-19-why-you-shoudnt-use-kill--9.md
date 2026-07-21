@@ -5,9 +5,9 @@ date: 2015-03-19 20:46:03.00 +02:00
 tag: ["Linux"]
 ---
 
-I recenty found this advice given by _Randal Schwartz_.
-I think most of programmers got some idea who he is.
-Anyway if you have not had to touch Perl here is the link to [wiki page](https://en.wikipedia.org/wiki/Randal_L._Schwartz).
+I recently found this advice given by _Randal Schwartz_.
+I think most programmers have some idea who he is.
+Anyway, if you have never had to touch Perl, here is the link to his [wiki page](https://en.wikipedia.org/wiki/Randal_L._Schwartz).
 
 Here is the advice from Randal:
 
@@ -29,14 +29,14 @@ Don't use kill -9. Don't bring out the combine harvester just to tidy up the flo
 
 
 
-In a short:
+In short:
 
   *  _15_ is _SIGTERM_ (terminate), 
   *  _2_ is _SIGINT_ (interrupt, ctrl-c), 
   *  _1_ is _SIGHUP_ (terminal hangup, often overloaded to keep a process running but reload the config)
 
 
-For those who would like to have full overview to all availabe signals here is a snippet from `signal.h`:
+For those who would like to have a full overview of all available signals, here is a snippet from `signal.h`:
 {% highlight c %}
 #define SIGHUP           1
 #define SIGINT           2

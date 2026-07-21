@@ -10,7 +10,7 @@
   
   
   <title>Robert&#39;s notes</title>
-  <meta name="description" content="">
+  <meta name="description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
   
 
   <link rel="stylesheet" href="/assets/main.css">
@@ -34,30 +34,37 @@
 
 
   
+  <meta property="og:title" content="Robert&#39;s notes">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/">
+  <meta property="og:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
+  
+  
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:site" content="rweclawski">
+  
   <meta name="twitter:title" content="Robert&#39;s notes">
-  <meta name="twitter:description" content="">
-  
-    <meta name="twitter:creator" content="rweclawski">
+  <meta name="twitter:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
   
   
 
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css?family=Bitter:400,400i,700" rel="stylesheet">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
 
   
-  <!-- Google Analytics -->
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  
+  
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-50640818-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
+      ga('create', 'UA-50640818-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  
 
 
 </head>
@@ -112,6 +119,672 @@
         <header class="post-header">
           <h1 class="post-title">
             
+              <a class="post-link" href="/2026/07/21/transition-to-opentofu/">From Terraform to OpenTofu - why and how we made the switch</a>
+            
+          </h1>
+
+          <p class="post-meta">
+            Jul 21, 2026
+            
+               •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/categories/devops/">DevOps</a>
+      
+    
+  
+
+
+ •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/devops/">DevOps</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/terraform/">Terraform</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/opentofu/">OpenTofu</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/iac/">IaC</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+            
+            
+          </p>
+        </header>
+
+        <div class="post-content">
+          <p>I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed.
+Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem,
+and recently I went through a full migration from Terraform to <a href="https://opentofu.org/">OpenTofu</a> in a few production environments.
+In this post I want to share why we did it, how it went, and what surprised me along the way.</p>
+
+
+        </div>
+        
+          <p class="post-continue">
+            <a href="/2026/07/21/transition-to-opentofu/">Read on &rarr;</a>
+          </p>
+        
+      </li>
+    
+      
+      
+
+      <li>
+        <header class="post-header">
+          <h1 class="post-title">
+            
+              <a class="post-link" href="/2024/06/11/why-go-lang/">Why GoLang</a>
+            
+          </h1>
+
+          <p class="post-meta">
+            Jun 11, 2024
+            
+               •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/categories/golang/">GoLang</a>
+      
+    
+      
+    
+  
+
+
+ •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/programming/">Programming</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/golang/">GoLang</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+            
+            
+          </p>
+        </header>
+
+        <div class="post-content">
+          <p>GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers 
+due to its simplicity, efficiency, and robustness. In this blog post, we will explore GoLang’s best features from both performance and development perspectives, 
+backed by comprehensive code examples to illustrate these advantages.</p>
+
+
+        </div>
+        
+          <p class="post-continue">
+            <a href="/2024/06/11/why-go-lang/">Read on &rarr;</a>
+          </p>
+        
+      </li>
+    
+      
+      
+
+      <li>
+        <header class="post-header">
+          <h1 class="post-title">
+            
+              <a class="post-link" href="/2024/06/11/go-lang-generics/">Go Lang and interfaces and generics</a>
+            
+          </h1>
+
+          <p class="post-meta">
+            Jun 11, 2024
+            
+               •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/categories/golang/">GoLang</a>
+      
+    
+      
+    
+  
+
+
+ •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/programming/">Programming</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/golang/">GoLang</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/generics/">Generics</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+            
+            
+          </p>
+        </header>
+
+        <div class="post-content">
+          <p>Hey everyone,</p>
+
+<p>Today, I want to dive into Go language and talk about interfaces, with a specific focus on generics.
+Generics have been one of the most highly anticipated features in Go, and they are finally here with the release of Go 1.18.
+Let’s explore how interfaces and generics work together in Go and how they can make our code more flexible and reusable.</p>
+
+
+        </div>
+        
+          <p class="post-continue">
+            <a href="/2024/06/11/go-lang-generics/">Read on &rarr;</a>
+          </p>
+        
+      </li>
+    
+      
+      
+
+      <li>
+        <header class="post-header">
+          <h1 class="post-title">
+            
               <a class="post-link" href="/2016/11/05/introduction-to-augeas-in-puppet/">Quick introduction to Augeas in Puppet</a>
             
           </h1>
@@ -144,7 +817,25 @@
       
     
       
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
         <a href="/categories/automation/">Automation</a>
+      
+    
+      
+    
       
     
   
@@ -166,6 +857,24 @@
     
       
         <a href="/tags/provisioning/">Provisioning</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -205,6 +914,24 @@
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
     
     
@@ -232,6 +959,24 @@
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 
@@ -241,9 +986,9 @@
         </header>
 
         <div class="post-content">
-          <p>Recently I came across an interesting problem. I had to install kernel
-from branch 3.10 on CentOS6 and there was a need to update <code class="highlighter-rouge">grub.conf</code> - change default kernel plus add boot option.
-Both mentioned operation had to be done in Puppet 3.7 (Augeas are of course also available in the higher version of Puppet). Sounds easy right?</p>
+          <p>Recently I came across an interesting problem. I had to install a kernel
+from the 3.10 branch on CentOS 6 and there was a need to update <code class="language-plaintext highlighter-rouge">grub.conf</code> - change the default kernel plus add a boot option.
+Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?</p>
 
 
         </div>
@@ -298,6 +1043,24 @@ Both mentioned operation had to be done in Puppet 3.7 (Augeas are of course also
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 
@@ -307,222 +1070,15 @@ Both mentioned operation had to be done in Puppet 3.7 (Augeas are of course also
         </header>
 
         <div class="post-content">
-          <p>Yesterday I faced quite interesting problem.
-In my SLS definition I was iterating over some hash of hashes and wanted to pass to Jinja template
-hash, which was present in current iteration.</p>
+          <p>Yesterday I faced a quite interesting problem.
+In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash
+from the current iteration to a Jinja template.</p>
 
 
         </div>
         
           <p class="post-continue">
             <a href="/2015/11/03/pass-variables-to-jinja-template-in-salt/">Read on &rarr;</a>
-          </p>
-        
-      </li>
-    
-      
-      
-
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2015/04/30/add-new-key-to-apt/">Add new key to APT AKA tell APT to trust given key</a>
-            
-          </h1>
-
-          <p class="post-meta">
-            Apr 30, 2015
-            
-              
-
- •
-  
-    
-    
-      
-    
-      
-    
-      
-    
-      
-        <a href="/tags/linux/">Linux</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-
-
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <p>One of my desktop box I recently got this message when I wanted to update it via <code class="highlighter-rouge">apt</code> :</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>Fetched 1448 B in 8s (180 B/s)
-Reading package lists... Done
-W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used.
-GPG error: http://xxxxxxx ./ Release: The following signatures couldn't be verified because
-the public key is not available: NO_PUBKEY 0000000000
-</code></pre>
-</div>
-
-
-        </div>
-        
-          <p class="post-continue">
-            <a href="/2015/04/30/add-new-key-to-apt/">Read on &rarr;</a>
-          </p>
-        
-      </li>
-    
-      
-      
-
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2015/03/19/why-you-shoudnt-use-kill-9/">Why you should not use kill -9</a>
-            
-          </h1>
-
-          <p class="post-meta">
-            Mar 19, 2015
-            
-              
-
- •
-  
-    
-    
-      
-    
-      
-    
-      
-    
-      
-        <a href="/tags/linux/">Linux</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-
-
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <p>I recenty found this advice given by <em>Randal Schwartz</em>.
-I think most of programmers got some idea who he is.
-Anyway if you have not had to touch Perl here is the link to <a href="https://en.wikipedia.org/wiki/Randal_L._Schwartz">wiki page</a>.</p>
-
-<p>Here is the advice from Randal:</p>
-
-
-        </div>
-        
-          <p class="post-continue">
-            <a href="/2015/03/19/why-you-shoudnt-use-kill-9/">Read on &rarr;</a>
-          </p>
-        
-      </li>
-    
-      
-      
-
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2014/11/27/temporary-disabling-bash-history/">Temporary Disabling Bash History</a>
-            
-          </h1>
-
-          <p class="post-meta">
-            Nov 27, 2014
-            
-              
-
- •
-  
-    
-    
-      
-    
-      
-    
-      
-        <a href="/tags/bash/">bash</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-
-
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <p>How to do it ? It’s actually very simple.
-You can achieve this by <code class="highlighter-rouge">unset HISTFILE</code>. Of course in such case we only disable history 
-for current session. 
-What if we want to selectively do not put some commands into bash history ?</p>
-
-
-        </div>
-        
-          <p class="post-continue">
-            <a href="/2014/11/27/temporary-disabling-bash-history/">Read on &rarr;</a>
           </p>
         
       </li>
@@ -554,12 +1110,6 @@ What if we want to selectively do not put some commands into bash history ?</p>
     </a>
 </div>
 
-
-<div class="footer">
-    <a href="https://twitter.com/rweclawski">
-      <i class="fa fa-twitter"></i> Twitter
-    </a>
-  </div>
 
 
 <div class="footer">

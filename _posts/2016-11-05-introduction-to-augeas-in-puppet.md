@@ -5,27 +5,27 @@ date: 2016-11-05 23:30:00.00 +02:00
 tag: ["Provisioning", "Automation", "Puppet"]
 category: Automation
 ---
-Recently I came across an interesting problem. I had to install kernel
-from branch 3.10 on CentOS6 and there was a need to update `grub.conf` - change default kernel plus add boot option.
-Both mentioned operation had to be done in Puppet 3.7 (Augeas are of course also available in the higher version of Puppet). Sounds easy right? <!--more--> 
+Recently I came across an interesting problem. I had to install a kernel
+from the 3.10 branch on CentOS 6 and there was a need to update `grub.conf` - change the default kernel plus add a boot option.
+Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right? <!--more--> 
 In the traditional approach (I saw it in many companies) I would probably
-create another template but I was wondering if there is a way to do it in a
+create another template, but I was wondering if there is a way to do it in a
 more elegant and universal way. Of course we can create another template
-and do not think about that but what if we actually do not know what we can expect
-in `grub.conf`. Serving `grub.conf` as a template can have bunch of other
-implication - dealing with updates, mixed versions of kernels ect.
-In other words another thing we would need to maintain and keep an eye on.
-Actually wy we should provide another template if we only want to add single value
-to lets say `sysctl.conf`?
+and not think about it, but what if we actually do not know what to expect
+in `grub.conf`? Serving `grub.conf` as a template can have a bunch of other
+implications - dealing with updates, mixed versions of kernels etc.
+In other words, another thing we would need to maintain and keep an eye on.
+Actually, why should we provide another template if we only want to add a single value
+to, let's say, `sysctl.conf`?
 
-To deal with it we can execute some nasty shell command (sed,awk - you name it)
-or use more sophisticated interface to configuration files - [Augeas](http://augeas.net/).
-Augeas is actually a library written in C. This library provides us an interface which treads
-configuration file as an tree. Additionally we can dynamically change every single element of this tree.
-Augeas is not a new solution and provides bindings for most of popular programming languages (Python,Ruby).
-It's not a surprise it;s also available in Puppet by default.
+To deal with it we can execute some nasty shell command (sed, awk - you name it)
+or use a more sophisticated interface to configuration files - [Augeas](http://augeas.net/).
+Augeas is actually a library written in C. This library provides us an interface which treats
+a configuration file as a tree. Additionally, we can dynamically change every single element of this tree.
+Augeas is not a new solution and provides bindings for most popular programming languages (Python, Ruby).
+It's no surprise it's also available in Puppet by default.
 
-If I want to add some value to `sysctl.conf` I can do this like this:
+If I want to add some value to `sysctl.conf` I can do it like this:
 
 ```ruby
 augeas { "sysctl":
@@ -35,14 +35,14 @@ augeas { "sysctl":
   ],
 }
 ```
-We can execute it many times. Required entry will be added only once.
-From what I noticed this is a simplified way how we can call Augeas in puppet.
+We can execute it many times. The required entry will be added only once.
+From what I noticed, this is the simplified way of calling Augeas in Puppet.
 
 For some more sophisticated configuration files there are specialized interfaces.
-In puppet we can access them by specifying something what is called `lens`.
-I did not check how in works under the hood in puppet but I suspect the puppet
-select lens automatically if we do not specify any.
-Below is an example how we can make changes in `grub.conf` (real world example I use in the puppet):
+In Puppet we can access them by specifying something called a `lens`.
+I did not check how it works under the hood in Puppet, but I suspect Puppet
+selects the lens automatically if we do not specify any.
+Below is an example of how we can make changes in `grub.conf` (a real-world example I use in Puppet):
 
 {% highlight ruby %}
 augeas { 'grub_conf':
@@ -59,21 +59,21 @@ augeas { 'grub_conf':
 {% endhighlight %}
 
 
-Lets go through it line by line:
-  : * `inc` - specify what configuration file we would like to change
-  * `lens` - specify the name of the lens we would like to use
-  * `changes` - defines group or single modification we would like to make
+Let's go through it line by line:
+  : * `incl` - specifies what configuration file we would like to change
+  * `lens` - specifies the name of the lens we would like to use
+  * `changes` - defines a group of modifications (or a single one) we would like to make
 
-`changes` section support operators like:
-  : * `set` - sets required field to specified value,      
+The `changes` section supports operators like:
+  : * `set` - sets the required field to the specified value,      
     `set default 0` produces `default=0` in the configuration file
-  * `setm` - adds value to line which matches to (`m` stands for multi I guess)
-  * `rm` removes value from line which matches to
+  * `setm` - adds a value to lines which match (`m` stands for multi, I guess)
+  * `rm` - removes a value from lines which match
 
 
-You probably will ask - "how do I know how line I desire to change should be presented to augeas".
-To see how defined config file looks like when Augeas converts it to tree you can use `augtool`.
-It should be available in the standard CentOS repo (it's also available on the OSX via Brew)
+You will probably ask - "how do I know how the line I want to change is represented in Augeas?".
+To see what a given config file looks like when Augeas converts it to a tree, you can use `augtool`.
+It should be available in the standard CentOS repo (it's also available on OSX via Brew).
 It's a command line interface for Augeas.
 
 ##### See an example below: #
@@ -97,7 +97,7 @@ title[2]/ = CentOS 6 (2.6.32-504.8.1.el6.x86_64)
 [root@localhost ~]#
 ```
 
-Some folks also figured out that Augeas in Puppet can be integrated as `providers` to create even more user friendly interface.
+Some folks also figured out that Augeas in Puppet can be integrated as `providers` to create an even more user friendly interface.
 You can read more about that here [http://augeasproviders.com/](http://augeasproviders.com/)
 
 --

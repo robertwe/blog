@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  
+  
+  <title>From Terraform to OpenTofu - why and how we made the switch</title>
+  <meta name="description" content="I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed. Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem, and recently I went through a full migration from Terraform to OpenTofu in a few production environments. In this post I want to share why we did it, how it went, and what surprised me along the way.">
+  
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="https://roberts-notes.blog/2026/07/21/transition-to-opentofu/">
+  
+  
+  <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
+
+  <link rel="icon"
+      type="image/png"
+      href="/favicon.png">
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+<!--
+ ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
+██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
+██║  ███╗██████╔╝█████╗  █████╗     ██║   ██║██╔██╗ ██║██║  ███╗███████╗    ██║
+██║   ██║██╔══██╗██╔══╝  ██╔══╝     ██║   ██║██║╚██╗██║██║   ██║╚════██║    ╚═╝
+╚██████╔╝██║  ██║███████╗███████╗   ██║   ██║██║ ╚████║╚██████╔╝███████║    ██╗
+ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
+-->
+
+
+  
+  <meta property="og:title" content="From Terraform to OpenTofu - why and how we made the switch">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2026/07/21/transition-to-opentofu/">
+  <meta property="og:description" content="I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed. Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem, and recently I went through a full migration from Terraform to OpenTofu in a few production environments. In this post I want to share why we did it, how it went, and what surprised me along the way.">
+  
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:title" content="From Terraform to OpenTofu - why and how we made the switch">
+  <meta name="twitter:description" content="I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed. Infrastructure as Code is simply how I work. But over t...">
+  
+  
+
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+
+  
+  
+  
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-50640818-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  
+
+
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Robert&#39;s notes</a>
+
+    <nav class="site-nav">
+      
+        
+        <a class="page-link" href="/">Main</a>
+      
+        
+        <a class="page-link" href="/archives/">Archives</a>
+      
+        
+        <a class="page-link" href="/stats/">Stats</a>
+      
+        
+        <a class="page-link" href="/contact/">Contact</a>
+      
+        
+        <a class="page-link" href="/about/">About</a>
+      
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    
+      <h1 class="post-title" itemprop="name headline">From Terraform to OpenTofu - why and how we made the switch</h1>
+    
+    <p class="post-meta"><time datetime="2026-07-21T09:00:00+02:00" itemprop="datePublished">Jul 21, 2026</time> •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/categories/devops/">DevOps</a>
+      
+    
+  
+
+
+ •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/devops/">DevOps</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/terraform/">Terraform</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/opentofu/">OpenTofu</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/iac/">IaC</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+</p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed.
+Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem,
+and recently I went through a full migration from Terraform to <a href="https://opentofu.org/">OpenTofu</a> in a few production environments.
+In this post I want to share why we did it, how it went, and what surprised me along the way.
+<!--more--></p>
+
+<h2 id="a-bit-of-history---why-opentofu-even-exists">A bit of history - why OpenTofu even exists</h2>
+
+<p>In August 2023 HashiCorp changed the license of Terraform (and their other tools) from the open source MPL 2.0
+to the Business Source License (BSL). BSL is a source-available license, not an open source one - it restricts
+who can use the software and for what, especially if you build products that compete with HashiCorp’s offering.</p>
+
+<p>For most end users nothing changed overnight. But the community reaction was strong, and for a good reason:
+a huge ecosystem of modules, providers and tooling was built over the years on the assumption that Terraform is
+and will stay open source. In response, a group of companies and individuals created a fork of the last MPL-licensed
+Terraform (1.5.x) called OpenTofu, which was quickly adopted by the Linux Foundation. That gives it neutral,
+community-driven governance - no single vendor can pull the same license move again.</p>
+
+<p>Since then OpenTofu has been shipping releases at a solid pace, and it is not just a passive fork anymore.
+It has features that Terraform does not have, like native state encryption - something people were asking
+HashiCorp for literally for years.</p>
+
+<h2 id="why-we-decided-to-migrate">Why we decided to migrate</h2>
+
+<p>I will not name the companies I have been working with, but the motivation was pretty similar everywhere:</p>
+
+<ul>
+  <li><strong>License risk</strong> - legal departments do not like “source available” licenses with vague boundaries.
+Even if you are 99% sure your use case is fine, that 1% is an unnecessary risk. Open source under
+the Linux Foundation umbrella is a much easier conversation,</li>
+  <li><strong>State encryption</strong> - with OpenTofu 1.7+ you can encrypt the state file itself. Terraform state
+contains secrets in plain text (yes, still, in 2026) and until now the only protection was encryption
+at rest on the backend side. Client-side state encryption is a real security improvement,</li>
+  <li><strong>Cost</strong> - some teams were evaluating Terraform Cloud/HCP pricing and did not like where it was going.
+OpenTofu keeps the classic open workflow: your state backend, your CI, your rules,</li>
+  <li><strong>No vendor lock-in on the tool itself</strong> - the whole point of IaC is control and repeatability.
+Having the core tool governed by a foundation instead of a single vendor fits that philosophy.</li>
+</ul>
+
+<h2 id="the-migration-itself---honestly-it-is-boring-and-that-is-great">The migration itself - honestly, it is boring (and that is great)</h2>
+
+<p>This was the biggest surprise. I expected a painful multi-week project. In reality, for a codebase
+that was on Terraform 1.5.x, the migration is almost a non-event, because OpenTofu started as a
+drop-in replacement.</p>
+
+<p>The whole process looks like this:</p>
+
+<p><strong>1. Install OpenTofu</strong></p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># macOS</span>
+brew <span class="nb">install </span>opentofu
+
+<span class="c"># or via the installer script</span>
+curl <span class="nt">--proto</span> <span class="s1">'=https'</span> <span class="nt">--tlsv1</span>.2 <span class="nt">-fsSL</span> https://get.opentofu.org/install-opentofu.sh <span class="nt">-o</span> install-opentofu.sh
+<span class="nb">chmod</span> +x install-opentofu.sh
+./install-opentofu.sh <span class="nt">--install-method</span> deb
+</code></pre></div></div>
+
+<p><strong>2. Take a state backup first</strong></p>
+
+<p>I do not care how confident you are - back up your state before touching anything:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>terraform state pull <span class="o">&gt;</span> backup-<span class="si">$(</span><span class="nb">date</span> +%F<span class="si">)</span>.tfstate
+</code></pre></div></div>
+
+<p><strong>3. Re-initialize with tofu</strong></p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tofu init
+</code></pre></div></div>
+
+<p>That is it for the core switch. <code class="language-plaintext highlighter-rouge">tofu init</code> downloads providers from the OpenTofu registry
+(<code class="language-plaintext highlighter-rouge">registry.opentofu.org</code>), which mirrors the providers you already use. The state format is compatible,
+so <code class="language-plaintext highlighter-rouge">tofu plan</code> right after the init should show <strong>no changes</strong>. If it does not - stop and investigate,
+do not apply.</p>
+
+<p><strong>4. Verify with a plan on every workspace/environment</strong></p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tofu plan <span class="nt">-detailed-exitcode</span>
+</code></pre></div></div>
+
+<p>We ran this across all environments before letting anyone apply anything. Exit code <code class="language-plaintext highlighter-rouge">0</code> everywhere means
+you are done with the risky part.</p>
+
+<p><strong>5. Update your CI/CD pipelines</strong></p>
+
+<p>This was actually most of the work - not because it is hard, but because pipelines are everywhere.
+Mostly it boils down to replacing the binary and the setup step, e.g. in GitHub Actions:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">opentofu/setup-opentofu@v1</span>
+  <span class="na">with</span><span class="pi">:</span>
+    <span class="na">tofu_version</span><span class="pi">:</span> <span class="s">1.10.0</span>
+
+<span class="pi">-</span> <span class="na">run</span><span class="pi">:</span> <span class="s">tofu init -input=false</span>
+<span class="pi">-</span> <span class="na">run</span><span class="pi">:</span> <span class="s">tofu plan -input=false</span>
+</code></pre></div></div>
+
+<p>Tools around the ecosystem (Atlantis, Terragrunt, pre-commit hooks, tflint, checkov, infracost) all
+support OpenTofu these days, usually via a single configuration switch.</p>
+
+<p><strong>6. Pin the version</strong></p>
+
+<p>Same discipline as with Terraform - pin it:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">terraform</span> <span class="p">{</span>
+  <span class="nx">required_version</span> <span class="p">=</span> <span class="s2">"&gt;= 1.10.0"</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Yes, the block is still called <code class="language-plaintext highlighter-rouge">terraform</code> - OpenTofu kept it for compatibility, and I think that was
+the right call.</p>
+
+<h2 id="the-nice-bonus---state-encryption">The nice bonus - state encryption</h2>
+
+<p>This alone justified the migration for one security-conscious team. Example configuration with an AWS KMS key:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">terraform</span> <span class="p">{</span>
+  <span class="nx">encryption</span> <span class="p">{</span>
+    <span class="nx">key_provider</span> <span class="s2">"aws_kms"</span> <span class="s2">"main"</span> <span class="p">{</span>
+      <span class="nx">kms_key_id</span> <span class="p">=</span> <span class="s2">"arn:aws:kms:eu-west-1:111111111111:key/xxxx"</span>
+      <span class="nx">key_spec</span>   <span class="p">=</span> <span class="s2">"AES_256"</span>
+    <span class="p">}</span>
+
+    <span class="nx">method</span> <span class="s2">"aes_gcm"</span> <span class="s2">"main"</span> <span class="p">{</span>
+      <span class="nx">keys</span> <span class="p">=</span> <span class="nx">key_provider</span><span class="err">.</span><span class="nx">aws_kms</span><span class="err">.</span><span class="nx">main</span>
+    <span class="p">}</span>
+
+    <span class="nx">state</span> <span class="p">{</span>
+      <span class="nx">method</span> <span class="p">=</span> <span class="nx">method</span><span class="err">.</span><span class="nx">aes_gcm</span><span class="err">.</span><span class="nx">main</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>From that moment your state file is encrypted client-side before it ever reaches the backend.
+Anyone who ever had to explain to a security auditor why there are database passwords in plain text
+in an S3 bucket will appreciate this.</p>
+
+<h2 id="gotchas-we-hit">Gotchas we hit</h2>
+
+<p>Nothing dramatic, but worth mentioning:</p>
+
+<ul>
+  <li><strong>Do the migration from Terraform &lt;= 1.5.x if you can.</strong> If your code already uses features from
+newer Terraform versions (post-fork), check the OpenTofu migration guide - the projects have started
+to diverge and a few features have different implementations,</li>
+  <li><strong>Provider versions</strong> - the OpenTofu registry mirrors providers, but re-check your lock file
+(<code class="language-plaintext highlighter-rouge">.terraform.lock.hcl</code>) after init. We regenerated it cleanly with <code class="language-plaintext highlighter-rouge">tofu providers lock</code>,</li>
+  <li><strong>Muscle memory</strong> - the amount of times I typed <code class="language-plaintext highlighter-rouge">terraform plan</code> in the first two weeks… a shell
+alias helps: <code class="language-plaintext highlighter-rouge">alias terraform=tofu</code>,</li>
+  <li><strong>Documentation drift</strong> - internal runbooks and READMEs mention <code class="language-plaintext highlighter-rouge">terraform</code> everywhere. A boring
+find-and-replace task, but if you skip it, new team members will happily install Terraform again.</li>
+</ul>
+
+<h2 id="verdict">Verdict</h2>
+
+<p>The migration was one of those rare infrastructure changes where the risk/benefit ratio is clearly positive:
+a day or two of work (mostly CI plumbing and verification), and in return you get an actually open source tool,
+community governance, state encryption and no license anxiety. After several months in production across
+multiple environments I have not hit a single issue that I could attribute to OpenTofu itself.</p>
+
+<p>If you are still on Terraform 1.5.x and wondering whether to move - in my opinion the answer is yes,
+and the best moment is now, while the drop-in compatibility window is still wide open.</p>
+
+<p>–
+cheers</p>
+
+  </div>
+
+  
+    <div class="post-comments" itemprop="comment">
+      <hr />
+<h1>Comments</h1>
+
+<script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
+    </div>
+  
+
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+    <div class="wrapper">
+        
+  <div class="footer">
+    <a href="https://github.com/robertwe">
+      <i class="fa fa-github"></i> GitHub
+    </a>
+</div>
+
+
+
+<div class="footer">
+    <a href="https://stackoverflow.com/users/213377">
+      <i class="fa fa-stack-overflow"></i> StackOverflow
+    </a>
+  </div>
+
+
+<div class="footer">
+    <a href="https://linkedin.com/in/robertweclawski">
+      <i class="fa fa-linkedin"></i> LinkedIn
+    </a>
+  </div>
+
+<span class="footer">
+&copy;  - Powered by <a href="https://jekyllrb.com">Jekyll</a> &amp; <a href="https://github.com/yous/whiteglass">whiteglass</a> - Subscribe via <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</span>
+    </div>
+  </footer>
+
+  </body>
+
+</html>
