@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  
+  
+  <title>OpenTofu&#39;s enabled meta-argument - conditional resources without the count hack</title>
+  <meta name="description" content="In my previous post I wrote about migrating from Terraform to OpenTofu and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that: a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation via count. The feature is called enabled, it lives in the lifecycle block, it shipped in OpenTofu 1.11, and Terraform simply does not have it.">
+  
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument/">
+  
+  
+  <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
+
+  <link rel="icon"
+      type="image/png"
+      href="/favicon.png">
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+<!--
+ ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
+██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
+██║  ███╗██████╔╝█████╗  █████╗     ██║   ██║██╔██╗ ██║██║  ███╗███████╗    ██║
+██║   ██║██╔══██╗██╔══╝  ██╔══╝     ██║   ██║██║╚██╗██║██║   ██║╚════██║    ╚═╝
+╚██████╔╝██║  ██║███████╗███████╗   ██║   ██║██║ ╚████║╚██████╔╝███████║    ██╗
+ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
+-->
+
+
+  
+  <meta property="og:title" content="OpenTofu&#39;s enabled meta-argument - conditional resources without the count hack">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument/">
+  <meta property="og:description" content="In my previous post I wrote about migrating from Terraform to OpenTofu and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that: a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation via count. The feature is called enabled, it lives in the lifecycle block, it shipped in OpenTofu 1.11, and Terraform simply does not have it.">
+  
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:title" content="OpenTofu&#39;s enabled meta-argument - conditional resources withou...">
+  <meta name="twitter:description" content="In my previous post I wrote about migrating from Terraform to OpenTofu and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that: a small...">
+  
+  
+
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+
+  
+  
+  
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-50640818-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  
+
+
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Robert&#39;s notes</a>
+
+    <nav class="site-nav">
+      
+        
+        <a class="page-link" href="/">Main</a>
+      
+        
+        <a class="page-link" href="/archives/">Archives</a>
+      
+        
+        <a class="page-link" href="/stats/">Stats</a>
+      
+        
+        <a class="page-link" href="/contact/">Contact</a>
+      
+        
+        <a class="page-link" href="/about/">About</a>
+      
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    
+      <h1 class="post-title" itemprop="name headline">OpenTofu&#39;s enabled meta-argument - conditional resources without the count hack</h1>
+    
+    <p class="post-meta"><time datetime="2026-07-21T21:00:00+02:00" itemprop="datePublished">Jul 21, 2026</time> •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/categories/devops/">DevOps</a>
+      
+    
+  
+
+
+ •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/devops/">DevOps</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/opentofu/">OpenTofu</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/terraform/">Terraform</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/iac/">IaC</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+</p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>In my <a href="/2026/07/21/transition-to-opentofu/">previous post</a> I wrote about migrating from Terraform to OpenTofu
+and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that:
+a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation
+via <code class="language-plaintext highlighter-rouge">count</code>. The feature is called <code class="language-plaintext highlighter-rouge">enabled</code>, it lives in the <code class="language-plaintext highlighter-rouge">lifecycle</code> block, it shipped in OpenTofu 1.11,
+and Terraform simply does not have it.
+<!--more--></p>
+
+<h2 id="the-problem---the-count--condition--1--0-hack">The problem - the count = condition ? 1 : 0 hack</h2>
+
+<p>Everyone who has written any serious amount of HCL knows this pattern. You want to create a resource only in some
+environments - let’s say a bastion host that should exist in dev but not in prod. For years the only way was:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">variable</span> <span class="s2">"create_bastion"</span> <span class="p">{</span>
+  <span class="nx">type</span>    <span class="p">=</span> <span class="nx">bool</span>
+  <span class="nx">default</span> <span class="p">=</span> <span class="kc">false</span>
+<span class="p">}</span>
+
+<span class="nx">resource</span> <span class="s2">"aws_instance"</span> <span class="s2">"bastion"</span> <span class="p">{</span>
+  <span class="nx">count</span>         <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">create_bastion</span> <span class="err">?</span> <span class="mi">1</span> <span class="err">:</span> <span class="mi">0</span>
+  <span class="nx">ami</span>           <span class="p">=</span> <span class="nx">data</span><span class="err">.</span><span class="nx">aws_ami</span><span class="err">.</span><span class="nx">al2023</span><span class="err">.</span><span class="nx">id</span>
+  <span class="nx">instance_type</span> <span class="p">=</span> <span class="s2">"t3.micro"</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>It works, but look at what it does to the rest of your code. The resource is now a <em>list</em> with zero or one element,
+so every single reference has to deal with indices:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">output</span> <span class="s2">"bastion_ip"</span> <span class="p">{</span>
+  <span class="nx">value</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">create_bastion</span> <span class="err">?</span> <span class="nx">aws_instance</span><span class="err">.</span><span class="nx">bastion</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="err">.</span><span class="nx">public_ip</span> <span class="err">:</span> <span class="kc">null</span>
+<span class="p">}</span>
+
+<span class="nx">resource</span> <span class="s2">"aws_route53_record"</span> <span class="s2">"bastion"</span> <span class="p">{</span>
+  <span class="nx">count</span>   <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">create_bastion</span> <span class="err">?</span> <span class="mi">1</span> <span class="err">:</span> <span class="mi">0</span>
+  <span class="nx">name</span>    <span class="p">=</span> <span class="s2">"bastion"</span>
+  <span class="nx">type</span>    <span class="p">=</span> <span class="s2">"A"</span>
+  <span class="nx">ttl</span>     <span class="p">=</span> <span class="mi">300</span>
+  <span class="nx">records</span> <span class="p">=</span> <span class="p">[</span><span class="nx">aws_instance</span><span class="err">.</span><span class="nx">bastion</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="err">.</span><span class="nx">public_ip</span><span class="p">]</span>
+  <span class="nx">zone_id</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">zone_id</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">[0]</code> everywhere, the <code class="language-plaintext highlighter-rouge">one()</code> calls, the <code class="language-plaintext highlighter-rouge">try()</code> wrappers, the condition repeated in every dependent resource…
+And my favourite part: when you retrofit this pattern onto an already existing resource, the address in the state
+changes from <code class="language-plaintext highlighter-rouge">aws_instance.bastion</code> to <code class="language-plaintext highlighter-rouge">aws_instance.bastion[0]</code>, so without a <code class="language-plaintext highlighter-rouge">moved</code> block (or a manual <code class="language-plaintext highlighter-rouge">state mv</code>)
+the plan wants to destroy and recreate your instance. All of that just to express “create this thing or don’t”.</p>
+
+<h2 id="the-opentofu-way---lifecycle-enabled">The OpenTofu way - lifecycle enabled</h2>
+
+<p>Since OpenTofu 1.11 you can write this instead:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">resource</span> <span class="s2">"aws_instance"</span> <span class="s2">"bastion"</span> <span class="p">{</span>
+  <span class="nx">ami</span>           <span class="p">=</span> <span class="nx">data</span><span class="err">.</span><span class="nx">aws_ami</span><span class="err">.</span><span class="nx">al2023</span><span class="err">.</span><span class="nx">id</span>
+  <span class="nx">instance_type</span> <span class="p">=</span> <span class="s2">"t3.micro"</span>
+
+  <span class="nx">lifecycle</span> <span class="p">{</span>
+    <span class="nx">enabled</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">create_bastion</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>That’s it. No list, no indices, no address change. The resource keeps its normal singular address
+(<code class="language-plaintext highlighter-rouge">aws_instance.bastion</code>, not <code class="language-plaintext highlighter-rouge">aws_instance.bastion[0]</code>), and when it’s disabled it simply evaluates to <code class="language-plaintext highlighter-rouge">null</code>:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">output</span> <span class="s2">"bastion_ip"</span> <span class="p">{</span>
+  <span class="nx">value</span> <span class="p">=</span> <span class="nx">aws_instance</span><span class="err">.</span><span class="nx">bastion</span> <span class="err">!</span><span class="p">=</span> <span class="kc">null</span> <span class="err">?</span> <span class="nx">aws_instance</span><span class="err">.</span><span class="nx">bastion</span><span class="err">.</span><span class="nx">public_ip</span> <span class="err">:</span> <span class="kc">null</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>When you flip <code class="language-plaintext highlighter-rouge">enabled</code> to <code class="language-plaintext highlighter-rouge">false</code> on an existing resource, OpenTofu destroys the infrastructure object -
+exactly the same as it would with the <code class="language-plaintext highlighter-rouge">count</code> trick, but declared in a place that actually says what it means.</p>
+
+<h2 id="driving-it-from-an-environment-variable">Driving it from an environment variable</h2>
+
+<p>This is where it gets practical for CI/CD. Since <code class="language-plaintext highlighter-rouge">enabled</code> takes a regular variable, you can toggle resources
+per environment without touching any code, using the standard <code class="language-plaintext highlighter-rouge">TF_VAR_</code> mechanism:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># dev pipeline</span>
+<span class="nv">TF_VAR_create_bastion</span><span class="o">=</span><span class="nb">true </span>tofu apply
+
+<span class="c"># prod pipeline</span>
+<span class="nv">TF_VAR_create_bastion</span><span class="o">=</span><span class="nb">false </span>tofu apply
+</code></pre></div></div>
+
+<p>One codebase, one variable, and the dev environment gets its bastion while prod stays clean. No <code class="language-plaintext highlighter-rouge">-target</code>,
+no separate tfvars files if you don’t want them, and most importantly - no <code class="language-plaintext highlighter-rouge">[0]</code> spreading through the module.</p>
+
+<h2 id="it-works-on-modules-too">It works on modules too</h2>
+
+<p>For me this is actually the bigger deal. The <code class="language-plaintext highlighter-rouge">count</code> hack on a whole module is even more painful than on
+a single resource, because then <em>every</em> output reference becomes <code class="language-plaintext highlighter-rouge">module.thing[0].output</code>. With OpenTofu:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">module</span> <span class="s2">"monitoring"</span> <span class="p">{</span>
+  <span class="nx">source</span> <span class="p">=</span> <span class="s2">"./modules/monitoring"</span>
+
+  <span class="nx">lifecycle</span> <span class="p">{</span>
+    <span class="nx">enabled</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">enable_monitoring</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The whole monitoring stack becomes optional with three lines, and <code class="language-plaintext highlighter-rouge">module.monitoring</code> stays a singular reference.</p>
+
+<h2 id="things-to-keep-in-mind">Things to keep in mind</h2>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">enabled</code> is mutually exclusive with <code class="language-plaintext highlighter-rouge">count</code> and <code class="language-plaintext highlighter-rouge">for_each</code> - it is for the “zero or one” case,
+not for scaling. If you need N copies, <code class="language-plaintext highlighter-rouge">count</code>/<code class="language-plaintext highlighter-rouge">for_each</code> are still the right tools,</li>
+  <li>a disabled resource evaluates to <code class="language-plaintext highlighter-rouge">null</code>, so guard your references with <code class="language-plaintext highlighter-rouge">!= null</code> checks or <code class="language-plaintext highlighter-rouge">try()</code> -
+a direct attribute access on a disabled resource is an error,</li>
+  <li>when you <em>migrate</em> an existing <code class="language-plaintext highlighter-rouge">count = x ? 1 : 0</code> resource to <code class="language-plaintext highlighter-rouge">enabled</code>, the state address changes
+from <code class="language-plaintext highlighter-rouge">foo[0]</code> back to <code class="language-plaintext highlighter-rouge">foo</code>, so add a <code class="language-plaintext highlighter-rouge">moved</code> block for the transition:</li>
+</ul>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">moved</span> <span class="p">{</span>
+  <span class="nx">from</span> <span class="p">=</span> <span class="nx">aws_instance</span><span class="err">.</span><span class="nx">bastion</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="nx">to</span>   <span class="p">=</span> <span class="nx">aws_instance</span><span class="err">.</span><span class="nx">bastion</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>and the obvious one: this is OpenTofu 1.11+ only. Terraform does not support it (the corresponding
+feature request has been open on the HashiCorp side for years), so once you start using <code class="language-plaintext highlighter-rouge">enabled</code>,
+your code is no longer portable back to Terraform. For me that ship has sailed anyway.</li>
+</ul>
+
+<h2 id="verdict">Verdict</h2>
+
+<p>It’s a small feature, but it removes a hack we have all been copy-pasting for a decade and it makes the
+intent readable: “this resource exists only when this flag says so”. This is exactly the kind of
+quality-of-life improvement I hoped to see when the community took over the project. If you are still
+maintaining a pile of <code class="language-plaintext highlighter-rouge">count = var.enabled ? 1 : 0</code> - this alone might be worth the upgrade to 1.11.</p>
+
+<p>Full details in the <a href="https://opentofu.org/docs/language/meta-arguments/enabled/">official docs</a>.</p>
+
+<p>–
+cheers</p>
+
+  </div>
+
+  
+    <div class="post-comments" itemprop="comment">
+      <hr />
+<h1>Comments</h1>
+
+<script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
+    </div>
+  
+
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+    <div class="wrapper">
+        
+  <div class="footer">
+    <a href="https://github.com/robertwe">
+      <i class="fa fa-github"></i> GitHub
+    </a>
+</div>
+
+
+
+<div class="footer">
+    <a href="https://stackoverflow.com/users/213377">
+      <i class="fa fa-stack-overflow"></i> StackOverflow
+    </a>
+  </div>
+
+
+<div class="footer">
+    <a href="https://linkedin.com/in/robertweclawski">
+      <i class="fa fa-linkedin"></i> LinkedIn
+    </a>
+  </div>
+
+<span class="footer">
+&copy;  - Powered by <a href="https://jekyllrb.com">Jekyll</a> &amp; <a href="https://github.com/yous/whiteglass">whiteglass</a> - Subscribe via <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</span>
+    </div>
+  </footer>
+
+  </body>
+
+</html>

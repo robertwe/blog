@@ -5,7 +5,7 @@
   
   <link href="https://roberts-notes.blog/feed.xml" rel="self" type="application/atom+xml" />
   <link href="https://roberts-notes.blog/" rel="alternate" type="text/html" />
-  <updated>2026-07-21T19:53:24+02:00</updated>
+  <updated>2026-07-21T21:33:41+02:00</updated>
   <id>https://roberts-notes.blog//</id>
 
   
@@ -19,6 +19,185 @@
 
   
 
+  
+  
+    <entry>
+      
+      <title type="html">OpenTofu’s enabled meta-argument - conditional resources without the count hack</title>
+      
+      
+      <link href="https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument/" rel="alternate" type="text/html" title="OpenTofu's enabled meta-argument - conditional resources without the count hack" />
+      
+      <published>2026-07-21T21:00:00+02:00</published>
+      <updated>2026-07-21T21:00:00+02:00</updated>
+      <id>https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument</id>
+      <content type="html" xml:base="https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument/">&lt;p&gt;In my &lt;a href=&quot;/2026/07/21/transition-to-opentofu/&quot;&gt;previous post&lt;/a&gt; I wrote about migrating from Terraform to OpenTofu
+and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that:
+a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation
+via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;count&lt;/code&gt;. The feature is called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;enabled&lt;/code&gt;, it lives in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lifecycle&lt;/code&gt; block, it shipped in OpenTofu 1.11,
+and Terraform simply does not have it.
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;the-problem---the-count--condition--1--0-hack&quot;&gt;The problem - the count = condition ? 1 : 0 hack&lt;/h2&gt;
+
+&lt;p&gt;Everyone who has written any serious amount of HCL knows this pattern. You want to create a resource only in some
+environments - let’s say a bastion host that should exist in dev but not in prod. For years the only way was:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;variable&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;create_bastion&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;bool&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_instance&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;bastion&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;count&lt;/span&gt;         &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;create_bastion&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;ami&lt;/span&gt;           &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;aws_ami&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;al2023&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;instance_type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;t3.micro&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It works, but look at what it does to the rest of your code. The resource is now a &lt;em&gt;list&lt;/em&gt; with zero or one element,
+so every single reference has to deal with indices:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;output&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;bastion_ip&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;create_bastion&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_instance&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;bastion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;public_ip&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_route53_record&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;bastion&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;count&lt;/span&gt;   &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;create_bastion&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;bastion&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;A&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;ttl&lt;/span&gt;     &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;300&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;records&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;aws_instance&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;bastion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;public_ip&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;zone_id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;zone_id&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[0]&lt;/code&gt; everywhere, the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;one()&lt;/code&gt; calls, the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;try()&lt;/code&gt; wrappers, the condition repeated in every dependent resource…
+And my favourite part: when you retrofit this pattern onto an already existing resource, the address in the state
+changes from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws_instance.bastion&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws_instance.bastion[0]&lt;/code&gt;, so without a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;moved&lt;/code&gt; block (or a manual &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;state mv&lt;/code&gt;)
+the plan wants to destroy and recreate your instance. All of that just to express “create this thing or don’t”.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-opentofu-way---lifecycle-enabled&quot;&gt;The OpenTofu way - lifecycle enabled&lt;/h2&gt;
+
+&lt;p&gt;Since OpenTofu 1.11 you can write this instead:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_instance&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;bastion&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;ami&lt;/span&gt;           &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;aws_ami&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;al2023&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;instance_type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;t3.micro&quot;&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;lifecycle&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;enabled&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;create_bastion&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That’s it. No list, no indices, no address change. The resource keeps its normal singular address
+(&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws_instance.bastion&lt;/code&gt;, not &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws_instance.bastion[0]&lt;/code&gt;), and when it’s disabled it simply evaluates to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;null&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;output&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;bastion_ip&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_instance&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;bastion&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_instance&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;bastion&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;public_ip&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;When you flip &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;enabled&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;false&lt;/code&gt; on an existing resource, OpenTofu destroys the infrastructure object -
+exactly the same as it would with the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;count&lt;/code&gt; trick, but declared in a place that actually says what it means.&lt;/p&gt;
+
+&lt;h2 id=&quot;driving-it-from-an-environment-variable&quot;&gt;Driving it from an environment variable&lt;/h2&gt;
+
+&lt;p&gt;This is where it gets practical for CI/CD. Since &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;enabled&lt;/code&gt; takes a regular variable, you can toggle resources
+per environment without touching any code, using the standard &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;TF_VAR_&lt;/code&gt; mechanism:&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# dev pipeline&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;TF_VAR_create_bastion&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;true &lt;/span&gt;tofu apply
+
+&lt;span class=&quot;c&quot;&gt;# prod pipeline&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;TF_VAR_create_bastion&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;false &lt;/span&gt;tofu apply
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;One codebase, one variable, and the dev environment gets its bastion while prod stays clean. No &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-target&lt;/code&gt;,
+no separate tfvars files if you don’t want them, and most importantly - no &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[0]&lt;/code&gt; spreading through the module.&lt;/p&gt;
+
+&lt;h2 id=&quot;it-works-on-modules-too&quot;&gt;It works on modules too&lt;/h2&gt;
+
+&lt;p&gt;For me this is actually the bigger deal. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;count&lt;/code&gt; hack on a whole module is even more painful than on
+a single resource, because then &lt;em&gt;every&lt;/em&gt; output reference becomes &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;module.thing[0].output&lt;/code&gt;. With OpenTofu:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;monitoring&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;source&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;./modules/monitoring&quot;&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;lifecycle&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;enabled&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;enable_monitoring&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The whole monitoring stack becomes optional with three lines, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;module.monitoring&lt;/code&gt; stays a singular reference.&lt;/p&gt;
+
+&lt;h2 id=&quot;things-to-keep-in-mind&quot;&gt;Things to keep in mind&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;enabled&lt;/code&gt; is mutually exclusive with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;count&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;for_each&lt;/code&gt; - it is for the “zero or one” case,
+not for scaling. If you need N copies, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;count&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;for_each&lt;/code&gt; are still the right tools,&lt;/li&gt;
+  &lt;li&gt;a disabled resource evaluates to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;null&lt;/code&gt;, so guard your references with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;!= null&lt;/code&gt; checks or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;try()&lt;/code&gt; -
+a direct attribute access on a disabled resource is an error,&lt;/li&gt;
+  &lt;li&gt;when you &lt;em&gt;migrate&lt;/em&gt; an existing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;count = x ? 1 : 0&lt;/code&gt; resource to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;enabled&lt;/code&gt;, the state address changes
+from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foo[0]&lt;/code&gt; back to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;foo&lt;/code&gt;, so add a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;moved&lt;/code&gt; block for the transition:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;moved&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_instance&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;bastion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;to&lt;/span&gt;   &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_instance&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;bastion&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;and the obvious one: this is OpenTofu 1.11+ only. Terraform does not support it (the corresponding
+feature request has been open on the HashiCorp side for years), so once you start using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;enabled&lt;/code&gt;,
+your code is no longer portable back to Terraform. For me that ship has sailed anyway.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;verdict&quot;&gt;Verdict&lt;/h2&gt;
+
+&lt;p&gt;It’s a small feature, but it removes a hack we have all been copy-pasting for a decade and it makes the
+intent readable: “this resource exists only when this flag says so”. This is exactly the kind of
+quality-of-life improvement I hoped to see when the community took over the project. If you are still
+maintaining a pile of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;count = var.enabled ? 1 : 0&lt;/code&gt; - this alone might be worth the upgrade to 1.11.&lt;/p&gt;
+
+&lt;p&gt;Full details in the &lt;a href=&quot;https://opentofu.org/docs/language/meta-arguments/enabled/&quot;&gt;official docs&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;–
+cheers&lt;/p&gt;</content>
+
+      
+      
+      
+      
+      
+
+      
+
+      
+        <category term="DevOps" />
+      
+
+      
+        <category term="DevOps" />
+      
+        <category term="OpenTofu" />
+      
+        <category term="Terraform" />
+      
+        <category term="IaC" />
+      
+
+      
+        <summary type="html">In my previous post I wrote about migrating from Terraform to OpenTofu and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that: a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation via count. The feature is called enabled, it lives in the lifecycle block, it shipped in OpenTofu 1.11, and Terraform simply does not have it.</summary>
+      
+
+      
+      
+    </entry>
+  
   
   
     <entry>
