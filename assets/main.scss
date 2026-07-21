@@ -76,9 +76,15 @@ span.footer {
     font-weight: bold;
     text-align: center;
 }
-.highlight .k { 
+.highlight .k {
     color: #204a87;
     font-weight: bold;
+}
+// Rouge marks tokens its lexer can't parse (e.g. dots in HCL) as .err
+// and paints them with a highlight background - render them as plain text
+.highlight .err {
+    color: inherit;
+    background-color: transparent;
 }
 
 .post-title {
