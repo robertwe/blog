@@ -79,7 +79,15 @@ Standard Kubernetes `NetworkPolicy` (including what the AWS VPC CNI enforces nat
 IP/label-based - no FQDN field, same problem as security groups. But CNIs with extended policy engines
 do support DNS-based egress rules:
 
-  - **Cilium** - `CiliumNetworkPolicy` with `toFQDNs`. Cilium's agent snoops DNS responses (you add a
+  - **Cilium** - a word about it first, because this is not just another CNI plugin. Cilium is an
+    eBPF-based networking stack for Kubernetes (a CNCF *graduated* project, same status as Kubernetes
+    itself, and the default data plane in GKE and in EKS-Anywhere). Instead of iptables chains it loads
+    eBPF programs directly into the kernel, which is what makes things like identity-aware L7 policies,
+    kube-proxy replacement and the Hubble observability layer possible - and it's exactly this
+    architecture that enables the DNS-aware policies below. On EKS you can run it on top of the VPC CNI
+    (chaining mode) or as a full replacement for it.
+
+    For our problem the interesting piece is `CiliumNetworkPolicy` with `toFQDNs`. Cilium's agent snoops DNS responses (you add a
     `rules.dns` section so it proxies/observes DNS), builds an IP↔name mapping per pod, and enforces
     egress against the *names*:
 

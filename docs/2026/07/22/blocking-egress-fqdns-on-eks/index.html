@@ -584,9 +584,19 @@ IP/label-based - no FQDN field, same problem as security groups. But CNIs with e
 do support DNS-based egress rules:</p>
 
 <ul>
-  <li><strong>Cilium</strong> - <code class="language-plaintext highlighter-rouge">CiliumNetworkPolicy</code> with <code class="language-plaintext highlighter-rouge">toFQDNs</code>. Cilium’s agent snoops DNS responses (you add a
+  <li>
+    <p><strong>Cilium</strong> - a word about it first, because this is not just another CNI plugin. Cilium is an
+eBPF-based networking stack for Kubernetes (a CNCF <em>graduated</em> project, same status as Kubernetes
+itself, and the default data plane in GKE and in EKS-Anywhere). Instead of iptables chains it loads
+eBPF programs directly into the kernel, which is what makes things like identity-aware L7 policies,
+kube-proxy replacement and the Hubble observability layer possible - and it’s exactly this
+architecture that enables the DNS-aware policies below. On EKS you can run it on top of the VPC CNI
+(chaining mode) or as a full replacement for it.</p>
+
+    <p>For our problem the interesting piece is <code class="language-plaintext highlighter-rouge">CiliumNetworkPolicy</code> with <code class="language-plaintext highlighter-rouge">toFQDNs</code>. Cilium’s agent snoops DNS responses (you add a
 <code class="language-plaintext highlighter-rouge">rules.dns</code> section so it proxies/observes DNS), builds an IP↔name mapping per pod, and enforces
-egress against the <em>names</em>:</li>
+egress against the <em>names</em>:</p>
+  </li>
 </ul>
 
 <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">cilium.io/v2</span>
