@@ -25,7 +25,7 @@ My day-to-day toolbox:
     CloudWatch and friends,
   - [_Python_](https://www.python.org/) - my go-to for scripts and glue code, a lot of it running as AWS Lambdas,
   - CI/CD - GitHub Actions and Jenkins (including automating Jenkins itself - DSL, pipelines),
-  - [_Docker_](https://www.docker.com/) and containers in general.
+  - [_Podman_](https://podman.io/) / [_OrbStack_](https://orbstack.dev/) and containers in general.
 
 In the past I also spent serious time with PHP (Laravel, Symfony), Node.js, SaltStack, Packer and Serverless
 Framework - they all taught me something, even if they are no longer in daily rotation.
@@ -33,6 +33,6 @@ Framework - they all taught me something, even if they are no longer in daily ro
 You can find me on [GitHub](https://github.com/robertwe) and
 [LinkedIn](https://www.linkedin.com/in/robertweclawski).
 
-`Email: robert.weclawski@mykolab.com`
+`Email: umberto.eco@abyss.rest`
 `KeyID: 0x47743A17`
 `Fingerprint: E967 8AE5 7D98 965F A0DE 66CC 9469 2712 4774 3A17`
