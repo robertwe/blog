@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  
+  
+  <title>Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example</title>
+  <meta name="description" content="In the previous post I compared the options for blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall is the cheapest seatbelt you can put on a VPC. Talk is cheap though, so here is the whole thing as working OpenTofu code: a custom blocklist, the rule group, the VPC association, fail-mode configuration and query logging so you can actually see what gets blocked. Tested with OpenTofu 1.12.">
+  
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/">
+  
+  
+  <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
+
+  <link rel="icon"
+      type="image/png"
+      href="/favicon.png">
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+<!--
+ ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
+██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
+██║  ███╗██████╔╝█████╗  █████╗     ██║   ██║██╔██╗ ██║██║  ███╗███████╗    ██║
+██║   ██║██╔══██╗██╔══╝  ██╔══╝     ██║   ██║██║╚██╗██║██║   ██║╚════██║    ╚═╝
+╚██████╔╝██║  ██║███████╗███████╗   ██║   ██║██║ ╚████║╚██████╔╝███████║    ██╗
+ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
+-->
+
+
+  
+  <meta property="og:title" content="Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/">
+  <meta property="og:description" content="In the previous post I compared the options for blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall is the cheapest seatbelt you can put on a VPC. Talk is cheap though, so here is the whole thing as working OpenTofu code: a custom blocklist, the rule group, the VPC association, fail-mode configuration and query logging so you can actually see what gets blocked. Tested with OpenTofu 1.12.">
+  
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:title" content="Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example">
+  <meta name="twitter:description" content="In the previous post I compared the options for blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall is the cheapest seatbelt you can put on a ...">
+  
+  
+
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+
+  
+  
+  
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-WY8Y4X9RJF');
+    </script>
+  
+
+
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Robert&#39;s notes</a>
+
+    <nav class="site-nav">
+      
+        
+        <a class="page-link" href="/">Main</a>
+      
+        
+        <a class="page-link" href="/archives/">Archives</a>
+      
+        
+        <a class="page-link" href="/stats/">Stats</a>
+      
+        
+        <a class="page-link" href="/contact/">Contact</a>
+      
+        
+        <a class="page-link" href="/about/">About</a>
+      
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    
+      <h1 class="post-title" itemprop="name headline">Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example</h1>
+    
+    <p class="post-meta"><time datetime="2026-07-22T23:30:00+02:00" itemprop="datePublished">Jul 22, 2026</time> •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/categories/devops/">DevOps</a>
+      
+    
+  
+
+
+ •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/devops/">DevOps</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/aws/">AWS</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/opentofu/">OpenTofu</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/iac/">IaC</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/security/">Security</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/networking/">Networking</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+</p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>In the <a href="/2026/07/22/blocking-egress-fqdns-on-eks/">previous post</a> I compared the options for
+blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall
+is the cheapest seatbelt you can put on a VPC. Talk is cheap though, so here is the whole thing as working
+OpenTofu code: a custom blocklist, the rule group, the VPC association, fail-mode configuration and query
+logging so you can actually see what gets blocked. Tested with OpenTofu 1.12.
+<!--more--></p>
+
+<h2 id="the-moving-parts">The moving parts</h2>
+
+<p>DNS Firewall is four resources stacked on top of each other, and the names are a mouthful:</p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">aws_route53_resolver_firewall_domain_list</code> - the list of domains,</li>
+  <li><code class="language-plaintext highlighter-rouge">aws_route53_resolver_firewall_rule_group</code> - a container for rules,</li>
+  <li><code class="language-plaintext highlighter-rouge">aws_route53_resolver_firewall_rule</code> - “for this domain list, do BLOCK/ALERT/ALLOW”,</li>
+  <li><code class="language-plaintext highlighter-rouge">aws_route53_resolver_firewall_rule_group_association</code> - attaches the rule group to a VPC.</li>
+</ol>
+
+<p>Everything the VPC resolver (the <code class="language-plaintext highlighter-rouge">.2</code> address) answers goes through the associated rule groups in priority
+order. No routing changes, no agents, applies to every instance and every EKS pod in the VPC immediately.</p>
+
+<h2 id="variables">Variables</h2>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">variable</span> <span class="s2">"vpc_id"</span> <span class="p">{</span>
+  <span class="nx">type</span> <span class="p">=</span> <span class="nx">string</span>
+<span class="p">}</span>
+
+<span class="nx">variable</span> <span class="s2">"blocked_domains"</span> <span class="p">{</span>
+  <span class="nx">description</span> <span class="p">=</span> <span class="s2">"Domains to block, apex only - wildcards are added automatically"</span>
+  <span class="nx">type</span>        <span class="p">=</span> <span class="nx">set</span><span class="err">(</span><span class="nx">string</span><span class="err">)</span>
+  <span class="nx">default</span> <span class="p">=</span> <span class="p">[</span>
+    <span class="s2">"evil-domain.com"</span><span class="p">,</span>
+    <span class="s2">"definitely-not-crypto-mining.io"</span><span class="p">,</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="nx">variable</span> <span class="s2">"enable_query_logging"</span> <span class="p">{</span>
+  <span class="nx">type</span>    <span class="p">=</span> <span class="nx">bool</span>
+  <span class="nx">default</span> <span class="p">=</span> <span class="kc">true</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>One quirk worth knowing before we start: an entry <code class="language-plaintext highlighter-rouge">evil-domain.com</code> matches <em>only</em> the apex, not
+<code class="language-plaintext highlighter-rouge">www.evil-domain.com</code>. To block a domain and everything under it you need two entries - the apex and the
+<code class="language-plaintext highlighter-rouge">*.</code> wildcard. Nobody wants to maintain that by hand, so a local doubles the list for us:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">locals</span> <span class="p">{</span>
+  <span class="c1"># each domain becomes itself + wildcard: evil.com, *.evil.com</span>
+  <span class="nx">blocked_fqdns</span> <span class="p">=</span> <span class="nx">flatten</span><span class="err">(</span><span class="p">[</span><span class="nx">for</span> <span class="nx">d</span> <span class="nx">in</span> <span class="nx">var</span><span class="err">.</span><span class="nx">blocked_domains</span> <span class="err">:</span> <span class="p">[</span><span class="nx">d</span><span class="p">,</span> <span class="s2">"*.${d}"</span><span class="p">]]</span><span class="err">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="the-blocklist-itself">The blocklist itself</h2>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">terraform</span> <span class="p">{</span>
+  <span class="nx">required_version</span> <span class="p">=</span> <span class="s2">"&gt;= 1.12"</span>
+
+  <span class="nx">required_providers</span> <span class="p">{</span>
+    <span class="nx">aws</span> <span class="p">=</span> <span class="p">{</span>
+      <span class="nx">source</span>  <span class="p">=</span> <span class="s2">"hashicorp/aws"</span>
+      <span class="nx">version</span> <span class="p">=</span> <span class="s2">"&gt;= 5.0"</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">resource</span> <span class="s2">"aws_route53_resolver_firewall_domain_list"</span> <span class="s2">"blocklist"</span> <span class="p">{</span>
+  <span class="nx">name</span>    <span class="p">=</span> <span class="s2">"egress-blocklist"</span>
+  <span class="nx">domains</span> <span class="p">=</span> <span class="nx">local</span><span class="err">.</span><span class="nx">blocked_fqdns</span>
+<span class="p">}</span>
+
+<span class="nx">resource</span> <span class="s2">"aws_route53_resolver_firewall_rule_group"</span> <span class="s2">"egress"</span> <span class="p">{</span>
+  <span class="nx">name</span> <span class="p">=</span> <span class="s2">"egress-filtering"</span>
+<span class="p">}</span>
+
+<span class="nx">resource</span> <span class="s2">"aws_route53_resolver_firewall_rule"</span> <span class="s2">"block"</span> <span class="p">{</span>
+  <span class="nx">name</span>                    <span class="p">=</span> <span class="s2">"block-denied-domains"</span>
+  <span class="nx">firewall_rule_group_id</span>  <span class="p">=</span> <span class="nx">aws_route53_resolver_firewall_rule_group</span><span class="err">.</span><span class="nx">egress</span><span class="err">.</span><span class="nx">id</span>
+  <span class="nx">firewall_domain_list_id</span> <span class="p">=</span> <span class="nx">aws_route53_resolver_firewall_domain_list</span><span class="err">.</span><span class="nx">blocklist</span><span class="err">.</span><span class="nx">id</span>
+  <span class="nx">priority</span>                <span class="p">=</span> <span class="mi">100</span>
+
+  <span class="nx">action</span>         <span class="p">=</span> <span class="s2">"BLOCK"</span>
+  <span class="nx">block_response</span> <span class="p">=</span> <span class="s2">"NXDOMAIN"</span>
+<span class="p">}</span>
+
+<span class="nx">resource</span> <span class="s2">"aws_route53_resolver_firewall_rule_group_association"</span> <span class="s2">"vpc"</span> <span class="p">{</span>
+  <span class="nx">name</span>                   <span class="p">=</span> <span class="s2">"egress-filtering"</span>
+  <span class="nx">firewall_rule_group_id</span> <span class="p">=</span> <span class="nx">aws_route53_resolver_firewall_rule_group</span><span class="err">.</span><span class="nx">egress</span><span class="err">.</span><span class="nx">id</span>
+  <span class="nx">vpc_id</span>                 <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">vpc_id</span>
+  <span class="nx">priority</span>               <span class="p">=</span> <span class="mi">101</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Notes on the non-obvious bits:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">block_response</code> can be <code class="language-plaintext highlighter-rouge">NXDOMAIN</code> (“no such domain”), <code class="language-plaintext highlighter-rouge">NODATA</code> (“domain exists, no such record”)
+or <code class="language-plaintext highlighter-rouge">OVERRIDE</code>. I use NXDOMAIN - it makes clients fail fast instead of retrying other record types,</li>
+  <li>rule <code class="language-plaintext highlighter-rouge">priority</code> orders rules <em>within</em> the group, association <code class="language-plaintext highlighter-rouge">priority</code> orders rule groups <em>per VPC</em> -
+and the association one must be between 100 and 9900 (exclusive). First custom group → 101,</li>
+  <li><code class="language-plaintext highlighter-rouge">action = "ALERT"</code> instead of <code class="language-plaintext highlighter-rouge">BLOCK</code> is the dry-run mode: nothing is blocked, but matches show up
+in the query logs. Roll out with ALERT first, flip to BLOCK when the logs look sane.</li>
+</ul>
+
+<h2 id="the-override-variant---sinkholing">The override variant - sinkholing</h2>
+
+<p>Instead of NXDOMAIN you can answer the query with a record you control. Useful if you want to point
+blocked domains at an internal page (“this domain is blocked, contact #security”) - or a honeypot:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">resource</span> <span class="s2">"aws_route53_resolver_firewall_rule"</span> <span class="s2">"sinkhole"</span> <span class="p">{</span>
+  <span class="nx">name</span>                    <span class="p">=</span> <span class="s2">"sinkhole-denied-domains"</span>
+  <span class="nx">firewall_rule_group_id</span>  <span class="p">=</span> <span class="nx">aws_route53_resolver_firewall_rule_group</span><span class="err">.</span><span class="nx">egress</span><span class="err">.</span><span class="nx">id</span>
+  <span class="nx">firewall_domain_list_id</span> <span class="p">=</span> <span class="nx">aws_route53_resolver_firewall_domain_list</span><span class="err">.</span><span class="nx">blocklist</span><span class="err">.</span><span class="nx">id</span>
+  <span class="nx">priority</span>                <span class="p">=</span> <span class="mi">100</span>
+
+  <span class="nx">action</span>                  <span class="p">=</span> <span class="s2">"BLOCK"</span>
+  <span class="nx">block_response</span>          <span class="p">=</span> <span class="s2">"OVERRIDE"</span>
+  <span class="nx">block_override_dns_type</span> <span class="p">=</span> <span class="s2">"CNAME"</span>
+  <span class="nx">block_override_domain</span>   <span class="p">=</span> <span class="s2">"blocked.internal.example.com"</span>
+  <span class="nx">block_override_ttl</span>      <span class="p">=</span> <span class="mi">60</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>(Use this <em>or</em> the plain block rule, not both - one rule per domain list and priority.)</p>
+
+<h2 id="fail-mode">Fail mode</h2>
+
+<p>What happens when DNS Firewall itself has a bad day? By default the resolver <strong>fails open</strong> - if the
+firewall can’t evaluate a query, the query is answered anyway. For a blocklist that’s usually what you
+want (availability over filtering), but if your compliance people insist on fail-closed:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">resource</span> <span class="s2">"aws_route53_resolver_firewall_config"</span> <span class="s2">"this"</span> <span class="p">{</span>
+  <span class="nx">resource_id</span>        <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">vpc_id</span>
+  <span class="nx">firewall_fail_open</span> <span class="p">=</span> <span class="s2">"DISABLED"</span> <span class="c1"># DISABLED = fail closed</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="seeing-what-gets-blocked---query-logging">Seeing what gets blocked - query logging</h2>
+
+<p>A blocklist without logs is a blocklist you’ll never be able to debug. Resolver query logging captures
+every query in the VPC including the firewall action that was applied. This is also where the previous
+post’s <a href="/2026/07/21/opentofu-enabled-meta-argument/">OpenTofu enabled meta-argument</a> earns
+its keep - the whole logging stack becomes optional without a single <code class="language-plaintext highlighter-rouge">count</code> or <code class="language-plaintext highlighter-rouge">[0]</code>:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">resource</span> <span class="s2">"aws_cloudwatch_log_group"</span> <span class="s2">"dns_queries"</span> <span class="p">{</span>
+  <span class="nx">name</span>              <span class="p">=</span> <span class="s2">"/aws/route53-resolver/queries"</span>
+  <span class="nx">retention_in_days</span> <span class="p">=</span> <span class="mi">30</span>
+
+  <span class="nx">lifecycle</span> <span class="p">{</span>
+    <span class="nx">enabled</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">enable_query_logging</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">resource</span> <span class="s2">"aws_route53_resolver_query_log_config"</span> <span class="s2">"this"</span> <span class="p">{</span>
+  <span class="nx">name</span>            <span class="p">=</span> <span class="s2">"vpc-dns-queries"</span>
+  <span class="nx">destination_arn</span> <span class="p">=</span> <span class="nx">aws_cloudwatch_log_group</span><span class="err">.</span><span class="nx">dns_queries</span><span class="err">.</span><span class="nx">arn</span>
+
+  <span class="nx">lifecycle</span> <span class="p">{</span>
+    <span class="nx">enabled</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">enable_query_logging</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">resource</span> <span class="s2">"aws_route53_resolver_query_log_config_association"</span> <span class="s2">"vpc"</span> <span class="p">{</span>
+  <span class="nx">resolver_query_log_config_id</span> <span class="p">=</span> <span class="nx">aws_route53_resolver_query_log_config</span><span class="err">.</span><span class="nx">this</span><span class="err">.</span><span class="nx">id</span>
+  <span class="nx">resource_id</span>                  <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">vpc_id</span>
+
+  <span class="nx">lifecycle</span> <span class="p">{</span>
+    <span class="nx">enabled</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">enable_query_logging</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>A blocked query lands in CloudWatch looking like this - <code class="language-plaintext highlighter-rouge">firewall_rule_action</code> is the field to filter on:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"query_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"evil-domain.com."</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"query_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"rcode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NXDOMAIN"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"firewall_rule_action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BLOCK"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"firewall_rule_group_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rslvr-frg-0123456789abcdef"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"firewall_domain_list_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"rslvr-fdl-0123456789abcdef"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="does-it-work">Does it work?</h2>
+
+<p>From any instance or pod in the VPC:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>dig +short amazon.com
+205.251.242.103
+54.239.28.85
+
+<span class="nv">$ </span>dig evil-domain.com
+
+<span class="p">;;</span> -&gt;&gt;HEADER<span class="o">&lt;&lt;-</span> <span class="no">opcode</span><span class="sh">: QUERY, status: NXDOMAIN, id: 47017
+;; QUESTION SECTION:
+;evil-domain.com.               IN      A
+</span></code></pre></div></div>
+
+<p>NXDOMAIN, no packets ever left the VPC. And the same for <code class="language-plaintext highlighter-rouge">www.evil-domain.com</code>, thanks to the wildcard
+entry the local generated.</p>
+
+<h2 id="dont-forget-the-side-door">Don’t forget the side door</h2>
+
+<p>As I wrote in the previous post - DNS Firewall only filters queries that go through the VPC resolver.
+A pod pointing at <code class="language-plaintext highlighter-rouge">8.8.8.8</code> walks right past it. Close that hole at the security group / NACL level by
+blocking outbound port 53 to anything that isn’t the VPC resolver, and the DNS path is sealed. (Direct
+connections to hardcoded IPs remain out of scope - that’s Network Firewall territory and Network Firewall
+pricing.)</p>
+
+<p>Also worth knowing: AWS ships managed domain lists (malware, botnet C2, DGA domains - names like
+<code class="language-plaintext highlighter-rouge">AWSManagedDomainsMalwareDomainList</code>) that you can reference in a rule the same way as your own list.
+A custom blocklist for policy plus the managed malware list for hygiene is a solid default combo.</p>
+
+<h2 id="verdict">Verdict</h2>
+
+<p>Around sixty lines of HCL, no infrastructure changes, a few dollars a month - and every workload in the
+VPC stops resolving domains you’ve denylisted, with logs to prove it. As seatbelts go, hard to beat.</p>
+
+<p>Full resource reference in the
+<a href="https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_rule_group">provider docs</a>.</p>
+
+<p>–
+cheers</p>
+
+  </div>
+
+  
+    <div class="post-comments" itemprop="comment">
+      <hr />
+<h1>Comments</h1>
+
+<script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
+    </div>
+  
+
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+    <div class="wrapper">
+        
+  <div class="footer">
+    <a href="https://github.com/robertwe">
+      <i class="fa fa-github"></i> GitHub
+    </a>
+</div>
+
+
+
+<div class="footer">
+    <a href="https://stackoverflow.com/users/213377">
+      <i class="fa fa-stack-overflow"></i> StackOverflow
+    </a>
+  </div>
+
+
+<div class="footer">
+    <a href="https://linkedin.com/in/robertweclawski">
+      <i class="fa fa-linkedin"></i> LinkedIn
+    </a>
+  </div>
+
+<span class="footer">
+&copy;  - Powered by <a href="https://jekyllrb.com">Jekyll</a> &amp; <a href="https://github.com/yous/whiteglass">whiteglass</a> - Subscribe via <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</span>
+    </div>
+  </footer>
+
+  </body>
+
+</html>

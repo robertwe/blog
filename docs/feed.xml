@@ -5,7 +5,7 @@
   
   <link href="https://roberts-notes.blog/feed.xml" rel="self" type="application/atom+xml" />
   <link href="https://roberts-notes.blog/" rel="alternate" type="text/html" />
-  <updated>2026-07-22T23:41:53+02:00</updated>
+  <updated>2026-07-22T23:53:16+02:00</updated>
   <id>https://roberts-notes.blog//</id>
 
   
@@ -19,6 +19,276 @@
 
   
 
+  
+  
+    <entry>
+      
+      <title type="html">Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example</title>
+      
+      
+      <link href="https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/" rel="alternate" type="text/html" title="Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example" />
+      
+      <published>2026-07-22T23:30:00+02:00</published>
+      <updated>2026-07-22T23:30:00+02:00</updated>
+      <id>https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu</id>
+      <content type="html" xml:base="https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/">&lt;p&gt;In the &lt;a href=&quot;/2026/07/22/blocking-egress-fqdns-on-eks/&quot;&gt;previous post&lt;/a&gt; I compared the options for
+blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall
+is the cheapest seatbelt you can put on a VPC. Talk is cheap though, so here is the whole thing as working
+OpenTofu code: a custom blocklist, the rule group, the VPC association, fail-mode configuration and query
+logging so you can actually see what gets blocked. Tested with OpenTofu 1.12.
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;the-moving-parts&quot;&gt;The moving parts&lt;/h2&gt;
+
+&lt;p&gt;DNS Firewall is four resources stacked on top of each other, and the names are a mouthful:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws_route53_resolver_firewall_domain_list&lt;/code&gt; - the list of domains,&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws_route53_resolver_firewall_rule_group&lt;/code&gt; - a container for rules,&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws_route53_resolver_firewall_rule&lt;/code&gt; - “for this domain list, do BLOCK/ALERT/ALLOW”,&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws_route53_resolver_firewall_rule_group_association&lt;/code&gt; - attaches the rule group to a VPC.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Everything the VPC resolver (the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.2&lt;/code&gt; address) answers goes through the associated rule groups in priority
+order. No routing changes, no agents, applies to every instance and every EKS pod in the VPC immediately.&lt;/p&gt;
+
+&lt;h2 id=&quot;variables&quot;&gt;Variables&lt;/h2&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;variable&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;vpc_id&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;string&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;variable&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;blocked_domains&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;description&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Domains to block, apex only - wildcards are added automatically&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;        &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;evil-domain.com&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;s2&quot;&gt;&quot;definitely-not-crypto-mining.io&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;variable&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;enable_query_logging&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;bool&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;One quirk worth knowing before we start: an entry &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;evil-domain.com&lt;/code&gt; matches &lt;em&gt;only&lt;/em&gt; the apex, not
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;www.evil-domain.com&lt;/code&gt;. To block a domain and everything under it you need two entries - the apex and the
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*.&lt;/code&gt; wildcard. Nobody wants to maintain that by hand, so a local doubles the list for us:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;locals&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;# each domain becomes itself + wildcard: evil.com, *.evil.com&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;blocked_fqdns&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;flatten&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;blocked_domains&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;*.${d}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]]&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;the-blocklist-itself&quot;&gt;The blocklist itself&lt;/h2&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;terraform&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;required_version&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&amp;gt;= 1.12&quot;&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;required_providers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;source&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;hashicorp/aws&quot;&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;version&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&amp;gt;= 5.0&quot;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_route53_resolver_firewall_domain_list&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;blocklist&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;egress-blocklist&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;domains&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;local&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;blocked_fqdns&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_route53_resolver_firewall_rule_group&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;egress&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;egress-filtering&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_route53_resolver_firewall_rule&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;block&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;                    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;block-denied-domains&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;firewall_rule_group_id&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_route53_resolver_firewall_rule_group&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;egress&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;firewall_domain_list_id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_route53_resolver_firewall_domain_list&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;blocklist&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;priority&lt;/span&gt;                &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;action&lt;/span&gt;         &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;BLOCK&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;block_response&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;NXDOMAIN&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_route53_resolver_firewall_rule_group_association&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;vpc&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;                   &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;egress-filtering&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;firewall_rule_group_id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_route53_resolver_firewall_rule_group&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;egress&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;vpc_id&lt;/span&gt;                 &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;vpc_id&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;priority&lt;/span&gt;               &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;101&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Notes on the non-obvious bits:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;block_response&lt;/code&gt; can be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NXDOMAIN&lt;/code&gt; (“no such domain”), &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NODATA&lt;/code&gt; (“domain exists, no such record”)
+or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OVERRIDE&lt;/code&gt;. I use NXDOMAIN - it makes clients fail fast instead of retrying other record types,&lt;/li&gt;
+  &lt;li&gt;rule &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;priority&lt;/code&gt; orders rules &lt;em&gt;within&lt;/em&gt; the group, association &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;priority&lt;/code&gt; orders rule groups &lt;em&gt;per VPC&lt;/em&gt; -
+and the association one must be between 100 and 9900 (exclusive). First custom group → 101,&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;action = &quot;ALERT&quot;&lt;/code&gt; instead of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BLOCK&lt;/code&gt; is the dry-run mode: nothing is blocked, but matches show up
+in the query logs. Roll out with ALERT first, flip to BLOCK when the logs look sane.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;the-override-variant---sinkholing&quot;&gt;The override variant - sinkholing&lt;/h2&gt;
+
+&lt;p&gt;Instead of NXDOMAIN you can answer the query with a record you control. Useful if you want to point
+blocked domains at an internal page (“this domain is blocked, contact #security”) - or a honeypot:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_route53_resolver_firewall_rule&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;sinkhole&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;                    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;sinkhole-denied-domains&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;firewall_rule_group_id&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_route53_resolver_firewall_rule_group&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;egress&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;firewall_domain_list_id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_route53_resolver_firewall_domain_list&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;blocklist&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;priority&lt;/span&gt;                &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;action&lt;/span&gt;                  &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;BLOCK&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;block_response&lt;/span&gt;          &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;OVERRIDE&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;block_override_dns_type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;CNAME&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;block_override_domain&lt;/span&gt;   &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;blocked.internal.example.com&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;block_override_ttl&lt;/span&gt;      &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;60&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;(Use this &lt;em&gt;or&lt;/em&gt; the plain block rule, not both - one rule per domain list and priority.)&lt;/p&gt;
+
+&lt;h2 id=&quot;fail-mode&quot;&gt;Fail mode&lt;/h2&gt;
+
+&lt;p&gt;What happens when DNS Firewall itself has a bad day? By default the resolver &lt;strong&gt;fails open&lt;/strong&gt; - if the
+firewall can’t evaluate a query, the query is answered anyway. For a blocklist that’s usually what you
+want (availability over filtering), but if your compliance people insist on fail-closed:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_route53_resolver_firewall_config&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;this&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;resource_id&lt;/span&gt;        &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;vpc_id&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;firewall_fail_open&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;DISABLED&quot;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# DISABLED = fail closed&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;seeing-what-gets-blocked---query-logging&quot;&gt;Seeing what gets blocked - query logging&lt;/h2&gt;
+
+&lt;p&gt;A blocklist without logs is a blocklist you’ll never be able to debug. Resolver query logging captures
+every query in the VPC including the firewall action that was applied. This is also where the previous
+post’s &lt;a href=&quot;/2026/07/21/opentofu-enabled-meta-argument/&quot;&gt;OpenTofu enabled meta-argument&lt;/a&gt; earns
+its keep - the whole logging stack becomes optional without a single &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;count&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[0]&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_cloudwatch_log_group&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;dns_queries&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;              &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;/aws/route53-resolver/queries&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;retention_in_days&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;30&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;lifecycle&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;enabled&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;enable_query_logging&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_route53_resolver_query_log_config&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;this&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;            &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;vpc-dns-queries&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;destination_arn&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_cloudwatch_log_group&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dns_queries&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;arn&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;lifecycle&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;enabled&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;enable_query_logging&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_route53_resolver_query_log_config_association&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;vpc&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;resolver_query_log_config_id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws_route53_resolver_query_log_config&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;id&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;resource_id&lt;/span&gt;                  &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;vpc_id&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;lifecycle&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;enabled&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;enable_query_logging&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;A blocked query lands in CloudWatch looking like this - &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;firewall_rule_action&lt;/code&gt; is the field to filter on:&lt;/p&gt;
+
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;query_name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;evil-domain.com.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;query_type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;A&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;rcode&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;NXDOMAIN&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;firewall_rule_action&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;BLOCK&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;firewall_rule_group_id&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;rslvr-frg-0123456789abcdef&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;firewall_domain_list_id&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;rslvr-fdl-0123456789abcdef&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;does-it-work&quot;&gt;Does it work?&lt;/h2&gt;
+
+&lt;p&gt;From any instance or pod in the VPC:&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;dig +short amazon.com
+205.251.242.103
+54.239.28.85
+
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;dig evil-domain.com
+
+&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt; -&amp;gt;&amp;gt;HEADER&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;opcode&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;: QUERY, status: NXDOMAIN, id: 47017
+;; QUESTION SECTION:
+;evil-domain.com.               IN      A
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;NXDOMAIN, no packets ever left the VPC. And the same for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;www.evil-domain.com&lt;/code&gt;, thanks to the wildcard
+entry the local generated.&lt;/p&gt;
+
+&lt;h2 id=&quot;dont-forget-the-side-door&quot;&gt;Don’t forget the side door&lt;/h2&gt;
+
+&lt;p&gt;As I wrote in the previous post - DNS Firewall only filters queries that go through the VPC resolver.
+A pod pointing at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;8.8.8.8&lt;/code&gt; walks right past it. Close that hole at the security group / NACL level by
+blocking outbound port 53 to anything that isn’t the VPC resolver, and the DNS path is sealed. (Direct
+connections to hardcoded IPs remain out of scope - that’s Network Firewall territory and Network Firewall
+pricing.)&lt;/p&gt;
+
+&lt;p&gt;Also worth knowing: AWS ships managed domain lists (malware, botnet C2, DGA domains - names like
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AWSManagedDomainsMalwareDomainList&lt;/code&gt;) that you can reference in a rule the same way as your own list.
+A custom blocklist for policy plus the managed malware list for hygiene is a solid default combo.&lt;/p&gt;
+
+&lt;h2 id=&quot;verdict&quot;&gt;Verdict&lt;/h2&gt;
+
+&lt;p&gt;Around sixty lines of HCL, no infrastructure changes, a few dollars a month - and every workload in the
+VPC stops resolving domains you’ve denylisted, with logs to prove it. As seatbelts go, hard to beat.&lt;/p&gt;
+
+&lt;p&gt;Full resource reference in the
+&lt;a href=&quot;https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_rule_group&quot;&gt;provider docs&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;–
+cheers&lt;/p&gt;</content>
+
+      
+      
+      
+      
+      
+
+      
+
+      
+        <category term="DevOps" />
+      
+
+      
+        <category term="DevOps" />
+      
+        <category term="AWS" />
+      
+        <category term="OpenTofu" />
+      
+        <category term="IaC" />
+      
+        <category term="Security" />
+      
+        <category term="Networking" />
+      
+
+      
+        <summary type="html">In the previous post I compared the options for blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall is the cheapest seatbelt you can put on a VPC. Talk is cheap though, so here is the whole thing as working OpenTofu code: a custom blocklist, the rule group, the VPC association, fail-mode configuration and query logging so you can actually see what gets blocked. Tested with OpenTofu 1.12.</summary>
+      
+
+      
+      
+    </entry>
+  
   
   
     <entry>
