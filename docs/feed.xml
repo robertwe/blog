@@ -5,7 +5,7 @@
   
   <link href="https://roberts-notes.blog/feed.xml" rel="self" type="application/atom+xml" />
   <link href="https://roberts-notes.blog/" rel="alternate" type="text/html" />
-  <updated>2026-07-21T21:39:43+02:00</updated>
+  <updated>2026-07-22T23:31:26+02:00</updated>
   <id>https://roberts-notes.blog//</id>
 
   
@@ -19,6 +19,207 @@
 
   
 
+  
+  
+    <entry>
+      
+      <title type="html">Blocking egress to specific domains from an EKS cluster - what are the options?</title>
+      
+      
+      <link href="https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks/" rel="alternate" type="text/html" title="Blocking egress to specific domains from an EKS cluster - what are the options?" />
+      
+      <published>2026-07-22T21:00:00+02:00</published>
+      <updated>2026-07-22T21:00:00+02:00</updated>
+      <id>https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks</id>
+      <content type="html" xml:base="https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks/">&lt;p&gt;A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;evil-domain.com&lt;/code&gt;”
+(or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly
+annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS.
+A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game.
+Here is a rundown of the options that actually work with FQDNs, and what each one really gives you.
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;why-security-groups-and-nacls-are-out&quot;&gt;Why security groups and NACLs are out&lt;/h2&gt;
+
+&lt;p&gt;Just to get it off the table: security groups and network ACLs only accept CIDRs (or other SGs / prefix
+lists). There is no field to type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*.evil-domain.com&lt;/code&gt; into. You could resolve the domain periodically and
+sync the IPs into a prefix list with a Lambda, and people do build that - but for anything behind
+CloudFront/Cloudflare/Akamai the IP set changes constantly and is shared with thousands of other sites,
+so you either block too much or too little. Don’t build that. Use one of the tools below that was
+actually designed for the job.&lt;/p&gt;
+
+&lt;h2 id=&quot;option-1---route-53-resolver-dns-firewall&quot;&gt;Option 1 - Route 53 Resolver DNS Firewall&lt;/h2&gt;
+
+&lt;p&gt;The cheapest and simplest entry point. DNS Firewall sits in front of the VPC resolver (the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.2&lt;/code&gt; resolver
+that every VPC gets), and lets you attach rule groups to a VPC with domain lists:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;BLOCK&lt;/strong&gt; - the query for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;evil-domain.com&lt;/code&gt; returns NXDOMAIN, NODATA, or an OVERRIDE record you define
+(nice trick: override to a sinkhole/honeypot IP and alert on whoever hits it),&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;ALERT&lt;/strong&gt; - resolve normally but log the query,&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;ALLOW&lt;/strong&gt; - used to build allowlist setups: allow &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*.mycompany.com&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*.amazonaws.com&lt;/code&gt;, block &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;*&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Setup is pure Terraform/OpenTofu, no infrastructure changes, no re-routing, works instantly for the
+whole VPC - which means the whole EKS cluster, since pods (with the default VPC CNI + CoreDNS setup)
+ultimately forward queries to the VPC resolver.&lt;/p&gt;
+
+&lt;p&gt;The catch is fundamental though: &lt;strong&gt;it only filters DNS resolution, not traffic&lt;/strong&gt;. If a pod already knows
+the IP, or ships its own DNS-over-HTTPS client, or just uses &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;8.8.8.8&lt;/code&gt; directly, DNS Firewall never sees
+the query and the connection goes through. It’s a seatbelt against accidental/lazy egress, not against
+a determined adversary. Pair it with a NACL/SG rule blocking outbound &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;53&lt;/code&gt; to anything except the VPC
+resolver and you close the “just use another resolver” hole - but the “connect straight to the IP” hole
+stays open by design.&lt;/p&gt;
+
+&lt;p&gt;Pricing is per rule group association + per million queries, typically pocket change compared to the
+next option.&lt;/p&gt;
+
+&lt;h2 id=&quot;option-2---aws-network-firewall&quot;&gt;Option 2 - AWS Network Firewall&lt;/h2&gt;
+
+&lt;p&gt;The heavyweight. AWS Network Firewall is a managed stateful firewall you insert into the &lt;em&gt;packet path&lt;/em&gt; -
+traffic from your private subnets gets routed through firewall endpoints (usually placed in dedicated
+firewall subnets between your NAT gateway and the internet gateway, or in an inspection VPC in a hub-and-spoke
+setup with Transit Gateway).&lt;/p&gt;
+
+&lt;p&gt;Because it sees actual packets, it can block domains regardless of how they were resolved:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;for &lt;strong&gt;HTTPS&lt;/strong&gt; it matches the &lt;strong&gt;SNI&lt;/strong&gt; in the TLS ClientHello (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tls.sni&lt;/code&gt; in Suricata rule terms),&lt;/li&gt;
+  &lt;li&gt;for &lt;strong&gt;HTTP&lt;/strong&gt; it matches the &lt;strong&gt;Host header&lt;/strong&gt;,&lt;/li&gt;
+  &lt;li&gt;rules can be written as simple “domain list” rule groups (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.evil-domain.com&lt;/code&gt; denylist or an allowlist)
+or as full Suricata-compatible IPS rules if you need more,&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;So even a pod that hardcodes the IP still gets caught, because the TLS handshake announces the hostname.
+The remaining bypass is a client that uses encrypted ClientHello (ECH) or no SNI at all - rarer, and you
+can just drop no-SNI traffic in a strict setup.&lt;/p&gt;
+
+&lt;p&gt;The price you pay, literally: ~$0.395/h per firewall endpoint plus data processing per GB, and you want
+an endpoint per AZ. That’s roughly $300/month per AZ before traffic costs, plus the routing surgery on
+your VPC (firewall subnets, route table changes for IGW/NAT paths). For a compliance-driven environment
+this is the “proper” answer; for “I just want to block one domain” it’s a lot of machinery.&lt;/p&gt;
+
+&lt;p&gt;One EKS-specific note: Network Firewall sees traffic &lt;em&gt;after&lt;/em&gt; SNAT through the NAT gateway (or with the
+node’s IP), so rules are per-VPC/subnet, not per-pod. You can’t say “only the payments namespace can
+reach api.stripe.com” with it - that granularity lives one layer down, in the cluster itself.&lt;/p&gt;
+
+&lt;h2 id=&quot;option-3---fqdn-aware-network-policies-in-the-cluster&quot;&gt;Option 3 - FQDN-aware network policies in the cluster&lt;/h2&gt;
+
+&lt;p&gt;Standard Kubernetes &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NetworkPolicy&lt;/code&gt; (including what the AWS VPC CNI enforces natively on EKS) is also
+IP/label-based - no FQDN field, same problem as security groups. But CNIs with extended policy engines
+do support DNS-based egress rules:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Cilium&lt;/strong&gt; - &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CiliumNetworkPolicy&lt;/code&gt; with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;toFQDNs&lt;/code&gt;. Cilium’s agent snoops DNS responses (you add a
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;rules.dns&lt;/code&gt; section so it proxies/observes DNS), builds an IP↔name mapping per pod, and enforces
+egress against the &lt;em&gt;names&lt;/em&gt;:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;apiVersion&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;cilium.io/v2&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;kind&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;CiliumNetworkPolicy&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;metadata&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;allow-stripe-only&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;namespace&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;payments&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;spec&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;endpointSelector&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;{}&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;egress&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;toEndpoints&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;matchLabels&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;s&quot;&gt;k8s:io.kubernetes.pod.namespace: kube-system&lt;/span&gt;
+            &lt;span class=&quot;s&quot;&gt;k8s-app&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;kube-dns&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;toPorts&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;ports&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;53&quot;&lt;/span&gt;
+              &lt;span class=&quot;na&quot;&gt;protocol&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;ANY&lt;/span&gt;
+          &lt;span class=&quot;na&quot;&gt;rules&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;dns&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+              &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;matchPattern&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;*&quot;&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;toFQDNs&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;matchName&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;api.stripe.com&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Calico Enterprise / Calico Cloud&lt;/strong&gt; - &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;GlobalNetworkPolicy&lt;/code&gt; with domain names in egress rules
+(note: this is the paid tier; open-source Calico doesn’t do FQDN policies).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This is the only option that gives you &lt;strong&gt;per-namespace / per-pod granularity&lt;/strong&gt; - “this workload may talk
+to exactly these three domains” - which neither DNS Firewall nor Network Firewall can express. It’s also
+free (with Cilium) and doesn’t touch VPC routing.&lt;/p&gt;
+
+&lt;p&gt;The trade-offs: you’re changing (or configuring around) the cluster CNI, which on an existing EKS cluster
+running the VPC CNI is not a small decision - Cilium can run in chaining mode or replace the VPC CNI
+entirely, both need testing. And enforcement is DNS-snooping based: like DNS Firewall, a pod that never
+does a DNS lookup the agent can see (hardcoded IP) is enforced only by whatever IP/CIDR rules remain -
+the default-deny that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;toFQDNs&lt;/code&gt; policies imply is what saves you there.&lt;/p&gt;
+
+&lt;h2 id=&quot;option-4---an-egress-proxy&quot;&gt;Option 4 - an egress proxy&lt;/h2&gt;
+
+&lt;p&gt;The old-school answer that still works: run Squid/Envoy (or use a managed egress-proxy service) in the
+VPC, allow outbound traffic &lt;em&gt;only&lt;/em&gt; from the proxy (SG on the NAT path / no default route for pod subnets),
+and point workloads at it via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HTTP_PROXY&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HTTPS_PROXY&lt;/code&gt;. The proxy filters by hostname from the CONNECT
+request, logs everything, and can even do TLS inspection if you go down the MITM-CA rabbit hole.&lt;/p&gt;
+
+&lt;p&gt;It gives you great logs and hostname-level control without touching the CNI or paying for Network
+Firewall - but it’s explicit-proxy based, so every workload must cooperate (env vars, or an istio-style
+transparent redirect), and non-HTTP protocols need extra care. In Kubernetes-land, a service mesh
+(Istio/Cilium’s Envoy) with an egress gateway is the modern spelling of the same idea.&lt;/p&gt;
+
+&lt;h2 id=&quot;so-which-one&quot;&gt;So which one?&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;“Stop developers/pods from accidentally reaching known-bad or unsanctioned domains, cheaply”&lt;/strong&gt; →
+Route 53 DNS Firewall + block outbound 53 to non-VPC resolvers. An afternoon of work.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;“Compliance says all egress must be inspected and enforced on the wire”&lt;/strong&gt; →
+AWS Network Firewall with a domain allowlist on SNI/Host. Budget for it.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;“Different workloads need different egress allowlists”&lt;/strong&gt; →
+Cilium &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;toFQDNs&lt;/code&gt; policies (or Calico Enterprise). Only option with pod-level granularity.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;“We want full visibility of every egress request”&lt;/strong&gt; →
+egress proxy / egress gateway.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;They also compose: DNS Firewall as the cheap VPC-wide baseline plus Cilium policies for the sensitive
+namespaces is a very reasonable combination - defence in depth without the Network Firewall bill. And
+whatever you pick, remember the golden rule of egress filtering: &lt;strong&gt;denylists rot, allowlists work&lt;/strong&gt;.
+If you can enumerate what your workloads legitimately talk to, flip the model to default-deny and
+allow only that.&lt;/p&gt;
+
+&lt;p&gt;–
+cheers&lt;/p&gt;</content>
+
+      
+      
+      
+      
+      
+
+      
+
+      
+        <category term="DevOps" />
+      
+
+      
+        <category term="DevOps" />
+      
+        <category term="AWS" />
+      
+        <category term="EKS" />
+      
+        <category term="Kubernetes" />
+      
+        <category term="Security" />
+      
+        <category term="Networking" />
+      
+
+      
+        <summary type="html">A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to evil-domain.com” (or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS. A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game. Here is a rundown of the options that actually work with FQDNs, and what each one really gives you.</summary>
+      
+
+      
+      
+    </entry>
+  
   
   
     <entry>

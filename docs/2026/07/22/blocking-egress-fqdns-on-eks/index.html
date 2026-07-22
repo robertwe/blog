@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  
+  
+  <title>Blocking egress to specific domains from an EKS cluster - what are the options?</title>
+  <meta name="description" content="A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to evil-domain.com” (or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS. A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game. Here is a rundown of the options that actually work with FQDNs, and what each one really gives you.">
+  
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks/">
+  
+  
+  <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
+
+  <link rel="icon"
+      type="image/png"
+      href="/favicon.png">
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+<!--
+ ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
+██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
+██║  ███╗██████╔╝█████╗  █████╗     ██║   ██║██╔██╗ ██║██║  ███╗███████╗    ██║
+██║   ██║██╔══██╗██╔══╝  ██╔══╝     ██║   ██║██║╚██╗██║██║   ██║╚════██║    ╚═╝
+╚██████╔╝██║  ██║███████╗███████╗   ██║   ██║██║ ╚████║╚██████╔╝███████║    ██╗
+ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
+-->
+
+
+  
+  <meta property="og:title" content="Blocking egress to specific domains from an EKS cluster - what are the options?">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks/">
+  <meta property="og:description" content="A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to evil-domain.com” (or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS. A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game. Here is a rundown of the options that actually work with FQDNs, and what each one really gives you.">
+  
+  
+  <meta name="twitter:card" content="summary">
+  
+  <meta name="twitter:title" content="Blocking egress to specific domains from an EKS cluster - what are ...">
+  <meta name="twitter:description" content="A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to evil-domain.com” (or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surpr...">
+  
+  
+
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
+
+  
+  
+  
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-50640818-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  
+
+
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Robert&#39;s notes</a>
+
+    <nav class="site-nav">
+      
+        
+        <a class="page-link" href="/">Main</a>
+      
+        
+        <a class="page-link" href="/archives/">Archives</a>
+      
+        
+        <a class="page-link" href="/stats/">Stats</a>
+      
+        
+        <a class="page-link" href="/contact/">Contact</a>
+      
+        
+        <a class="page-link" href="/about/">About</a>
+      
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    
+      <h1 class="post-title" itemprop="name headline">Blocking egress to specific domains from an EKS cluster - what are the options?</h1>
+    
+    <p class="post-meta"><time datetime="2026-07-22T21:00:00+02:00" itemprop="datePublished">Jul 22, 2026</time> •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/categories/devops/">DevOps</a>
+      
+    
+  
+
+
+ •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/devops/">DevOps</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/aws/">AWS</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/eks/">EKS</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/kubernetes/">Kubernetes</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/security/">Security</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/networking/">Networking</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+</p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to <code class="language-plaintext highlighter-rouge">evil-domain.com</code>”
+(or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly
+annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS.
+A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game.
+Here is a rundown of the options that actually work with FQDNs, and what each one really gives you.
+<!--more--></p>
+
+<h2 id="why-security-groups-and-nacls-are-out">Why security groups and NACLs are out</h2>
+
+<p>Just to get it off the table: security groups and network ACLs only accept CIDRs (or other SGs / prefix
+lists). There is no field to type <code class="language-plaintext highlighter-rouge">*.evil-domain.com</code> into. You could resolve the domain periodically and
+sync the IPs into a prefix list with a Lambda, and people do build that - but for anything behind
+CloudFront/Cloudflare/Akamai the IP set changes constantly and is shared with thousands of other sites,
+so you either block too much or too little. Don’t build that. Use one of the tools below that was
+actually designed for the job.</p>
+
+<h2 id="option-1---route-53-resolver-dns-firewall">Option 1 - Route 53 Resolver DNS Firewall</h2>
+
+<p>The cheapest and simplest entry point. DNS Firewall sits in front of the VPC resolver (the <code class="language-plaintext highlighter-rouge">.2</code> resolver
+that every VPC gets), and lets you attach rule groups to a VPC with domain lists:</p>
+
+<ul>
+  <li><strong>BLOCK</strong> - the query for <code class="language-plaintext highlighter-rouge">evil-domain.com</code> returns NXDOMAIN, NODATA, or an OVERRIDE record you define
+(nice trick: override to a sinkhole/honeypot IP and alert on whoever hits it),</li>
+  <li><strong>ALERT</strong> - resolve normally but log the query,</li>
+  <li><strong>ALLOW</strong> - used to build allowlist setups: allow <code class="language-plaintext highlighter-rouge">*.mycompany.com</code>, <code class="language-plaintext highlighter-rouge">*.amazonaws.com</code>, block <code class="language-plaintext highlighter-rouge">*</code>.</li>
+</ul>
+
+<p>Setup is pure Terraform/OpenTofu, no infrastructure changes, no re-routing, works instantly for the
+whole VPC - which means the whole EKS cluster, since pods (with the default VPC CNI + CoreDNS setup)
+ultimately forward queries to the VPC resolver.</p>
+
+<p>The catch is fundamental though: <strong>it only filters DNS resolution, not traffic</strong>. If a pod already knows
+the IP, or ships its own DNS-over-HTTPS client, or just uses <code class="language-plaintext highlighter-rouge">8.8.8.8</code> directly, DNS Firewall never sees
+the query and the connection goes through. It’s a seatbelt against accidental/lazy egress, not against
+a determined adversary. Pair it with a NACL/SG rule blocking outbound <code class="language-plaintext highlighter-rouge">53</code> to anything except the VPC
+resolver and you close the “just use another resolver” hole - but the “connect straight to the IP” hole
+stays open by design.</p>
+
+<p>Pricing is per rule group association + per million queries, typically pocket change compared to the
+next option.</p>
+
+<h2 id="option-2---aws-network-firewall">Option 2 - AWS Network Firewall</h2>
+
+<p>The heavyweight. AWS Network Firewall is a managed stateful firewall you insert into the <em>packet path</em> -
+traffic from your private subnets gets routed through firewall endpoints (usually placed in dedicated
+firewall subnets between your NAT gateway and the internet gateway, or in an inspection VPC in a hub-and-spoke
+setup with Transit Gateway).</p>
+
+<p>Because it sees actual packets, it can block domains regardless of how they were resolved:</p>
+
+<ul>
+  <li>for <strong>HTTPS</strong> it matches the <strong>SNI</strong> in the TLS ClientHello (<code class="language-plaintext highlighter-rouge">tls.sni</code> in Suricata rule terms),</li>
+  <li>for <strong>HTTP</strong> it matches the <strong>Host header</strong>,</li>
+  <li>rules can be written as simple “domain list” rule groups (<code class="language-plaintext highlighter-rouge">.evil-domain.com</code> denylist or an allowlist)
+or as full Suricata-compatible IPS rules if you need more,</li>
+</ul>
+
+<p>So even a pod that hardcodes the IP still gets caught, because the TLS handshake announces the hostname.
+The remaining bypass is a client that uses encrypted ClientHello (ECH) or no SNI at all - rarer, and you
+can just drop no-SNI traffic in a strict setup.</p>
+
+<p>The price you pay, literally: ~$0.395/h per firewall endpoint plus data processing per GB, and you want
+an endpoint per AZ. That’s roughly $300/month per AZ before traffic costs, plus the routing surgery on
+your VPC (firewall subnets, route table changes for IGW/NAT paths). For a compliance-driven environment
+this is the “proper” answer; for “I just want to block one domain” it’s a lot of machinery.</p>
+
+<p>One EKS-specific note: Network Firewall sees traffic <em>after</em> SNAT through the NAT gateway (or with the
+node’s IP), so rules are per-VPC/subnet, not per-pod. You can’t say “only the payments namespace can
+reach api.stripe.com” with it - that granularity lives one layer down, in the cluster itself.</p>
+
+<h2 id="option-3---fqdn-aware-network-policies-in-the-cluster">Option 3 - FQDN-aware network policies in the cluster</h2>
+
+<p>Standard Kubernetes <code class="language-plaintext highlighter-rouge">NetworkPolicy</code> (including what the AWS VPC CNI enforces natively on EKS) is also
+IP/label-based - no FQDN field, same problem as security groups. But CNIs with extended policy engines
+do support DNS-based egress rules:</p>
+
+<ul>
+  <li><strong>Cilium</strong> - <code class="language-plaintext highlighter-rouge">CiliumNetworkPolicy</code> with <code class="language-plaintext highlighter-rouge">toFQDNs</code>. Cilium’s agent snoops DNS responses (you add a
+<code class="language-plaintext highlighter-rouge">rules.dns</code> section so it proxies/observes DNS), builds an IP↔name mapping per pod, and enforces
+egress against the <em>names</em>:</li>
+</ul>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">cilium.io/v2</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">CiliumNetworkPolicy</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">allow-stripe-only</span>
+  <span class="na">namespace</span><span class="pi">:</span> <span class="s">payments</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">endpointSelector</span><span class="pi">:</span> <span class="pi">{}</span>
+  <span class="na">egress</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">toEndpoints</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">matchLabels</span><span class="pi">:</span>
+            <span class="s">k8s:io.kubernetes.pod.namespace: kube-system</span>
+            <span class="s">k8s-app</span><span class="err">:</span> <span class="s">kube-dns</span>
+      <span class="na">toPorts</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">ports</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">port</span><span class="pi">:</span> <span class="s2">"</span><span class="s">53"</span>
+              <span class="na">protocol</span><span class="pi">:</span> <span class="s">ANY</span>
+          <span class="na">rules</span><span class="pi">:</span>
+            <span class="na">dns</span><span class="pi">:</span>
+              <span class="pi">-</span> <span class="na">matchPattern</span><span class="pi">:</span> <span class="s2">"</span><span class="s">*"</span>
+    <span class="pi">-</span> <span class="na">toFQDNs</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">matchName</span><span class="pi">:</span> <span class="s2">"</span><span class="s">api.stripe.com"</span>
+</code></pre></div></div>
+
+<ul>
+  <li><strong>Calico Enterprise / Calico Cloud</strong> - <code class="language-plaintext highlighter-rouge">GlobalNetworkPolicy</code> with domain names in egress rules
+(note: this is the paid tier; open-source Calico doesn’t do FQDN policies).</li>
+</ul>
+
+<p>This is the only option that gives you <strong>per-namespace / per-pod granularity</strong> - “this workload may talk
+to exactly these three domains” - which neither DNS Firewall nor Network Firewall can express. It’s also
+free (with Cilium) and doesn’t touch VPC routing.</p>
+
+<p>The trade-offs: you’re changing (or configuring around) the cluster CNI, which on an existing EKS cluster
+running the VPC CNI is not a small decision - Cilium can run in chaining mode or replace the VPC CNI
+entirely, both need testing. And enforcement is DNS-snooping based: like DNS Firewall, a pod that never
+does a DNS lookup the agent can see (hardcoded IP) is enforced only by whatever IP/CIDR rules remain -
+the default-deny that <code class="language-plaintext highlighter-rouge">toFQDNs</code> policies imply is what saves you there.</p>
+
+<h2 id="option-4---an-egress-proxy">Option 4 - an egress proxy</h2>
+
+<p>The old-school answer that still works: run Squid/Envoy (or use a managed egress-proxy service) in the
+VPC, allow outbound traffic <em>only</em> from the proxy (SG on the NAT path / no default route for pod subnets),
+and point workloads at it via <code class="language-plaintext highlighter-rouge">HTTP_PROXY</code>/<code class="language-plaintext highlighter-rouge">HTTPS_PROXY</code>. The proxy filters by hostname from the CONNECT
+request, logs everything, and can even do TLS inspection if you go down the MITM-CA rabbit hole.</p>
+
+<p>It gives you great logs and hostname-level control without touching the CNI or paying for Network
+Firewall - but it’s explicit-proxy based, so every workload must cooperate (env vars, or an istio-style
+transparent redirect), and non-HTTP protocols need extra care. In Kubernetes-land, a service mesh
+(Istio/Cilium’s Envoy) with an egress gateway is the modern spelling of the same idea.</p>
+
+<h2 id="so-which-one">So which one?</h2>
+
+<ul>
+  <li><strong>“Stop developers/pods from accidentally reaching known-bad or unsanctioned domains, cheaply”</strong> →
+Route 53 DNS Firewall + block outbound 53 to non-VPC resolvers. An afternoon of work.</li>
+  <li><strong>“Compliance says all egress must be inspected and enforced on the wire”</strong> →
+AWS Network Firewall with a domain allowlist on SNI/Host. Budget for it.</li>
+  <li><strong>“Different workloads need different egress allowlists”</strong> →
+Cilium <code class="language-plaintext highlighter-rouge">toFQDNs</code> policies (or Calico Enterprise). Only option with pod-level granularity.</li>
+  <li><strong>“We want full visibility of every egress request”</strong> →
+egress proxy / egress gateway.</li>
+</ul>
+
+<p>They also compose: DNS Firewall as the cheap VPC-wide baseline plus Cilium policies for the sensitive
+namespaces is a very reasonable combination - defence in depth without the Network Firewall bill. And
+whatever you pick, remember the golden rule of egress filtering: <strong>denylists rot, allowlists work</strong>.
+If you can enumerate what your workloads legitimately talk to, flip the model to default-deny and
+allow only that.</p>
+
+<p>–
+cheers</p>
+
+  </div>
+
+  
+    <div class="post-comments" itemprop="comment">
+      <hr />
+<h1>Comments</h1>
+
+<script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
+    </div>
+  
+
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+    <div class="wrapper">
+        
+  <div class="footer">
+    <a href="https://github.com/robertwe">
+      <i class="fa fa-github"></i> GitHub
+    </a>
+</div>
+
+
+
+<div class="footer">
+    <a href="https://stackoverflow.com/users/213377">
+      <i class="fa fa-stack-overflow"></i> StackOverflow
+    </a>
+  </div>
+
+
+<div class="footer">
+    <a href="https://linkedin.com/in/robertweclawski">
+      <i class="fa fa-linkedin"></i> LinkedIn
+    </a>
+  </div>
+
+<span class="footer">
+&copy;  - Powered by <a href="https://jekyllrb.com">Jekyll</a> &amp; <a href="https://github.com/yous/whiteglass">whiteglass</a> - Subscribe via <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</span>
+    </div>
+  </footer>
+
+  </body>
+
+</html>

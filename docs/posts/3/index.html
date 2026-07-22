@@ -119,6 +119,108 @@
         <header class="post-header">
           <h1 class="post-title">
             
+              <a class="post-link" href="/2014/07/01/add-timestamp-to-bash-history/">Add timestamp to Bash history</a>
+            
+          </h1>
+
+          <p class="post-meta">
+            Jul 1, 2014
+            
+              
+
+ •
+  
+    
+    
+      
+    
+      
+    
+      
+        <a href="/tags/bash/">bash</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+            
+            
+          </p>
+        </header>
+
+        <div class="post-content">
+          <p>Sometimes there is a need to add a timestamp to bash history.
+At my work I found it quite useful, especially when some other developers
+have access to the same box or when you simply want to have an idea when a command from the history was executed.  
+This is how we can achieve this:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">echo</span> <span class="s1">'export HISTTIMEFORMAT="%d.%m.%y %T"'</span> <span class="o">&gt;&gt;</span> ~/.profile</code></pre></figure>
+
+<p>(or <code class="language-plaintext highlighter-rouge">.bash_profile</code> if you use a RHEL based distro) and after that just re-login or reload your profile file.
+Time formatting is exactly the same as for <code class="language-plaintext highlighter-rouge">strftime</code> - please check <code class="language-plaintext highlighter-rouge">man 3 strftime</code>.</p>
+
+<p>Hint: reloading the profile can be done like this:
+<code class="language-plaintext highlighter-rouge">. .profile</code> or <code class="language-plaintext highlighter-rouge">source .profile</code></p>
+
+<p>–
+Cheers
+Robert</p>
+
+        </div>
+        
+      </li>
+    
+      
+      
+
+      <li>
+        <header class="post-header">
+          <h1 class="post-title">
+            
               <a class="post-link" href="/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">IPtables returns an error : security raw nat mangle filter FAILED</a>
             
           </h1>
@@ -173,6 +275,16 @@ iptables: Applying firewall rules:                         <span class="o">[</sp
     
       
         <a href="/tags/hosting/">hosting</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -324,6 +436,16 @@ Robert</p>
       
     
       
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
         <a href="/categories/centos/">CentOS</a>
       
     
@@ -353,47 +475,6 @@ Here is a quick solution for that:</p>
           <p class="post-continue">
             <a href="/2014/05/20/centos6-host-command-is-missing/">Read on &rarr;</a>
           </p>
-        
-      </li>
-    
-      
-      
-
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2014/05/09/is-tdd-dead/">Is TDD Dead ?</a>
-            
-          </h1>
-
-          <p class="post-meta">
-            May 9, 2014
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <p>Today I watched a quite interesting hangout. It was a quick (30 min) discussion.
-Attendees:</p>
-
-<ul>
-  <li>Kent Beck,</li>
-  <li>Martin Fowler,</li>
-  <li>David Heinemeier Hansson</li>
-</ul>
-
-<p>A few days ago @DHH wrote a somewhat “controversial” <a href="http://david.heinemeierhansson.com/2014/tdd-is-dead-long-live-testing.html">post</a> on his blog about TDD and, in general, presented his point of view on TDD.
-As a result we got a huge discussion on Twitter about TDD. Some people say that every professional should use TDD and so on.
-In response, the guys from <strong>ThoughtWorks</strong> organized this hangout.
- </p>
-
-<h3 id="youtube-playlist-parts-from-1-to-6">Youtube playlist (Parts from 1 to 6)</h3>
-<iframe width="560" height="315" src="//www.youtube.com/embed/videoseries?list=PLJb2p0qX8R_qSRhs14CiwKuDuzERXSU8m" frameborder="0" allowfullscreen=""></iframe>
-
-
-        </div>
         
       </li>
     

@@ -119,6 +119,267 @@
         <header class="post-header">
           <h1 class="post-title">
             
+              <a class="post-link" href="/2016/11/05/introduction-to-augeas-in-puppet/">Quick introduction to Augeas in Puppet</a>
+            
+          </h1>
+
+          <p class="post-meta">
+            Nov 5, 2016
+            
+               •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/categories/automation/">Automation</a>
+      
+    
+      
+    
+      
+    
+  
+
+
+ •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/provisioning/">Provisioning</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/automation/">Automation</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/puppet/">Puppet</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+            
+            
+          </p>
+        </header>
+
+        <div class="post-content">
+          <p>Recently I came across an interesting problem. I had to install a kernel
+from the 3.10 branch on CentOS 6 and there was a need to update <code class="language-plaintext highlighter-rouge">grub.conf</code> - change the default kernel plus add a boot option.
+Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?</p>
+
+
+        </div>
+        
+          <p class="post-continue">
+            <a href="/2016/11/05/introduction-to-augeas-in-puppet/">Read on &rarr;</a>
+          </p>
+        
+      </li>
+    
+      
+      
+
+      <li>
+        <header class="post-header">
+          <h1 class="post-title">
+            
               <a class="post-link" href="/2015/11/03/pass-variables-to-jinja-template-in-salt/">How to pass variable to Jinja template in Salt</a>
             
           </h1>
@@ -142,6 +403,16 @@
     
       
         <a href="/tags/salt/">Salt</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -224,6 +495,16 @@ from the current iteration to a Jinja template.</p>
     
       
         <a href="/tags/linux/">Linux</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -347,6 +628,16 @@ the public key is not available: NO_PUBKEY 0000000000
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 
@@ -433,6 +724,16 @@ Anyway, if you have never had to touch Perl, here is the link to his <a href="ht
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 
@@ -453,98 +754,6 @@ What if we want to selectively keep some commands out of the bash history?</p>
           <p class="post-continue">
             <a href="/2014/11/27/temporary-disabling-bash-history/">Read on &rarr;</a>
           </p>
-        
-      </li>
-    
-      
-      
-
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2014/07/01/add-timestamp-to-bash-history/">Add timestamp to Bash history</a>
-            
-          </h1>
-
-          <p class="post-meta">
-            Jul 1, 2014
-            
-              
-
- •
-  
-    
-    
-      
-    
-      
-    
-      
-        <a href="/tags/bash/">bash</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-
-
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <p>Sometimes there is a need to add a timestamp to bash history.
-At my work I found it quite useful, especially when some other developers
-have access to the same box or when you simply want to have an idea when a command from the history was executed.  
-This is how we can achieve this:</p>
-
-<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">echo</span> <span class="s1">'export HISTTIMEFORMAT="%d.%m.%y %T"'</span> <span class="o">&gt;&gt;</span> ~/.profile</code></pre></figure>
-
-<p>(or <code class="language-plaintext highlighter-rouge">.bash_profile</code> if you use a RHEL based distro) and after that just re-login or reload your profile file.
-Time formatting is exactly the same as for <code class="language-plaintext highlighter-rouge">strftime</code> - please check <code class="language-plaintext highlighter-rouge">man 3 strftime</code>.</p>
-
-<p>Hint: reloading the profile can be done like this:
-<code class="language-plaintext highlighter-rouge">. .profile</code> or <code class="language-plaintext highlighter-rouge">source .profile</code></p>
-
-<p>–
-Cheers
-Robert</p>
-
-        </div>
         
       </li>
     

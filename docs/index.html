@@ -119,16 +119,26 @@
         <header class="post-header">
           <h1 class="post-title">
             
-              <a class="post-link" href="/2026/07/21/opentofu-enabled-meta-argument/">OpenTofu&#39;s enabled meta-argument - conditional resources without the count hack</a>
+              <a class="post-link" href="/2026/07/22/blocking-egress-fqdns-on-eks/">Blocking egress to specific domains from an EKS cluster - what are the options?</a>
             
           </h1>
 
           <p class="post-meta">
-            Jul 21, 2026
+            Jul 22, 2026
             
                •
   
     
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
     
       
     
@@ -221,6 +231,444 @@
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/aws/">AWS</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/eks/">EKS</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/kubernetes/">Kubernetes</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/security/">Security</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/networking/">Networking</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  
+
+
+            
+            
+          </p>
+        </header>
+
+        <div class="post-content">
+          <p>A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to <code class="language-plaintext highlighter-rouge">evil-domain.com</code>”
+(or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly
+annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS.
+A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game.
+Here is a rundown of the options that actually work with FQDNs, and what each one really gives you.</p>
+
+
+        </div>
+        
+          <p class="post-continue">
+            <a href="/2026/07/22/blocking-egress-fqdns-on-eks/">Read on &rarr;</a>
+          </p>
+        
+      </li>
+    
+      
+      
+
+      <li>
+        <header class="post-header">
+          <h1 class="post-title">
+            
+              <a class="post-link" href="/2026/07/21/opentofu-enabled-meta-argument/">OpenTofu&#39;s enabled meta-argument - conditional resources without the count hack</a>
+            
+          </h1>
+
+          <p class="post-meta">
+            Jul 21, 2026
+            
+               •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/categories/devops/">DevOps</a>
+      
+    
+  
+
+
+ •
+  
+    
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+        <a href="/tags/devops/">DevOps</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
     
     
@@ -252,6 +700,16 @@
     
       
         <a href="/tags/opentofu/">OpenTofu</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -311,6 +769,16 @@
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
     
     
@@ -344,6 +812,16 @@
     
       
         <a href="/tags/iac/">IaC</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -437,6 +915,16 @@ and Terraform simply does not have it.</p>
       
     
       
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
         <a href="/categories/devops/">DevOps</a>
       
     
@@ -471,6 +959,16 @@ and Terraform simply does not have it.</p>
     
       
         <a href="/tags/devops/">DevOps</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -534,6 +1032,16 @@ and Terraform simply does not have it.</p>
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
     
     
@@ -565,6 +1073,16 @@ and Terraform simply does not have it.</p>
     
       
         <a href="/tags/opentofu/">OpenTofu</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -624,6 +1142,16 @@ and Terraform simply does not have it.</p>
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 
@@ -664,6 +1192,16 @@ In this post I want to share why we did it, how it went, and what surprised me a
                •
   
     
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
     
       
     
@@ -756,6 +1294,16 @@ In this post I want to share why we did it, how it went, and what surprised me a
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
     
     
@@ -779,6 +1327,16 @@ In this post I want to share why we did it, how it went, and what surprised me a
     
       
         <a href="/tags/golang/">GoLang</a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -878,6 +1436,16 @@ backed by comprehensive code examples to illustrate these advantages.</p>
       
     
       
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
         <a href="/categories/golang/">GoLang</a>
       
     
@@ -908,6 +1476,16 @@ backed by comprehensive code examples to illustrate these advantages.</p>
     
       
         <a href="/tags/programming/">Programming</a>,
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
@@ -977,6 +1555,16 @@ backed by comprehensive code examples to illustrate these advantages.</p>
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
     
     
@@ -1022,6 +1610,16 @@ backed by comprehensive code examples to illustrate these advantages.</p>
     
       
     
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
   
 
 
@@ -1042,227 +1640,6 @@ Let’s explore how interfaces and generics work together in Go and how they can
         
           <p class="post-continue">
             <a href="/2024/06/11/go-lang-generics/">Read on &rarr;</a>
-          </p>
-        
-      </li>
-    
-      
-      
-
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2016/11/05/introduction-to-augeas-in-puppet/">Quick introduction to Augeas in Puppet</a>
-            
-          </h1>
-
-          <p class="post-meta">
-            Nov 5, 2016
-            
-               •
-  
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-        <a href="/categories/automation/">Automation</a>
-      
-    
-      
-    
-      
-    
-  
-
-
- •
-  
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-        <a href="/tags/provisioning/">Provisioning</a>,
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-        <a href="/tags/automation/">Automation</a>,
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-        <a href="/tags/puppet/">Puppet</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-
-
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <p>Recently I came across an interesting problem. I had to install a kernel
-from the 3.10 branch on CentOS 6 and there was a need to update <code class="language-plaintext highlighter-rouge">grub.conf</code> - change the default kernel plus add a boot option.
-Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?</p>
-
-
-        </div>
-        
-          <p class="post-continue">
-            <a href="/2016/11/05/introduction-to-augeas-in-puppet/">Read on &rarr;</a>
           </p>
         
       </li>
