@@ -33,6 +33,6 @@ Framework - they all taught me something, even if they are no longer in daily ro
 You can find me on [GitHub](https://github.com/robertwe) and
 [LinkedIn](https://www.linkedin.com/in/robertweclawski).
 
-`Email: umberto.eco@abyss.rest`
+`Email: umberto.eco@abyssos.cc`
 `KeyID: 0x47743A17`
 `Fingerprint: E967 8AE5 7D98 965F A0DE 66CC 9469 2712 4774 3A17`
