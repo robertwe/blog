@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  
+  
+  <title>One module block, every region: provider for_each in OpenTofu - Robert&#39;s notes</title>
+  <meta name="description" content="Here is a thing I wish somebody had shown me the week OpenTofu 1.9 came out. If you have ever had to deploy the same stack to five AWS regions, you know the ritual: five provider &quot;aws&quot; blocks with five aliases, five copies of the module block differing only in the providers map, and a bad feeling every time a sixth region shows up. In OpenTofu you can put for_each on the provider block itself. One provider block, one module block, regions come from a variable. Terraform still cannot do this.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181825">
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="https://roberts-notes.blog/2026/10/16/opentofu-provider-for-each-multi-region/">
+  <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
+  <link rel="icon"
+      type="image/png"
+      href="/favicon.png">
+<!--
+ ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
+██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
+██║  ███╗██████╔╝█████╗  █████╗     ██║   ██║██╔██╗ ██║██║  ███╗███████╗    ██║
+██║   ██║██╔══██╗██╔══╝  ██╔══╝     ██║   ██║██║╚██╗██║██║   ██║╚════██║    ╚═╝
+╚██████╔╝██║  ██║███████╗███████╗   ██║   ██║██║ ╚████║╚██████╔╝███████║    ██╗
+ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
+-->
+
+  <meta property="og:title" content="One module block, every region: provider for_each in OpenTofu">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2026/10/16/opentofu-provider-for-each-multi-region/">
+  <meta property="og:description" content="Here is a thing I wish somebody had shown me the week OpenTofu 1.9 came out. If you have ever had to deploy the same stack to five AWS regions, you know the ritual: five provider &quot;aws&quot; blocks with five aliases, five copies of the module block differing only in the providers map, and a bad feeling every time a sixth region shows up. In OpenTofu you can put for_each on the provider block itself. One provider block, one module block, regions come from a variable. Terraform still cannot do this.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="One module block, every region: provider for_each in OpenTofu">
+  <meta name="twitter:description" content="Here is a thing I wish somebody had shown me the week OpenTofu 1.9 came out. If you have ever had to deploy the same stack to five AWS regions, you know the ritual: five provider &quot;aws&quot; bl...">
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
+  
+</head>
+<body>
+
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>robert@notes: ~/posts — zsh</span></div>
+  <div class="term">
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">cat ~/.motd</span></div>
+
+    <div class="out motd"><a href="/">Robert&#39;s notes</a> - Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture.</div>
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls ~</span></div>
+
+    <nav class="out">
+      
+        <a href="/">Main</a>
+      
+        <a href="/archives/">Archives</a>
+      
+        <a href="/stats/">Stats</a>
+      
+        <a href="/contact/">Contact</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    
+
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">glow opentofu-provider-for-each-multi-region.md</span></div>
+
+<article class="post out" itemscope itemtype="http://schema.org/BlogPosting">
+  <h1 itemprop="name headline">One module block, every region: provider for_each in OpenTofu</h1>
+  <div class="meta"><time datetime="2026-10-16T11:45:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a> <a href="/tags/aws/">AWS</a></div>
+
+  <div class="body" itemprop="articleBody">
+    <p>Here is a thing I wish somebody had shown me the week OpenTofu 1.9 came out. If you have ever had to deploy the same
+stack to five AWS regions, you know the ritual: five <code class="language-plaintext highlighter-rouge">provider "aws"</code> blocks with five aliases, five copies of the
+<code class="language-plaintext highlighter-rouge">module</code> block differing only in the <code class="language-plaintext highlighter-rouge">providers</code> map, and a bad feeling every time a sixth region shows up. In OpenTofu
+you can put <code class="language-plaintext highlighter-rouge">for_each</code> on the provider block itself. One provider block, one module block, regions come from a
+variable. Terraform still cannot do this.
+<!--more--></p>
+
+<h2 id="the-old-way-for-contrast">The old way, for contrast</h2>
+
+<p>This is what multi-region looked like in every repo I have worked in:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">provider</span> <span class="s2">"aws"</span> <span class="p">{</span>
+  <span class="nx">alias</span>  <span class="p">=</span> <span class="s2">"frankfurt"</span>
+  <span class="nx">region</span> <span class="p">=</span> <span class="s2">"eu-central-1"</span>
+<span class="p">}</span>
+
+<span class="nx">provider</span> <span class="s2">"aws"</span> <span class="p">{</span>
+  <span class="nx">alias</span>  <span class="p">=</span> <span class="s2">"ireland"</span>
+  <span class="nx">region</span> <span class="p">=</span> <span class="s2">"eu-west-1"</span>
+<span class="p">}</span>
+
+<span class="nx">provider</span> <span class="s2">"aws"</span> <span class="p">{</span>
+  <span class="nx">alias</span>  <span class="p">=</span> <span class="s2">"virginia"</span>
+  <span class="nx">region</span> <span class="p">=</span> <span class="s2">"us-east-1"</span>
+<span class="p">}</span>
+
+<span class="nx">module</span> <span class="s2">"dns_firewall_frankfurt"</span> <span class="p">{</span>
+  <span class="nx">source</span>    <span class="p">=</span> <span class="s2">"./modules/dns-firewall"</span>
+  <span class="nx">providers</span> <span class="p">=</span> <span class="p">{</span> <span class="nx">aws</span> <span class="p">=</span> <span class="nx">aws</span><span class="err">.</span><span class="nx">frankfurt</span> <span class="p">}</span>
+  <span class="nx">vpc_id</span>    <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">vpc_ids</span><span class="p">[</span><span class="s2">"eu-central-1"</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="nx">module</span> <span class="s2">"dns_firewall_ireland"</span> <span class="p">{</span>
+  <span class="nx">source</span>    <span class="p">=</span> <span class="s2">"./modules/dns-firewall"</span>
+  <span class="nx">providers</span> <span class="p">=</span> <span class="p">{</span> <span class="nx">aws</span> <span class="p">=</span> <span class="nx">aws</span><span class="err">.</span><span class="nx">ireland</span> <span class="p">}</span>
+  <span class="nx">vpc_id</span>    <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">vpc_ids</span><span class="p">[</span><span class="s2">"eu-west-1"</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="nx">module</span> <span class="s2">"dns_firewall_virginia"</span> <span class="p">{</span>
+  <span class="nx">source</span>    <span class="p">=</span> <span class="s2">"./modules/dns-firewall"</span>
+  <span class="nx">providers</span> <span class="p">=</span> <span class="p">{</span> <span class="nx">aws</span> <span class="p">=</span> <span class="nx">aws</span><span class="err">.</span><span class="nx">virginia</span> <span class="p">}</span>
+  <span class="nx">vpc_id</span>    <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">vpc_ids</span><span class="p">[</span><span class="s2">"us-east-1"</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Three regions, and already nobody wants to touch it. People reach for templating (<code class="language-plaintext highlighter-rouge">cookiecutter</code>, a Python script
+spitting out <code class="language-plaintext highlighter-rouge">.tf</code> files, Terragrunt) and now the infrastructure code has a build step. All of that because <code class="language-plaintext highlighter-rouge">provider</code>
+blocks could not be iterated.</p>
+
+<h2 id="the-opentofu-way">The OpenTofu way</h2>
+
+<p>Since OpenTofu 1.9:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">variable</span> <span class="s2">"regions"</span> <span class="p">{</span>
+  <span class="nx">type</span>    <span class="p">=</span> <span class="nx">set</span><span class="err">(</span><span class="nx">string</span><span class="err">)</span>
+  <span class="nx">default</span> <span class="p">=</span> <span class="p">[</span><span class="s2">"eu-central-1"</span><span class="p">,</span> <span class="s2">"eu-west-1"</span><span class="p">,</span> <span class="s2">"us-east-1"</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="nx">variable</span> <span class="s2">"vpc_ids"</span> <span class="p">{</span>
+  <span class="nx">type</span> <span class="p">=</span> <span class="nx">map</span><span class="err">(</span><span class="nx">string</span><span class="err">)</span>
+<span class="p">}</span>
+
+<span class="nx">provider</span> <span class="s2">"aws"</span> <span class="p">{</span>
+  <span class="nx">alias</span>    <span class="p">=</span> <span class="s2">"by_region"</span>
+  <span class="nx">for_each</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">regions</span>
+  <span class="nx">region</span>   <span class="p">=</span> <span class="nx">each</span><span class="err">.</span><span class="nx">value</span>
+<span class="p">}</span>
+
+<span class="nx">module</span> <span class="s2">"dns_firewall"</span> <span class="p">{</span>
+  <span class="nx">source</span>   <span class="p">=</span> <span class="s2">"./modules/dns-firewall"</span>
+  <span class="nx">for_each</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">regions</span>
+
+  <span class="nx">providers</span> <span class="p">=</span> <span class="p">{</span>
+    <span class="nx">aws</span> <span class="p">=</span> <span class="nx">aws</span><span class="err">.</span><span class="nx">by_region</span><span class="p">[</span><span class="nx">each</span><span class="err">.</span><span class="nx">key</span><span class="p">]</span>
+  <span class="p">}</span>
+
+  <span class="nx">vpc_id</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">vpc_ids</span><span class="p">[</span><span class="nx">each</span><span class="err">.</span><span class="nx">key</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>That is the whole trick. <code class="language-plaintext highlighter-rouge">aws.by_region</code> is now a map of provider instances keyed by region, and <code class="language-plaintext highlighter-rouge">aws.by_region[each.key]</code>
+hands the right one to each module instance. Adding a region is adding a string to a set. The module code inside
+<code class="language-plaintext highlighter-rouge">./modules/dns-firewall</code> did not change at all, it still just says <code class="language-plaintext highlighter-rouge">provider "aws"</code> and gets whatever it is given.</p>
+
+<p>It works on resources too, not only modules, in case you do not want a module for a three-resource thing:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">resource</span> <span class="s2">"aws_cloudwatch_log_group"</span> <span class="s2">"dns_firewall"</span> <span class="p">{</span>
+  <span class="nx">for_each</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">regions</span>
+  <span class="nx">provider</span> <span class="p">=</span> <span class="nx">aws</span><span class="err">.</span><span class="nx">by_region</span><span class="p">[</span><span class="nx">each</span><span class="err">.</span><span class="nx">key</span><span class="p">]</span>
+
+  <span class="nx">name</span>              <span class="p">=</span> <span class="s2">"/aws/route53resolver/dns-firewall"</span>
+  <span class="nx">retention_in_days</span> <span class="p">=</span> <span class="mi">30</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="why-this-was-impossible-before-early-evaluation">Why this was impossible before: early evaluation</h2>
+
+<p>The reason Terraform never did this is not laziness, it is the evaluation model. Provider configuration has to be known
+before the graph is built, because providers are what the graph talks to. Anything in a provider block had to be a
+literal or a variable with no dependencies.</p>
+
+<p>OpenTofu 1.8 introduced what the docs call early evaluation (you will also see “static evaluation”): variables and
+locals that can be resolved before the graph exists are allowed in places that used to be literal-only. Provider
+<code class="language-plaintext highlighter-rouge">for_each</code> in 1.9 is built on top of it. The same mechanism gives you two other things advanced users have been asking
+for since roughly 2015:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># a variable in the backend config</span>
+<span class="nx">terraform</span> <span class="p">{</span>
+  <span class="nx">backend</span> <span class="s2">"s3"</span> <span class="p">{</span>
+    <span class="nx">bucket</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">state_bucket</span>
+    <span class="nx">key</span>    <span class="p">=</span> <span class="s2">"dns-firewall/${var.environment}.tfstate"</span>
+    <span class="nx">region</span> <span class="p">=</span> <span class="s2">"eu-central-1"</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># a variable in a module source</span>
+<span class="nx">module</span> <span class="s2">"dns_firewall"</span> <span class="p">{</span>
+  <span class="nx">source</span> <span class="p">=</span> <span class="s2">"git::https://github.com/example/tofu-modules.git//dns-firewall?ref=${var.modules_ref}"</span>
+  <span class="c1"># ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The rule to remember: the value has to be knowable without talking to any provider. Variables, locals built from
+variables, functions on those - fine. Anything that comes out of a <code class="language-plaintext highlighter-rouge">data</code> source or a <code class="language-plaintext highlighter-rouge">resource</code> - no, and OpenTofu
+tells you so at plan time, not with a cryptic error halfway through apply.</p>
+
+<h2 id="the-gotcha-and-the-pattern-that-avoids-it">The gotcha, and the pattern that avoids it</h2>
+
+<p>There is one sharp edge, and it is the same one aliased providers always had, just easier to hit now. Say you remove
+<code class="language-plaintext highlighter-rouge">us-east-1</code> from <code class="language-plaintext highlighter-rouge">var.regions</code>. OpenTofu now wants to destroy <code class="language-plaintext highlighter-rouge">module.dns_firewall["us-east-1"]</code>, but the provider
+instance <code class="language-plaintext highlighter-rouge">aws.by_region["us-east-1"]</code> is gone from the configuration too, and you cannot destroy a resource without the
+provider that created it. Plan fails.</p>
+
+<p>The fix is to decouple the two sets. Providers iterate over every region you could ever have, modules iterate over the
+ones you actually want right now:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">locals</span> <span class="p">{</span>
+  <span class="c1"># every region this account is ever allowed to touch</span>
+  <span class="nx">all_regions</span> <span class="p">=</span> <span class="p">[</span><span class="s2">"eu-central-1"</span><span class="p">,</span> <span class="s2">"eu-west-1"</span><span class="p">,</span> <span class="s2">"eu-north-1"</span><span class="p">,</span> <span class="s2">"us-east-1"</span><span class="p">,</span> <span class="s2">"us-west-2"</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="nx">variable</span> <span class="s2">"active_regions"</span> <span class="p">{</span>
+  <span class="nx">type</span>    <span class="p">=</span> <span class="nx">set</span><span class="err">(</span><span class="nx">string</span><span class="err">)</span>
+  <span class="nx">default</span> <span class="p">=</span> <span class="p">[</span><span class="s2">"eu-central-1"</span><span class="p">,</span> <span class="s2">"eu-west-1"</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="nx">provider</span> <span class="s2">"aws"</span> <span class="p">{</span>
+  <span class="nx">alias</span>    <span class="p">=</span> <span class="s2">"by_region"</span>
+  <span class="nx">for_each</span> <span class="p">=</span> <span class="nx">toset</span><span class="err">(</span><span class="nx">local</span><span class="err">.</span><span class="nx">all_regions</span><span class="err">)</span>
+  <span class="nx">region</span>   <span class="p">=</span> <span class="nx">each</span><span class="err">.</span><span class="nx">value</span>
+<span class="p">}</span>
+
+<span class="nx">module</span> <span class="s2">"dns_firewall"</span> <span class="p">{</span>
+  <span class="nx">source</span>   <span class="p">=</span> <span class="s2">"./modules/dns-firewall"</span>
+  <span class="nx">for_each</span> <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">active_regions</span>
+  <span class="nx">providers</span> <span class="p">=</span> <span class="p">{</span> <span class="nx">aws</span> <span class="p">=</span> <span class="nx">aws</span><span class="err">.</span><span class="nx">by_region</span><span class="p">[</span><span class="nx">each</span><span class="err">.</span><span class="nx">key</span><span class="p">]</span> <span class="p">}</span>
+  <span class="nx">vpc_id</span>   <span class="p">=</span> <span class="nx">var</span><span class="err">.</span><span class="nx">vpc_ids</span><span class="p">[</span><span class="nx">each</span><span class="err">.</span><span class="nx">key</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now removing a region from <code class="language-plaintext highlighter-rouge">active_regions</code> produces a clean destroy, because the provider instance for it still
+exists. An unused provider instance costs nothing, it is just configuration. Add a <code class="language-plaintext highlighter-rouge">validation</code> block on
+<code class="language-plaintext highlighter-rouge">active_regions</code> checking <code class="language-plaintext highlighter-rouge">setsubtract(var.active_regions, local.all_regions)</code> is empty if you want a friendlier error
+than the one OpenTofu gives for a missing map key.</p>
+
+<h2 id="two-small-bonuses">Two small bonuses</h2>
+
+<p>Since the module instances are keyed by region, you can do one region at a time without touching the code.
+OpenTofu 1.9 also added <code class="language-plaintext highlighter-rouge">-exclude</code>, the mirror image of <code class="language-plaintext highlighter-rouge">-target</code>:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># roll out only Frankfurt first</span>
+tofu apply <span class="nt">-target</span><span class="o">=</span><span class="s1">'module.dns_firewall["eu-central-1"]'</span>
+
+<span class="c"># everything except Virginia, which is in the middle of an incident</span>
+tofu apply <span class="nt">-exclude</span><span class="o">=</span><span class="s1">'module.dns_firewall["us-east-1"]'</span>
+</code></pre></div></div>
+
+<p>And because the region is <code class="language-plaintext highlighter-rouge">each.key</code>, your outputs come out as a map for free:</p>
+
+<div class="language-hcl highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">output</span> <span class="s2">"rule_group_ids"</span> <span class="p">{</span>
+  <span class="nx">value</span> <span class="p">=</span> <span class="p">{</span> <span class="nx">for</span> <span class="nx">region</span><span class="err">,</span> <span class="nx">m</span> <span class="nx">in</span> <span class="nx">module</span><span class="err">.</span><span class="nx">dns_firewall</span> <span class="err">:</span> <span class="nx">region</span> <span class="p">=</span><span class="err">&gt;</span> <span class="nx">m</span><span class="err">.</span><span class="nx">rule_group_id</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="should-you-migrate-existing-code-to-this">Should you migrate existing code to this?</h2>
+
+<p>If you have the five-copies setup and it works, the honest answer is: only when you touch it next. The addresses change
+from <code class="language-plaintext highlighter-rouge">module.dns_firewall_frankfurt</code> to <code class="language-plaintext highlighter-rouge">module.dns_firewall["eu-central-1"]</code>, so you need a <code class="language-plaintext highlighter-rouge">moved</code> block per region
+or a state move, which is a chore but a one-time one. For anything new, I do not see a reason to write the old pattern
+ever again. Requires OpenTofu 1.9 or newer, and the provider itself does not have to know or care.</p>
+
+  </div>
+</article>
+
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">giscus --comments</span></div>
+
+<div class="out comments">
+  <script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="catppuccin_mocha"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
+</div>
+
+
+    <footer>
+      <div class="links">
+  <a href="https://github.com/robertwe">GitHub</a>
+  <a href="https://stackoverflow.com/users/213377">StackOverflow</a>
+  <a href="https://linkedin.com/in/robertweclawski">LinkedIn</a>
+  <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</div>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>
+      <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="cur"></span></div>
+
+    </footer>
+  </div>
+</div>
+</body>
+</html>

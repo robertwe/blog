@@ -1,24 +1,222 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="https://roberts-notes.blog/feed.xml" rel="self" type="application/atom+xml" /><link href="https://roberts-notes.blog/" rel="alternate" type="text/html" /><updated>2026-10-16T17:33:05+02:00</updated><id>https://roberts-notes.blog/feed.xml</id><title type="html">Robert’s notes</title><subtitle>Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.
-</subtitle><entry><title type="html">This blog now looks like a terminal - and weighs 7 KB of CSS</title><link href="https://roberts-notes.blog/2026/10/16/blog-as-a-terminal-7kb-of-css/" rel="alternate" type="text/html" title="This blog now looks like a terminal - and weighs 7 KB of CSS" /><published>2026-10-16T10:30:00+02:00</published><updated>2026-10-16T10:30:00+02:00</updated><id>https://roberts-notes.blog/2026/10/16/blog-as-a-terminal-7kb-of-css</id><content type="html" xml:base="https://roberts-notes.blog/2026/10/16/blog-as-a-terminal-7kb-of-css/">&lt;p&gt;If you have been here before you noticed: the serif font and the white background are gone, the blog now renders inside
-a terminal window with a zsh prompt. This post is the short write-up of how, because the interesting part is not the
-look, it is what was removed to get there. No CSS framework, no JavaScript for the theme, no web fonts, one 7 KB
-stylesheet. Still Jekyll, still static files on Firebase Hosting.
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="https://roberts-notes.blog/feed.xml" rel="self" type="application/atom+xml" /><link href="https://roberts-notes.blog/" rel="alternate" type="text/html" /><updated>2026-10-16T17:37:33+02:00</updated><id>https://roberts-notes.blog/feed.xml</id><title type="html">Robert’s notes</title><subtitle>Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.
+</subtitle><entry><title type="html">One module block, every region: provider for_each in OpenTofu</title><link href="https://roberts-notes.blog/2026/10/16/opentofu-provider-for-each-multi-region/" rel="alternate" type="text/html" title="One module block, every region: provider for_each in OpenTofu" /><published>2026-10-16T11:45:00+02:00</published><updated>2026-10-16T11:45:00+02:00</updated><id>https://roberts-notes.blog/2026/10/16/opentofu-provider-for-each-multi-region</id><content type="html" xml:base="https://roberts-notes.blog/2026/10/16/opentofu-provider-for-each-multi-region/">&lt;p&gt;Here is a thing I wish somebody had shown me the week OpenTofu 1.9 came out. If you have ever had to deploy the same
+stack to five AWS regions, you know the ritual: five &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;provider &quot;aws&quot;&lt;/code&gt; blocks with five aliases, five copies of the
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;module&lt;/code&gt; block differing only in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;providers&lt;/code&gt; map, and a bad feeling every time a sixth region shows up. In OpenTofu
+you can put &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;for_each&lt;/code&gt; on the provider block itself. One provider block, one module block, regions come from a
+variable. Terraform still cannot do this.
 &lt;!--more--&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;what-went-out&quot;&gt;What went out&lt;/h2&gt;
+&lt;h2 id=&quot;the-old-way-for-contrast&quot;&gt;The old way, for contrast&lt;/h2&gt;
 
-&lt;p&gt;The old setup was the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jekyll-whiteglass&lt;/code&gt; theme plus Font Awesome 4.7 for three footer icons plus a Google font. That is
-a 10 KB stylesheet, a 30 KB icon CSS file with a font behind it, and a third-party font request on every page view -
-for a blog that is 95% text and code blocks.&lt;/p&gt;
+&lt;p&gt;This is what multi-region looked like in every repo I have worked in:&lt;/p&gt;
 
-&lt;p&gt;Now: the theme gem is gone, the layouts live in the repo (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_layouts/&lt;/code&gt;, six files, none longer than a screen), and the
-whole look is one hand-written CSS file. Fonts are the system monospace and system sans stacks, so zero font downloads.
-Icons are words. Nobody has ever been confused by the word “GitHub”.&lt;/p&gt;
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;provider&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;alias&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;frankfurt&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;region&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;eu-central-1&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 
-&lt;h2 id=&quot;the-window&quot;&gt;The window&lt;/h2&gt;
+&lt;span class=&quot;nx&quot;&gt;provider&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;alias&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;ireland&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;region&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;eu-west-1&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 
-&lt;p&gt;The frame is one &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;div&lt;/code&gt; with a title bar. The three dots are three empty &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;i&amp;gt;&lt;/code&gt; elements coloured red, yellow and green.
-The whole page is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;max-width: 106ch&lt;/code&gt; and centred, which is roughly what a comfortable terminal window is.&lt;/p&gt;
+&lt;span class=&quot;nx&quot;&gt;provider&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;alias&lt;/span&gt;  &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;virginia&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;region&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;us-east-1&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;dns_firewall_frankfurt&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;source&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;./modules/dns-firewall&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;providers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;frankfurt&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;vpc_id&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;vpc_ids&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;eu-central-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;dns_firewall_ireland&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;source&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;./modules/dns-firewall&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;providers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ireland&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;vpc_id&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;vpc_ids&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;eu-west-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;dns_firewall_virginia&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;source&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;./modules/dns-firewall&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;providers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;virginia&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;vpc_id&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;vpc_ids&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;us-east-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Three regions, and already nobody wants to touch it. People reach for templating (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cookiecutter&lt;/code&gt;, a Python script
+spitting out &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.tf&lt;/code&gt; files, Terragrunt) and now the infrastructure code has a build step. All of that because &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;provider&lt;/code&gt;
+blocks could not be iterated.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-opentofu-way&quot;&gt;The OpenTofu way&lt;/h2&gt;
+
+&lt;p&gt;Since OpenTofu 1.9:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;variable&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;regions&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;eu-central-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;eu-west-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;us-east-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;variable&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;vpc_ids&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;provider&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;alias&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;by_region&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;for_each&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;regions&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;region&lt;/span&gt;   &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;each&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;dns_firewall&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;source&lt;/span&gt;   &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;./modules/dns-firewall&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;for_each&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;regions&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;providers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;by_region&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;each&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;vpc_id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;vpc_ids&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;each&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That is the whole trick. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws.by_region&lt;/code&gt; is now a map of provider instances keyed by region, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws.by_region[each.key]&lt;/code&gt;
+hands the right one to each module instance. Adding a region is adding a string to a set. The module code inside
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;./modules/dns-firewall&lt;/code&gt; did not change at all, it still just says &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;provider &quot;aws&quot;&lt;/code&gt; and gets whatever it is given.&lt;/p&gt;
+
+&lt;p&gt;It works on resources too, not only modules, in case you do not want a module for a three-resource thing:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws_cloudwatch_log_group&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;dns_firewall&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;for_each&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;regions&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;provider&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;by_region&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;each&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;              &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;/aws/route53resolver/dns-firewall&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;retention_in_days&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;30&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;why-this-was-impossible-before-early-evaluation&quot;&gt;Why this was impossible before: early evaluation&lt;/h2&gt;
+
+&lt;p&gt;The reason Terraform never did this is not laziness, it is the evaluation model. Provider configuration has to be known
+before the graph is built, because providers are what the graph talks to. Anything in a provider block had to be a
+literal or a variable with no dependencies.&lt;/p&gt;
+
+&lt;p&gt;OpenTofu 1.8 introduced what the docs call early evaluation (you will also see “static evaluation”): variables and
+locals that can be resolved before the graph exists are allowed in places that used to be literal-only. Provider
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;for_each&lt;/code&gt; in 1.9 is built on top of it. The same mechanism gives you two other things advanced users have been asking
+for since roughly 2015:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# a variable in the backend config&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;terraform&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;backend&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s3&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;bucket&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;state_bucket&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;dns-firewall/${var.environment}.tfstate&quot;&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;region&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;eu-central-1&quot;&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# a variable in a module source&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;dns_firewall&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;source&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;git::https://github.com/example/tofu-modules.git//dns-firewall?ref=${var.modules_ref}&quot;&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;# ...&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The rule to remember: the value has to be knowable without talking to any provider. Variables, locals built from
+variables, functions on those - fine. Anything that comes out of a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;data&lt;/code&gt; source or a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;resource&lt;/code&gt; - no, and OpenTofu
+tells you so at plan time, not with a cryptic error halfway through apply.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-gotcha-and-the-pattern-that-avoids-it&quot;&gt;The gotcha, and the pattern that avoids it&lt;/h2&gt;
+
+&lt;p&gt;There is one sharp edge, and it is the same one aliased providers always had, just easier to hit now. Say you remove
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;us-east-1&lt;/code&gt; from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;var.regions&lt;/code&gt;. OpenTofu now wants to destroy &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;module.dns_firewall[&quot;us-east-1&quot;]&lt;/code&gt;, but the provider
+instance &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws.by_region[&quot;us-east-1&quot;]&lt;/code&gt; is gone from the configuration too, and you cannot destroy a resource without the
+provider that created it. Plan fails.&lt;/p&gt;
+
+&lt;p&gt;The fix is to decouple the two sets. Providers iterate over every region you could ever have, modules iterate over the
+ones you actually want right now:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;locals&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;# every region this account is ever allowed to touch&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;all_regions&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;eu-central-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;eu-west-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;eu-north-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;us-east-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;us-west-2&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;variable&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;active_regions&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;eu-central-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;eu-west-1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;provider&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;aws&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;alias&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;by_region&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;for_each&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;toset&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;local&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;all_regions&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;region&lt;/span&gt;   &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;each&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;module&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;dns_firewall&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;source&lt;/span&gt;   &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;./modules/dns-firewall&quot;&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;for_each&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;active_regions&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;providers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;aws&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;by_region&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;each&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;vpc_id&lt;/span&gt;   &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;vpc_ids&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;each&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now removing a region from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;active_regions&lt;/code&gt; produces a clean destroy, because the provider instance for it still
+exists. An unused provider instance costs nothing, it is just configuration. Add a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;validation&lt;/code&gt; block on
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;active_regions&lt;/code&gt; checking &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;setsubtract(var.active_regions, local.all_regions)&lt;/code&gt; is empty if you want a friendlier error
+than the one OpenTofu gives for a missing map key.&lt;/p&gt;
+
+&lt;h2 id=&quot;two-small-bonuses&quot;&gt;Two small bonuses&lt;/h2&gt;
+
+&lt;p&gt;Since the module instances are keyed by region, you can do one region at a time without touching the code.
+OpenTofu 1.9 also added &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-exclude&lt;/code&gt;, the mirror image of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-target&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# roll out only Frankfurt first&lt;/span&gt;
+tofu apply &lt;span class=&quot;nt&quot;&gt;-target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'module.dns_firewall[&quot;eu-central-1&quot;]'&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# everything except Virginia, which is in the middle of an incident&lt;/span&gt;
+tofu apply &lt;span class=&quot;nt&quot;&gt;-exclude&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'module.dns_firewall[&quot;us-east-1&quot;]'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And because the region is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;each.key&lt;/code&gt;, your outputs come out as a map for free:&lt;/p&gt;
+
+&lt;div class=&quot;language-hcl highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;output&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;rule_group_ids&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;region&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;m&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;module&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dns_firewall&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;region&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;rule_group_id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;should-you-migrate-existing-code-to-this&quot;&gt;Should you migrate existing code to this?&lt;/h2&gt;
+
+&lt;p&gt;If you have the five-copies setup and it works, the honest answer is: only when you touch it next. The addresses change
+from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;module.dns_firewall_frankfurt&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;module.dns_firewall[&quot;eu-central-1&quot;]&lt;/code&gt;, so you need a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;moved&lt;/code&gt; block per region
+or a state move, which is a chore but a one-time one. For anything new, I do not see a reason to write the old pattern
+ever again. Requires OpenTofu 1.9 or newer, and the provider itself does not have to know or care.&lt;/p&gt;</content><author><name></name></author><category term="DevOps" /><category term="DevOps" /><category term="OpenTofu" /><category term="Terraform" /><category term="IaC" /><category term="AWS" /><summary type="html">Here is a thing I wish somebody had shown me the week OpenTofu 1.9 came out. If you have ever had to deploy the same stack to five AWS regions, you know the ritual: five provider &quot;aws&quot; blocks with five aliases, five copies of the module block differing only in the providers map, and a bad feeling every time a sixth region shows up. In OpenTofu you can put for_each on the provider block itself. One provider block, one module block, regions come from a variable. Terraform still cannot do this.</summary></entry><entry><title type="html">I turned this blog into a terminal window (and threw out the theme while I was at it)</title><link href="https://roberts-notes.blog/2026/10/16/blog-as-a-terminal-7kb-of-css/" rel="alternate" type="text/html" title="I turned this blog into a terminal window (and threw out the theme while I was at it)" /><published>2026-10-16T10:30:00+02:00</published><updated>2026-10-16T10:30:00+02:00</updated><id>https://roberts-notes.blog/2026/10/16/blog-as-a-terminal-7kb-of-css</id><content type="html" xml:base="https://roberts-notes.blog/2026/10/16/blog-as-a-terminal-7kb-of-css/">&lt;p&gt;So, new look. If you were here before you probably remember a white page with a serif font that looked like every
+other Jekyll blog from 2016 - because that is exactly what it was. I have wanted something that looks like the thing
+I stare at all day for a long time, and last evening I finally did it. This is a short note on how, mostly because
+I ended up deleting more than I added, and that part surprised me.
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;how-it-started&quot;&gt;How it started&lt;/h2&gt;
+
+&lt;p&gt;I did not start from a design. I started from a complaint: the old theme pulled in a Google font, Font Awesome
+(the whole 30 KB of it, for three icons in the footer) and a theme gem I had not updated in years. For a blog that
+is ninety percent text and HCL snippets. Every time I touched it I had the feeling I was maintaining someone else’s
+furniture.&lt;/p&gt;
+
+&lt;p&gt;Then the “make it look like a console” idea came back, and I decided the two problems have one solution: rip out the
+theme, write the layouts myself, and keep only what I can read in one sitting.&lt;/p&gt;
+
+&lt;p&gt;I was lazy about it, in the good way. I had Claude Code throw together three static mockups - a green-on-black retro
+one with scanlines, a dark “modern terminal” one, and a man-page style light one - opened them side by side and
+picked. The retro one was the most fun and the least readable. The man page was the most readable and did not look
+like a terminal at all. The middle one won, with the scanlines stolen from the retro one because I liked them too much
+to let go.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-is-actually-there-now&quot;&gt;What is actually there now&lt;/h2&gt;
+
+&lt;p&gt;Six layout files in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_layouts/&lt;/code&gt;, two tiny includes, one CSS file. No framework, no JavaScript in the theme, no web
+fonts - it uses whatever monospace and sans fonts your system already has. The icons became words. Turns out “GitHub”
+written as a word is perfectly understandable.&lt;/p&gt;
+
+&lt;p&gt;The whole page sits in a fake window, about 106 characters wide, which is roughly how wide I keep my real terminal:&lt;/p&gt;
 
 &lt;div class=&quot;language-css highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nc&quot;&gt;.win&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;position&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;relative&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;max-width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;106ch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;margin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#1e1e2e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
      &lt;span class=&quot;nl&quot;&gt;border-radius&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;10px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;border&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1px&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;solid&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;#313244&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;box-shadow&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;20px&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;60px&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rgba&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;overflow&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;hidden&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
@@ -27,26 +225,33 @@ The whole page is &lt;code class=&quot;language-plaintext highlighter-rouge&quot
 &lt;span class=&quot;nc&quot;&gt;.bar&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;:nth-child&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#f38ba8&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;.bar&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;:nth-child&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#f9e2af&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;.bar&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;:nth-child&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#a6e3a1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;The colours are &lt;a href=&quot;https://catppuccin.com/&quot;&gt;Catppuccin Mocha&lt;/a&gt;, because it is a palette most terminal emulators and editors
-already ship, and because giscus has a matching theme, so the comment box does not look like a white sticker on a dark page.&lt;/p&gt;
+&lt;p&gt;The three dots in the title bar are three empty &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;i&amp;gt;&lt;/code&gt; tags with a background colour. I was half expecting to need an
+SVG for that, nope.&lt;/p&gt;
 
-&lt;h2 id=&quot;the-prompt&quot;&gt;The prompt&lt;/h2&gt;
+&lt;p&gt;Colours are &lt;a href=&quot;https://catppuccin.com/&quot;&gt;Catppuccin Mocha&lt;/a&gt;. Not a deep decision - it is everywhere already, it is easy on
+the eyes, and giscus has a theme with the same name, so the comments box below the posts does not look like someone
+glued a white sticker on a dark screen.&lt;/p&gt;
 
-&lt;p&gt;Every “section” of a page is a fake command followed by its output. The prompt is a Jekyll include with two
-parameters, the working directory and the command:&lt;/p&gt;
+&lt;h2 id=&quot;the-prompt-thing&quot;&gt;The prompt thing&lt;/h2&gt;
+
+&lt;p&gt;Every page is a sequence of fake commands and their “output”. The prompt is a Jekyll include, I pass it the directory
+and the command:&lt;/p&gt;
 
 &lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;p&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;arrow&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;➜&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;h&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;robert@notes&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&lt;/span&gt;
 &lt;span class=&quot;nt&quot;&gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;d&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;{{ include.cwd }}&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;g&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;git:(&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;arrow&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;master&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;g&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;)&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&lt;/span&gt;
 &lt;span class=&quot;nt&quot;&gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;c&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;{{ include.cmd }}&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;The home page is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ls -t posts/ | head -n 5 | xargs head -n 3&lt;/code&gt;, a post is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;glow &amp;lt;slug&amp;gt;.md&lt;/code&gt;, the archive is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ls -lt&lt;/code&gt;, a
-tag page is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;grep -l &quot;tag: AWS&quot; *.md&lt;/code&gt;. It is a joke, but it is a joke that also tells you where you are.&lt;/p&gt;
+&lt;p&gt;The front page pretends to run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ls -t posts/ | head -n 5 | xargs head -n 3&lt;/code&gt;, a post is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;glow something.md&lt;/code&gt;, the
+archive is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ls -lt&lt;/code&gt;, a tag page is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;grep -l &quot;tag: AWS&quot; *.md&lt;/code&gt;. Yes, it is a gag. But it is a gag that also tells you
+where on the site you are, so I am keeping it.&lt;/p&gt;
 
-&lt;h2 id=&quot;the-cursor-and-the-scanlines---css-only&quot;&gt;The cursor and the scanlines - CSS only&lt;/h2&gt;
+&lt;h2 id=&quot;blinking-cursor-and-scanlines-no-js&quot;&gt;Blinking cursor and scanlines, no JS&lt;/h2&gt;
 
-&lt;p&gt;The blinking block at the bottom is a pseudo-element with a one-step animation. The scanlines are a repeating gradient
-laid over the window with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pointer-events: none&lt;/code&gt;, so it never gets in the way of selecting text.&lt;/p&gt;
+&lt;p&gt;I was sure the cursor would need a few lines of JavaScript. It does not, it is a pseudo-element with a one-step
+animation. Same for the scanlines, that is a repeating gradient painted over the window. The important bit is
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pointer-events: none&lt;/code&gt;, otherwise you cannot select text through it - I learned that one the hard way, about thirty
+seconds after adding it.&lt;/p&gt;
 
 &lt;div class=&quot;language-css highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nc&quot;&gt;.cur&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;::after&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&quot;▋&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;animation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bl&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1.1s&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;steps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;infinite&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;@keyframes&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;opacity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}}&lt;/span&gt;
@@ -56,64 +261,37 @@ laid over the window with &lt;code class=&quot;language-plaintext highlighter-ro
   &lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;repeating-linear-gradient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0deg&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rgba&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;.12&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;transparent&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1px&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;3px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;prefers-reduced-motion&lt;/code&gt; line is two seconds of work and it is the difference between a nice touch and a page that
-some people cannot read.&lt;/p&gt;
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;prefers-reduced-motion&lt;/code&gt; line is there because a blinking thing in the corner is cute for me and genuinely
+unpleasant for some people. One line, do it.&lt;/p&gt;
 
-&lt;h2 id=&quot;monospace-where-it-is-ui-sans-where-it-is-prose&quot;&gt;Monospace where it is UI, sans where it is prose&lt;/h2&gt;
+&lt;h2 id=&quot;the-one-real-decision-not-everything-is-monospace&quot;&gt;The one real decision: not everything is monospace&lt;/h2&gt;
 
-&lt;p&gt;This was the one design decision that took some thought. A 100% monospace page looks the most like a terminal and is
-the hardest thing to read for two thousand words. So the chrome - prompts, nav, titles, headings, code - is monospace,
-and the post body is the system sans font at a slightly larger size. Headings keep the terminal feeling with a
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;##&lt;/code&gt; prefix drawn by CSS:&lt;/p&gt;
+&lt;p&gt;This is the part I went back and forth on. A page that is 100% monospace looks the most like a terminal. It is also
+tiring to read once a post goes past a few hundred words, and some of mine go well past that. So I split it: anything
+that is “UI” - prompts, nav, titles, headings, code - is monospace, and the body text of a post is a normal sans font,
+slightly bigger. Headings keep a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;##&lt;/code&gt; in front of them, drawn by CSS, so they still look like markdown in a terminal:&lt;/p&gt;
 
 &lt;div class=&quot;language-css highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nc&quot;&gt;.post&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;.body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;font-family&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;system-ui&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;-apple-system&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&quot;Segoe UI&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Roboto&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sans-serif&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;font-size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1.03rem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;line-height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1.7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;nc&quot;&gt;.post&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;.body&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;h2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;font-family&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ui-monospace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Menlo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Consolas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;monospace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#cba6f7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;nc&quot;&gt;.post&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;.body&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;h2&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;::before&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&quot;## &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#6c7086&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;h2 id=&quot;what-did-not-change-honestly&quot;&gt;What did not change, honestly&lt;/h2&gt;
+&lt;p&gt;If you are reading this on the site, you are looking at the result. If it bugs you, tell me, the mono-everything
+version is one CSS rule away.&lt;/p&gt;
 
-&lt;p&gt;The theme has zero JavaScript, but the page is not script-free. Google Analytics is still there, giscus loads on post
-pages for comments, and the contact form still uses reCAPTCHA. Those are the same three third parties the old design
-had, I just did not pretend otherwise in the footer. Dropping them is a separate decision for a separate day.&lt;/p&gt;
+&lt;h2 id=&quot;a-small-confession&quot;&gt;A small confession&lt;/h2&gt;
 
-&lt;h2 id=&quot;numbers&quot;&gt;Numbers&lt;/h2&gt;
+&lt;p&gt;The theme has no JavaScript, but the page does. Google Analytics is still here, the comments are giscus (so that is an
+iframe plus a script on post pages), and the contact form still has reCAPTCHA in front of it. Same three third parties
+as before, I just moved the furniture around them. I did briefly have “no JS, no cookies” in the footer, noticed it was
+a lie, and took it out. Whether to actually go cookie-free is a question for another evening.&lt;/p&gt;
 
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt; &lt;/th&gt;
-      &lt;th&gt;before&lt;/th&gt;
-      &lt;th&gt;after&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;stylesheet&lt;/td&gt;
-      &lt;td&gt;10.6 KB&lt;/td&gt;
-      &lt;td&gt;7.2 KB&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;icon font CSS&lt;/td&gt;
-      &lt;td&gt;30 KB + font file&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;web font requests&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;theme JavaScript&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
+&lt;h2 id=&quot;was-it-worth-it&quot;&gt;Was it worth it&lt;/h2&gt;
 
-&lt;p&gt;Not a dramatic saving in bytes, the site was already light. The win is in moving parts: no theme gem to keep in sync
-with Jekyll, no CDN that can go away, nothing to update. The whole design is 70 lines of CSS I can read in one sitting,
-which is exactly the amount of frontend I want to own.&lt;/p&gt;</content><author><name></name></author><category term="Meta" /><category term="Meta" /><category term="CSS" /><category term="Jekyll" /><category term="Web" /><summary type="html">If you have been here before you noticed: the serif font and the white background are gone, the blog now renders inside a terminal window with a zsh prompt. This post is the short write-up of how, because the interesting part is not the look, it is what was removed to get there. No CSS framework, no JavaScript for the theme, no web fonts, one 7 KB stylesheet. Still Jekyll, still static files on Firebase Hosting.</summary></entry><entry><title type="html">Claude Code skills - teach the agent your workflow once, in a Markdown file</title><link href="https://roberts-notes.blog/2026/10/16/claude-code-skills-in-practice/" rel="alternate" type="text/html" title="Claude Code skills - teach the agent your workflow once, in a Markdown file" /><published>2026-10-16T09:00:00+02:00</published><updated>2026-10-16T09:00:00+02:00</updated><id>https://roberts-notes.blog/2026/10/16/claude-code-skills-in-practice</id><content type="html" xml:base="https://roberts-notes.blog/2026/10/16/claude-code-skills-in-practice/">&lt;p&gt;Every time I opened Claude Code I was typing the same paragraph: “new post goes to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_posts&lt;/code&gt;, file name starts with the date,
+&lt;p&gt;Byte-wise, not dramatically: the stylesheet went from about 10 KB to about 7, and the font and icon downloads went
+to zero. The site was never heavy. What I got rid of is moving parts. There is no theme gem to keep compatible with
+Jekyll anymore, no CDN link that can rot, nothing to update. Seventy lines of CSS, and I know what every one of them
+does. For a blog I post to a couple of times a year, that is the right amount of frontend to own.&lt;/p&gt;</content><author><name></name></author><category term="Meta" /><category term="Meta" /><category term="CSS" /><category term="Jekyll" /><category term="Web" /><summary type="html">So, new look. If you were here before you probably remember a white page with a serif font that looked like every other Jekyll blog from 2016 - because that is exactly what it was. I have wanted something that looks like the thing I stare at all day for a long time, and last evening I finally did it. This is a short note on how, mostly because I ended up deleting more than I added, and that part surprised me.</summary></entry><entry><title type="html">Claude Code skills - teach the agent your workflow once, in a Markdown file</title><link href="https://roberts-notes.blog/2026/10/16/claude-code-skills-in-practice/" rel="alternate" type="text/html" title="Claude Code skills - teach the agent your workflow once, in a Markdown file" /><published>2026-10-16T09:00:00+02:00</published><updated>2026-10-16T09:00:00+02:00</updated><id>https://roberts-notes.blog/2026/10/16/claude-code-skills-in-practice</id><content type="html" xml:base="https://roberts-notes.blog/2026/10/16/claude-code-skills-in-practice/">&lt;p&gt;Every time I opened Claude Code I was typing the same paragraph: “new post goes to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_posts&lt;/code&gt;, file name starts with the date,
 front matter looks like this, build to a temp dir, don’t touch &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;docs/&lt;/code&gt;”. Then I discovered that this paragraph has a
 proper home. It is called a skill, it is one Markdown file, and the agent loads it on its own when the task matches.
 This post is the five minute version: what a skill is, where it lives, and two examples worth copying.
@@ -1312,46 +1490,4 @@ title[2]/ = CentOS 6 (2.6.32-504.8.1.el6.x86_64)
 You can read more about that here &lt;a href=&quot;http://augeasproviders.com/&quot;&gt;http://augeasproviders.com/&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;–
-Robert&lt;/p&gt;</content><author><name></name></author><category term="Automation" /><category term="Provisioning" /><category term="Automation" /><category term="Puppet" /><summary type="html">Recently I came across an interesting problem. I had to install a kernel from the 3.10 branch on CentOS 6 and there was a need to update grub.conf - change the default kernel plus add a boot option. Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?</summary></entry><entry><title type="html">How to pass variable to Jinja template in Salt</title><link href="https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt/" rel="alternate" type="text/html" title="How to pass variable to Jinja template in Salt" /><published>2015-11-03T21:00:00+01:00</published><updated>2015-11-03T21:00:00+01:00</updated><id>https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt</id><content type="html" xml:base="https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt/">&lt;p&gt;Yesterday I faced a quite interesting problem.
-In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash
-from the current iteration to a Jinja template. &lt;!--more--&gt;
-To make it more clear, let me show you the problem in the code:&lt;/p&gt;
-
-&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;pi&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;for vhost in pillar&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;vhosts'&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;/etc/httpd/conf.d/{{ vhost.name }}.conf&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;:&lt;/span&gt;
-  &lt;span class=&quot;na&quot;&gt;file.managed&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;template&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;jinja&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;salt://httpd/files/vhost/vhost_template.conf.jinja&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;m&quot;&gt;644&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;pkg&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;httpd&lt;/span&gt;
-&lt;span class=&quot;pi&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;endfor %&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;I simply wanted to use the variable &lt;em&gt;vhost&lt;/em&gt; in my template.
-The variable &lt;em&gt;vhost&lt;/em&gt; is nothing more than a hash with parameters for each vhost.
-We can solve this problem by using &lt;em&gt;context&lt;/em&gt; in the &lt;em&gt;salt&lt;/em&gt; definition.
-Here is the final version of my sls snippet (aka the solution):&lt;/p&gt;
-
-&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;pi&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;for vhost in pillar&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;vhosts'&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;/etc/httpd/conf.d/{{ vhost.name }}.conf&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;:&lt;/span&gt;
-  &lt;span class=&quot;na&quot;&gt;file.managed&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;template&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;jinja&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;salt://httpd/files/vhost/vhost_template.conf.jinja&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;apache&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;     &lt;span class=&quot;m&quot;&gt;644&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;pkg&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;httpd&lt;/span&gt;
-    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;             &lt;span class=&quot;c1&quot;&gt;# set up context for template&lt;/span&gt;
-        &lt;span class=&quot;na&quot;&gt;vhost&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;{{&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;vhost&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;}}&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# it makes vhost hash available inside&lt;/span&gt;
-                           &lt;span class=&quot;c1&quot;&gt;# Jinja template under the name vhost&lt;/span&gt;
-&lt;span class=&quot;pi&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;endfor %&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;Of course you can pass as many variables as you want via the context.&lt;/p&gt;
-
-&lt;p&gt;–robert&lt;/p&gt;</content><author><name></name></author><category term="Salt" /><summary type="html">Yesterday I faced a quite interesting problem. In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash from the current iteration to a Jinja template.</summary></entry></feed>
+Robert&lt;/p&gt;</content><author><name></name></author><category term="Automation" /><category term="Provisioning" /><category term="Automation" /><category term="Puppet" /><summary type="html">Recently I came across an interesting problem. I had to install a kernel from the 3.10 branch on CentOS 6 and there was a need to update grub.conf - change the default kernel plus add a boot option. Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?</summary></entry></feed>

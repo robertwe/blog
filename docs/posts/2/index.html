@@ -66,6 +66,20 @@
   
   
   <article class="card">
+    <h2><a href="/2026/07/21/opentofu-enabled-meta-argument/">OpenTofu&#39;s enabled meta-argument - conditional resources without the count hack</a></h2>
+    <div class="meta"><time datetime="2026-07-21T21:00:00+02:00">2026-07-21</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a></div>
+
+    <div class="excerpt"><p>In my <a href="/2026/07/21/transition-to-opentofu/">previous post</a> I wrote about migrating from Terraform to OpenTofu
+and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that:
+a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation
+via <code class="language-plaintext highlighter-rouge">count</code>. The feature is called <code class="language-plaintext highlighter-rouge">enabled</code>, it lives in the <code class="language-plaintext highlighter-rouge">lifecycle</code> block, it shipped in OpenTofu 1.11,
+and Terraform simply does not have it.</p>
+
+</div>
+    <a class="more" href="/2026/07/21/opentofu-enabled-meta-argument/">read more →</a>
+  </article>
+  
+  <article class="card">
     <h2><a href="/2026/07/21/transition-to-opentofu/">From Terraform to OpenTofu - why and how we made the switch</a></h2>
     <div class="meta"><time datetime="2026-07-21T09:00:00+02:00">2026-07-21</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/iac/">IaC</a></div>
 
@@ -114,18 +128,6 @@ Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also
 
 </div>
     <a class="more" href="/2016/11/05/introduction-to-augeas-in-puppet/">read more →</a>
-  </article>
-  
-  <article class="card">
-    <h2><a href="/2015/11/03/pass-variables-to-jinja-template-in-salt/">How to pass variable to Jinja template in Salt</a></h2>
-    <div class="meta"><time datetime="2015-11-03T21:00:00+01:00">2015-11-03</time> <a href="/tags/salt/">Salt</a></div>
-
-    <div class="excerpt"><p>Yesterday I faced a quite interesting problem.
-In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash
-from the current iteration to a Jinja template.</p>
-
-</div>
-    <a class="more" href="/2015/11/03/pass-variables-to-jinja-template-in-salt/">read more →</a>
   </article>
   
 </div>

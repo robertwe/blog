@@ -66,13 +66,27 @@
   
   
   <article class="card">
-    <h2><a href="/2026/10/16/blog-as-a-terminal-7kb-of-css/">This blog now looks like a terminal - and weighs 7 KB of CSS</a></h2>
+    <h2><a href="/2026/10/16/opentofu-provider-for-each-multi-region/">One module block, every region: provider for_each in OpenTofu</a></h2>
+    <div class="meta"><time datetime="2026-10-16T11:45:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a> <a href="/tags/aws/">AWS</a></div>
+
+    <div class="excerpt"><p>Here is a thing I wish somebody had shown me the week OpenTofu 1.9 came out. If you have ever had to deploy the same
+stack to five AWS regions, you know the ritual: five <code class="language-plaintext highlighter-rouge">provider "aws"</code> blocks with five aliases, five copies of the
+<code class="language-plaintext highlighter-rouge">module</code> block differing only in the <code class="language-plaintext highlighter-rouge">providers</code> map, and a bad feeling every time a sixth region shows up. In OpenTofu
+you can put <code class="language-plaintext highlighter-rouge">for_each</code> on the provider block itself. One provider block, one module block, regions come from a
+variable. Terraform still cannot do this.</p>
+
+</div>
+    <a class="more" href="/2026/10/16/opentofu-provider-for-each-multi-region/">read more →</a>
+  </article>
+  
+  <article class="card">
+    <h2><a href="/2026/10/16/blog-as-a-terminal-7kb-of-css/">I turned this blog into a terminal window (and threw out the theme while I was at it)</a></h2>
     <div class="meta"><time datetime="2026-10-16T10:30:00+02:00">2026-10-16</time> <a href="/tags/meta/">Meta</a> <a href="/tags/css/">CSS</a> <a href="/tags/jekyll/">Jekyll</a> <a href="/tags/web/">Web</a></div>
 
-    <div class="excerpt"><p>If you have been here before you noticed: the serif font and the white background are gone, the blog now renders inside
-a terminal window with a zsh prompt. This post is the short write-up of how, because the interesting part is not the
-look, it is what was removed to get there. No CSS framework, no JavaScript for the theme, no web fonts, one 7 KB
-stylesheet. Still Jekyll, still static files on Firebase Hosting.</p>
+    <div class="excerpt"><p>So, new look. If you were here before you probably remember a white page with a serif font that looked like every
+other Jekyll blog from 2016 - because that is exactly what it was. I have wanted something that looks like the thing
+I stare at all day for a long time, and last evening I finally did it. This is a short note on how, mostly because
+I ended up deleting more than I added, and that part surprised me.</p>
 
 </div>
     <a class="more" href="/2026/10/16/blog-as-a-terminal-7kb-of-css/">read more →</a>
@@ -117,20 +131,6 @@ Here is a rundown of the options that actually work with FQDNs, and what each on
 
 </div>
     <a class="more" href="/2026/07/22/blocking-egress-fqdns-on-eks/">read more →</a>
-  </article>
-  
-  <article class="card">
-    <h2><a href="/2026/07/21/opentofu-enabled-meta-argument/">OpenTofu&#39;s enabled meta-argument - conditional resources without the count hack</a></h2>
-    <div class="meta"><time datetime="2026-07-21T21:00:00+02:00">2026-07-21</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a></div>
-
-    <div class="excerpt"><p>In my <a href="/2026/07/21/transition-to-opentofu/">previous post</a> I wrote about migrating from Terraform to OpenTofu
-and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that:
-a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation
-via <code class="language-plaintext highlighter-rouge">count</code>. The feature is called <code class="language-plaintext highlighter-rouge">enabled</code>, it lives in the <code class="language-plaintext highlighter-rouge">lifecycle</code> block, it shipped in OpenTofu 1.11,
-and Terraform simply does not have it.</p>
-
-</div>
-    <a class="more" href="/2026/07/21/opentofu-enabled-meta-argument/">read more →</a>
   </article>
   
 </div>
