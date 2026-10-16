@@ -45,7 +45,7 @@ img {
 /* window */
 .win {
   position: relative;
-  max-width: 106ch;
+  max-width: 128ch;
   margin: 0 auto;
   background: var(--base);
   border-radius: 10px;

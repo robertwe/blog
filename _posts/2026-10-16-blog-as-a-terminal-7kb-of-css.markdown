@@ -34,10 +34,10 @@ Six layout files in `_layouts/`, two tiny includes, one CSS file. No framework, 
 fonts - it uses whatever monospace and sans fonts your system already has. The icons became words. Turns out "GitHub"
 written as a word is perfectly understandable.
 
-The whole page sits in a fake window, about 106 characters wide, which is roughly how wide I keep my real terminal:
+The whole page sits in a fake window, about 128 characters wide, which is roughly how wide I keep my real terminal:
 
 ```css
-.win{position:relative;max-width:106ch;margin:0 auto;background:#1e1e2e;
+.win{position:relative;max-width:128ch;margin:0 auto;background:#1e1e2e;
      border-radius:10px;border:1px solid #313244;box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden}
 .bar{background:#313244;padding:.55rem 1rem;display:flex;align-items:center;gap:.45rem}
 .bar i{width:12px;height:12px;border-radius:50%}
