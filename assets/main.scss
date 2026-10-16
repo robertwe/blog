@@ -58,6 +58,14 @@ code{font-family:var(--mono);font-size:.9em;background:var(--surf);color:var(--p
 .highlight .c,.highlight .c1,.highlight .cm,.highlight .cp{color:var(--sub2);font-style:italic}.highlight .err{color:inherit;background:none}
 .highlight .p,.highlight .o{color:var(--sky)}.highlight .nv,.highlight .nb{color:var(--red)}.highlight .nf{color:var(--blue)}
 
+/* trailing prompt: <details> that lists posts on click */
+details.sh summary{list-style:none;cursor:pointer;display:inline-block}
+details.sh summary::-webkit-details-marker{display:none}
+details.sh summary:hover .cur::after,details.sh summary:focus-visible .cur::after{color:var(--yellow)}
+details.sh summary:focus-visible{outline:1px dashed var(--mauve);outline-offset:4px}
+details.sh:not([open]) .when-open{display:none}details.sh[open] .when-closed{display:none}
+details.sh table.ls{margin:.4rem 0 1rem}
+
 /* comments, footer */
 .comments .feedback{color:var(--sub);margin:0}
 footer{color:var(--sub);font-size:.85rem;border-top:1px solid var(--surf);padding-top:1rem;margin-top:2rem}

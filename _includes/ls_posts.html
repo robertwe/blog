@@ -1,0 +1,18 @@
+{%- comment -%} Trailing prompt that "runs" ls posts/ on click - plain <details>, no JS. {%- endcomment -%}
+<details class="sh">
+  <summary title="ls posts/">
+    <span class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">{{ include.cwd }}</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c when-open">ls -lt posts/ | head -n 20</span><span class="cur when-closed"></span></span>
+  </summary>
+  <table class="ls out">
+    {%- for post in site.posts limit: 20 %}
+    <tr>
+      <td class="d"><time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y-%m-%d" }}</time></td>
+      <td><a href="{{ post.url | relative_url }}" title="{{ post.title | escape }}">{{ post.url | split: "/" | last }}.md</a></td>
+    </tr>
+    {%- endfor %}
+    {%- if site.posts.size > 20 %}
+    <tr><td class="d"></td><td><a href="{{ "/archives/" | relative_url }}">... {{ site.posts.size | minus: 20 }} more, see archives/</a></td></tr>
+    {%- endif %}
+  </table>
+  <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">{{ include.cwd }}</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="cur"></span></div>
+</details>
