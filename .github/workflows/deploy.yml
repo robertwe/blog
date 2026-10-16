@@ -4,6 +4,11 @@ on:
   push:
     branches: [master]
   pull_request:
+  schedule:
+    # Friday 21:17 UTC = 22:17 CET / 23:17 CEST. Publishes posts whose date has passed
+    # (Jekyll skips future-dated posts), so scheduled posts are dated Friday 22:00 local.
+    - cron: '17 21 * * 5'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -35,7 +40,7 @@ jobs:
           retention-days: 7
 
   deploy:
-    if: github.event_name == 'push'
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     steps:

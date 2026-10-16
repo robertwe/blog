@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Podman on macOS instead of Docker Desktop - what actually changes'
-date: 2026-10-16 14:30:00.00 +02:00
+date: 2026-11-27 22:00:00.00 +01:00
 tag: ["DevOps", "Containers", "Podman", "macOS"]
 category: DevOps
 ---

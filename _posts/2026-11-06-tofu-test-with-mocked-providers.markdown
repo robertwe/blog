@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Testing an OpenTofu module without an AWS account: tofu test and mock_provider'
-date: 2026-10-16 13:00:00.00 +02:00
+date: 2026-11-06 22:00:00.00 +01:00
 tag: ["DevOps", "OpenTofu", "Terraform", "IaC", "Testing", "AWS"]
 category: DevOps
 ---

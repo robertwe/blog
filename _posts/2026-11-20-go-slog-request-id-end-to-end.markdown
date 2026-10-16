@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Go: a request ID on every log line with log/slog, without passing a logger around'
-date: 2026-10-16 14:00:00.00 +02:00
+date: 2026-11-20 22:00:00.00 +01:00
 tag: ["Programming", "GoLang", "AWS", "Observability"]
 category: GoLang
 ---

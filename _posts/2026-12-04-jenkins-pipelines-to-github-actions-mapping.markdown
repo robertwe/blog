@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'From Jenkins pipelines to GitHub Actions - a mapping, not a migration guide'
-date: 2026-10-16 15:00:00.00 +02:00
+date: 2026-12-04 22:00:00.00 +01:00
 tag: ["DevOps", "CI/CD", "Jenkins", "GitHub Actions", "OpenTofu", "AWS"]
 category: DevOps
 ---

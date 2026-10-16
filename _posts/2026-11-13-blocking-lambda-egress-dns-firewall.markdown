@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Blocking egress from Lambda: the sequel to the EKS post'
-date: 2026-10-16 13:30:00.00 +02:00
+date: 2026-11-13 22:00:00.00 +01:00
 tag: ["DevOps", "AWS", "Lambda", "Security", "Networking", "OpenTofu"]
 category: DevOps
 ---

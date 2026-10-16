@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'State surgery without the CLI: import, moved and removed blocks with for_each'
-date: 2026-10-16 12:30:00.00 +02:00
+date: 2026-10-30 22:00:00.00 +01:00
 tag: ["DevOps", "OpenTofu", "Terraform", "IaC"]
 category: DevOps
 ---

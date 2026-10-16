@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'OpenTofu state encryption: encrypt an existing state and rotate the key without downtime'
-date: 2026-10-16 12:00:00.00 +02:00
+date: 2026-10-23 22:00:00.00 +02:00
 tag: ["DevOps", "OpenTofu", "Terraform", "IaC", "Security", "AWS"]
 category: DevOps
 ---
