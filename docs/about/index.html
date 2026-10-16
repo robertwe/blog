@@ -34,7 +34,7 @@
   <meta name="twitter:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
   
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
+  <script src="/assets/ga.js"></script>
   
 </head>
 <body>
@@ -100,6 +100,41 @@ Framework - they all taught me something, even if they are no longer in daily ro
 <p><code class="language-plaintext highlighter-rouge">Email: umberto.eco@abyssos.cc</code>
 <code class="language-plaintext highlighter-rouge">KeyID: 0x47743A17</code>
 <code class="language-plaintext highlighter-rouge">Fingerprint: E967 8AE5 7D98 965F A0DE 66CC 9469 2712 4774 3A17</code></p>
+
+<h2 id="privacy">Privacy</h2>
+
+<p>This is a static site - Jekyll, no theme gem, one CSS file, no JavaScript of its own. Three things load from
+somewhere else, nothing more:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>What</th>
+      <th>Where</th>
+      <th>Why</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Google Analytics 4</td>
+      <td>every page</td>
+      <td>visitor counts. Sets <code class="language-plaintext highlighter-rouge">_ga</code> cookies.</td>
+    </tr>
+    <tr>
+      <td>giscus</td>
+      <td>post pages</td>
+      <td>comments, stored as GitHub Discussions on the <a href="https://github.com/robertwe/blog">blog repo</a>. Runs in an iframe.</td>
+    </tr>
+    <tr>
+      <td>reCAPTCHA + a form backend</td>
+      <td>contact page only</td>
+      <td>spam filtering for the form.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The stats page additionally embeds a GitHub contribution chart and a Wakatime chart as images. If any of this
+changes, this table changes with it. The source of the whole site is on GitHub, so you can check.</p>
 
   </div>
 </article>

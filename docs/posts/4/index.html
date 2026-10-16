@@ -34,7 +34,7 @@
   <meta name="twitter:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
   
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
+  <script src="/assets/ga.js"></script>
   
 </head>
 <body>
@@ -66,92 +66,72 @@
   
   
   <article class="card">
-    <h2><a href="/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">IPtables returns an error : security raw nat mangle filter FAILED</a></h2>
-    <div class="meta"><time datetime="2014-06-28T12:13:09+02:00">2014-06-28</time></div>
+    <h2><a href="/2024/06/11/go-lang-generics/">Go Lang and interfaces and generics</a></h2>
+    <div class="meta"><time datetime="2024-06-11T03:30:00+02:00">2024-06-11</time> <a href="/tags/programming/">Programming</a> <a href="/tags/golang/">GoLang</a> <a href="/tags/generics/">Generics</a></div>
 
-    <div class="excerpt"><p>After setting up my new “linode” on linode.com I started configuring the firewall (iptables).
-After writing down all my rules I tried to restart iptables, but got output like this:</p>
+    <div class="excerpt"><p>Hey everyone,</p>
 
-<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>service iptables restart
-iptables: Flushing firewall rules:                         <span class="o">[</span>  OK  <span class="o">]</span>
-iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter
-iptables: Unloading modules:                               <span class="o">[</span>  OK  <span class="o">]</span>
-iptables: Applying firewall rules:                         <span class="o">[</span>  OK  <span class="o">]</span></code></pre></figure>
+<p>Today, I want to dive into Go language and talk about interfaces, with a specific focus on generics.
+Generics have been one of the most highly anticipated features in Go, and they are finally here with the release of Go 1.18.
+Let’s explore how interfaces and generics work together in Go and how they can make our code more flexible and reusable.</p>
 
 </div>
-    <a class="more" href="/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">read more →</a>
+    <a class="more" href="/2024/06/11/go-lang-generics/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2014/06/28/hosting-migration/">Hosting migration</a></h2>
-    <div class="meta"><time datetime="2014-06-28T11:52:36+02:00">2014-06-28</time> <a href="/tags/hosting/">hosting</a></div>
+    <h2><a href="/2016/11/05/introduction-to-augeas-in-puppet/">Quick introduction to Augeas in Puppet</a></h2>
+    <div class="meta"><time datetime="2016-11-05T22:30:00+01:00">2016-11-05</time> <a href="/tags/provisioning/">Provisioning</a> <a href="/tags/automation/">Automation</a> <a href="/tags/puppet/">Puppet</a></div>
 
-    <div class="excerpt"><p>I recently noticed I actually spend a lot of money on hosting and server resources I’m not using at all.
-Such a waste. After a small research I decided to move all my Droplets from <a href="https://www.digitalocean.com/">DigitalOcean.com</a>
-to its competitor - <a href="https://www.linode.com">linode.com</a>. I also hosted 2 sites on a separate hosting - elastichost.com -
-which is also rather expensive.
-So in the end I sat down and calculated how many resources I need and how many resources I actually pay for.
-At the beginning I thought that maybe the best solution would be to move everything to a dedicated machine at <a href="ovh.de">OVH</a> or
-maybe <a href="hetzner.de">Hetzner</a>, but in both cases the cost is ~50-70€ per month minimum. Quite a lot I think, especially when my
-sites do not have significant traffic.</p>
+    <div class="excerpt"><p>Recently I came across an interesting problem. I had to install a kernel
+from the 3.10 branch on CentOS 6 and there was a need to update <code class="language-plaintext highlighter-rouge">grub.conf</code> - change the default kernel plus add a boot option.
+Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?</p>
 
 </div>
-    <a class="more" href="/2014/06/28/hosting-migration/">read more →</a>
+    <a class="more" href="/2016/11/05/introduction-to-augeas-in-puppet/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2014/06/28/goal-for-the-next-2-3-months/">Goal for the next 2-3 months</a></h2>
-    <div class="meta"><time datetime="2014-06-28T11:21:42+02:00">2014-06-28</time></div>
+    <h2><a href="/2015/11/03/pass-variables-to-jinja-template-in-salt/">How to pass variable to Jinja template in Salt</a></h2>
+    <div class="meta"><time datetime="2015-11-03T21:00:00+01:00">2015-11-03</time> <a href="/tags/salt/">Salt</a></div>
 
-    <div class="excerpt"><h2 id="my-goal-for-the-next-2-or-3-months">My goal for the next 2 or 3 months:</h2>
-<p>I recently found <a href="http://ejohn.org/blog/write-code-every-day/">this</a> blog entry on the internet. Let’s see how it will go :).
-In general I think this is quite a good idea, mainly because you adapt to a “routine” of writing code (if you are not already addicted like me :D). This is definitely good training for your brain.
-Here is a link to my GitHub profile: https://github.com/robertwe
-So first I need to find a project :). I already contribute a little bit to the Jenkins CI project, but I would like to create something new.</p>
+    <div class="excerpt"><p>Yesterday I faced a quite interesting problem.
+In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash
+from the current iteration to a Jinja template.</p>
 
-<p>Have a great day.</p>
-
-<p>–
-Regards,
-Robert</p>
 </div>
-    <a class="more" href="/2014/06/28/goal-for-the-next-2-3-months/">read more →</a>
+    <a class="more" href="/2015/11/03/pass-variables-to-jinja-template-in-salt/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2014/05/20/centos6-host-command-is-missing/">CentOS6 &quot;host&quot; and &quot;dig&quot; commands are missing</a></h2>
-    <div class="meta"><time datetime="2014-05-20T20:39:37+02:00">2014-05-20</time></div>
+    <h2><a href="/2015/04/30/add-new-key-to-apt/">Add new key to APT AKA tell APT to trust given key</a></h2>
+    <div class="meta"><time datetime="2015-04-30T08:00:03+02:00">2015-04-30</time> <a href="/tags/linux/">Linux</a></div>
 
-    <div class="excerpt"><p>Recently I configured a new machine with CentOS 6.5 on board and it turned out the <em>host</em> command was missing.
-Here is a quick solution for that:</p>
+    <div class="excerpt"><p>On one of my desktop boxes I recently got this message when I wanted to update it via <code class="language-plaintext highlighter-rouge">apt</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Fetched 1448 B in 8s (180 B/s)
+Reading package lists... Done
+W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used.
+GPG error: http://xxxxxxx ./ Release: The following signatures couldn't be verified because
+the public key is not available: NO_PUBKEY 0000000000
+</code></pre></div></div>
 
 </div>
-    <a class="more" href="/2014/05/20/centos6-host-command-is-missing/">read more →</a>
+    <a class="more" href="/2015/04/30/add-new-key-to-apt/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2014/05/09/is-tdd-dead/">Is TDD Dead ?</a></h2>
-    <div class="meta"><time datetime="2014-05-09T21:24:39+02:00">2014-05-09</time></div>
+    <h2><a href="/2015/03/19/why-you-shoudnt-use-kill-9/">Why you should not use kill -9</a></h2>
+    <div class="meta"><time datetime="2015-03-19T19:46:03+01:00">2015-03-19</time> <a href="/tags/linux/">Linux</a></div>
 
-    <div class="excerpt"><p>Today I watched a quite interesting hangout. It was a quick (30 min) discussion.
-Attendees:</p>
+    <div class="excerpt"><p>I recently found this advice given by <em>Randal Schwartz</em>.
+I think most programmers have some idea who he is.
+Anyway, if you have never had to touch Perl, here is the link to his <a href="https://en.wikipedia.org/wiki/Randal_L._Schwartz">wiki page</a>.</p>
 
-<ul>
-  <li>Kent Beck,</li>
-  <li>Martin Fowler,</li>
-  <li>David Heinemeier Hansson</li>
-</ul>
-
-<p>A few days ago @DHH wrote a somewhat “controversial” <a href="http://david.heinemeierhansson.com/2014/tdd-is-dead-long-live-testing.html">post</a> on his blog about TDD and, in general, presented his point of view on TDD.
-As a result we got a huge discussion on Twitter about TDD. Some people say that every professional should use TDD and so on.
-In response, the guys from <strong>ThoughtWorks</strong> organized this hangout.
- </p>
-
-<h3 id="youtube-playlist-parts-from-1-to-6">Youtube playlist (Parts from 1 to 6)</h3>
-<iframe width="560" height="315" src="//www.youtube.com/embed/videoseries?list=PLJb2p0qX8R_qSRhs14CiwKuDuzERXSU8m" frameborder="0" allowfullscreen=""></iframe>
+<p>Here is the advice from Randal:</p>
 
 </div>
-    <a class="more" href="/2014/05/09/is-tdd-dead/">read more →</a>
+    <a class="more" href="/2015/03/19/why-you-shoudnt-use-kill-9/">read more →</a>
   </article>
   
 </div>
@@ -160,7 +140,7 @@ In response, the guys from <strong>ThoughtWorks</strong> organized this hangout.
 
 <div class="out pagination">
   <a href="/posts/3/">← newer</a>
-  <span>page 4/5</span>
+  <span>page 4/6</span>
   <a href="/posts/5/">older →</a>
 </div>
 

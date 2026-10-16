@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  
+  
+  <title>From Jenkins pipelines to GitHub Actions - a mapping, not a migration guide - Robert&#39;s notes</title>
+  <meta name="description" content="I have written a lot of Jenkins - shared libraries, Job DSL seed jobs, declarative pipelines, the works - and over the last years most of it has moved to GitHub Actions. Every migration guide I read was either “here is how to export your jobs” (you cannot, not meaningfully) or a sales pitch. What I actually wanted was a dictionary: I know what this Jenkins thing does, what is the Actions word for it, and where does the mental model break. So here is that dictionary, with the one place where Actions is genuinely better and the two places where you will miss Jenkins.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181825">
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="https://roberts-notes.blog/2026/10/16/jenkins-pipelines-to-github-actions-mapping/">
+  <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
+  <link rel="icon"
+      type="image/png"
+      href="/favicon.png">
+<!--
+ ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
+██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
+██║  ███╗██████╔╝█████╗  █████╗     ██║   ██║██╔██╗ ██║██║  ███╗███████╗    ██║
+██║   ██║██╔══██╗██╔══╝  ██╔══╝     ██║   ██║██║╚██╗██║██║   ██║╚════██║    ╚═╝
+╚██████╔╝██║  ██║███████╗███████╗   ██║   ██║██║ ╚████║╚██████╔╝███████║    ██╗
+ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
+-->
+
+  <meta property="og:title" content="From Jenkins pipelines to GitHub Actions - a mapping, not a migration guide">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2026/10/16/jenkins-pipelines-to-github-actions-mapping/">
+  <meta property="og:description" content="I have written a lot of Jenkins - shared libraries, Job DSL seed jobs, declarative pipelines, the works - and over the last years most of it has moved to GitHub Actions. Every migration guide I read was either “here is how to export your jobs” (you cannot, not meaningfully) or a sales pitch. What I actually wanted was a dictionary: I know what this Jenkins thing does, what is the Actions word for it, and where does the mental model break. So here is that dictionary, with the one place where Actions is genuinely better and the two places where you will miss Jenkins.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="From Jenkins pipelines to GitHub Actions - a mapping, not a migrati...">
+  <meta name="twitter:description" content="I have written a lot of Jenkins - shared libraries, Job DSL seed jobs, declarative pipelines, the works - and over the last years most of it has moved to GitHub Actions. Every migration guide I rea...">
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
+  <script src="/assets/ga.js"></script>
+  
+</head>
+<body>
+
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>robert@notes: ~/posts — zsh</span></div>
+  <div class="term">
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">cat ~/.motd</span></div>
+
+    <div class="out motd"><a href="/">Robert&#39;s notes</a> - Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture.</div>
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls ~</span></div>
+
+    <nav class="out">
+      
+        <a href="/">Main</a>
+      
+        <a href="/archives/">Archives</a>
+      
+        <a href="/stats/">Stats</a>
+      
+        <a href="/contact/">Contact</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    
+
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">glow jenkins-pipelines-to-github-actions-mapping.md</span></div>
+
+<article class="post out" itemscope itemtype="http://schema.org/BlogPosting">
+  <h1 itemprop="name headline">From Jenkins pipelines to GitHub Actions - a mapping, not a migration guide</h1>
+  <div class="meta"><time datetime="2026-10-16T15:00:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/ci-cd/">CI/CD</a> <a href="/tags/jenkins/">Jenkins</a> <a href="/tags/github-actions/">GitHub Actions</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/aws/">AWS</a></div>
+
+  <div class="body" itemprop="articleBody">
+    <p>I have written a lot of Jenkins - shared libraries, Job DSL seed jobs, declarative pipelines, the works - and over
+the last years most of it has moved to GitHub Actions. Every migration guide I read was either “here is how to export
+your jobs” (you cannot, not meaningfully) or a sales pitch. What I actually wanted was a dictionary: I know what this
+Jenkins thing does, what is the Actions word for it, and where does the mental model break. So here is that
+dictionary, with the one place where Actions is genuinely better and the two places where you will miss Jenkins.
+<!--more--></p>
+
+<h2 id="the-dictionary">The dictionary</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Jenkins</th>
+      <th>GitHub Actions</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">Jenkinsfile</code></td>
+      <td><code class="language-plaintext highlighter-rouge">.github/workflows/*.yml</code></td>
+      <td>one file per workflow, several workflows per repo</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">pipeline { stages { stage {} } }</code></td>
+      <td><code class="language-plaintext highlighter-rouge">jobs:</code> → <code class="language-plaintext highlighter-rouge">steps:</code></td>
+      <td>a job is the unit of parallelism and of the runner</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">agent { label 'linux' }</code></td>
+      <td><code class="language-plaintext highlighter-rouge">runs-on: ubuntu-latest</code></td>
+      <td>labels still exist, for self-hosted runners</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">steps { sh '...' }</code></td>
+      <td><code class="language-plaintext highlighter-rouge">- run: ...</code></td>
+      <td>multi-line with <code class="language-plaintext highlighter-rouge">run: \|</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">when { branch 'main' }</code></td>
+      <td><code class="language-plaintext highlighter-rouge">if: github.ref == 'refs/heads/main'</code></td>
+      <td>on job or step</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">parallel { }</code></td>
+      <td><code class="language-plaintext highlighter-rouge">strategy: matrix:</code> or multiple jobs</td>
+      <td>matrix is the idiomatic one</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">post { always { } }</code></td>
+      <td><code class="language-plaintext highlighter-rouge">if: always()</code> on a step</td>
+      <td><code class="language-plaintext highlighter-rouge">failure()</code>, <code class="language-plaintext highlighter-rouge">success()</code>, <code class="language-plaintext highlighter-rouge">cancelled()</code> too</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">parameters { }</code></td>
+      <td><code class="language-plaintext highlighter-rouge">on: workflow_dispatch: inputs:</code></td>
+      <td>typed: string, choice, boolean</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">triggers { cron('H 2 * * *') }</code></td>
+      <td><code class="language-plaintext highlighter-rouge">on: schedule: - cron: '17 2 * * *'</code></td>
+      <td>no <code class="language-plaintext highlighter-rouge">H</code>, pick an odd minute yourself</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">environment { }</code></td>
+      <td><code class="language-plaintext highlighter-rouge">env:</code></td>
+      <td>workflow, job or step scope</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">credentials('id')</code></td>
+      <td><code class="language-plaintext highlighter-rouge">$</code></td>
+      <td>plus OIDC, see below</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">lock('deploy-prod')</code></td>
+      <td><code class="language-plaintext highlighter-rouge">concurrency: group: deploy-prod</code></td>
+      <td><code class="language-plaintext highlighter-rouge">cancel-in-progress</code> optional</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">input message: 'Deploy?'</code></td>
+      <td><code class="language-plaintext highlighter-rouge">environment:</code> with required reviewers</td>
+      <td>approval lives in repo settings</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">archiveArtifacts</code> / <code class="language-plaintext highlighter-rouge">stash</code></td>
+      <td><code class="language-plaintext highlighter-rouge">actions/upload-artifact</code> / <code class="language-plaintext highlighter-rouge">download-artifact</code></td>
+      <td>artifacts cross jobs; stash was within a build</td>
+    </tr>
+    <tr>
+      <td>shared library <code class="language-plaintext highlighter-rouge">vars/*.groovy</code></td>
+      <td>composite action or reusable workflow</td>
+      <td>the big one, next section</td>
+    </tr>
+    <tr>
+      <td>Job DSL seed job</td>
+      <td>reusable workflow with <code class="language-plaintext highlighter-rouge">on: workflow_call</code></td>
+      <td>plus a template repo</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">buildDiscarder(logRotator(...))</code></td>
+      <td>repository settings → retention</td>
+      <td>not in YAML</td>
+    </tr>
+    <tr>
+      <td>Jenkins agents</td>
+      <td>self-hosted runners</td>
+      <td>or just use hosted ones</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="shared-libraries--composite-actions-and-reusable-workflows">Shared libraries → composite actions and reusable workflows</h2>
+
+<p>This is where the model actually differs, so it is worth more than a table row.</p>
+
+<p>A Jenkins shared library is Groovy code: it can have functions, classes, loops, and a <code class="language-plaintext highlighter-rouge">vars/deploy.groovy</code> step
+that takes a map of arguments and does anything. Actions has no scripting layer in YAML. Instead you get two
+composition tools, and you pick by granularity:</p>
+
+<p><strong>Composite action</strong> = a reusable <em>step sequence</em>. Lives in <code class="language-plaintext highlighter-rouge">action.yml</code>, takes <code class="language-plaintext highlighter-rouge">inputs</code>, produces <code class="language-plaintext highlighter-rouge">outputs</code>, runs
+inside the calling job on the calling runner. This is the replacement for the typical <code class="language-plaintext highlighter-rouge">vars/tofuPlan.groovy</code>:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># .github/actions/tofu-plan/action.yml</span>
+<span class="na">name</span><span class="pi">:</span> <span class="s">tofu plan</span>
+<span class="na">inputs</span><span class="pi">:</span>
+  <span class="na">working-directory</span><span class="pi">:</span>
+    <span class="na">required</span><span class="pi">:</span> <span class="no">true</span>
+<span class="na">runs</span><span class="pi">:</span>
+  <span class="na">using</span><span class="pi">:</span> <span class="s">composite</span>
+  <span class="na">steps</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">opentofu/setup-opentofu@v1</span>
+    <span class="pi">-</span> <span class="na">run</span><span class="pi">:</span> <span class="s">tofu init -input=false</span>
+      <span class="na">shell</span><span class="pi">:</span> <span class="s">bash</span>
+      <span class="na">working-directory</span><span class="pi">:</span> <span class="s">$</span>
+    <span class="pi">-</span> <span class="na">run</span><span class="pi">:</span> <span class="s">tofu plan -input=false -out=tfplan</span>
+      <span class="na">shell</span><span class="pi">:</span> <span class="s">bash</span>
+      <span class="na">working-directory</span><span class="pi">:</span> <span class="s">$</span>
+</code></pre></div></div>
+
+<p><strong>Reusable workflow</strong> = a reusable <em>job set</em>. Triggered with <code class="language-plaintext highlighter-rouge">on: workflow_call</code>, called from another workflow with
+<code class="language-plaintext highlighter-rouge">uses: org/repo/.github/workflows/plan.yml@main</code>, runs as its own jobs with its own runners. This is the replacement for
+the Job DSL seed job that stamped out one pipeline per service: one reusable workflow in a central repo, each service
+repo has a five-line workflow that calls it.</p>
+
+<p>The thing you lose is logic. There is no <code class="language-plaintext highlighter-rouge">if (env == 'prod') { ... } else { ... }</code> in a composite action, only <code class="language-plaintext highlighter-rouge">if:</code>
+expressions on steps. In practice that pushed me to move logic <em>out</em> of CI into scripts and Makefiles in the repo,
+which is where it should have been in the first place. Jenkins let you hide a lot of real program in a <code class="language-plaintext highlighter-rouge">vars/</code> folder.</p>
+
+<h2 id="the-place-actions-is-better-credentials-via-oidc">The place Actions is better: credentials via OIDC</h2>
+
+<p>In Jenkins the AWS credentials for deploying were an access key and secret stored in the credentials store, rotated
+when someone remembered. Actions can skip the long-lived key entirely. The job requests an OIDC token from GitHub,
+and AWS trusts GitHub’s identity provider for a specific repository and branch:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">permissions</span><span class="pi">:</span>
+  <span class="na">id-token</span><span class="pi">:</span> <span class="s">write</span>
+  <span class="na">contents</span><span class="pi">:</span> <span class="s">read</span>
+
+<span class="na">jobs</span><span class="pi">:</span>
+  <span class="na">plan</span><span class="pi">:</span>
+    <span class="na">runs-on</span><span class="pi">:</span> <span class="s">ubuntu-latest</span>
+    <span class="na">steps</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">actions/checkout@v4</span>
+      <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">aws-actions/configure-aws-credentials@v4</span>
+        <span class="na">with</span><span class="pi">:</span>
+          <span class="na">role-to-assume</span><span class="pi">:</span> <span class="s">arn:aws:iam::123456789012:role/github-actions-plan</span>
+          <span class="na">aws-region</span><span class="pi">:</span> <span class="s">eu-central-1</span>
+      <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">./.github/actions/tofu-plan</span>
+        <span class="na">with</span><span class="pi">:</span>
+          <span class="na">working-directory</span><span class="pi">:</span> <span class="s">envs/prod</span>
+</code></pre></div></div>
+
+<p>The IAM role’s trust policy restricts <code class="language-plaintext highlighter-rouge">token.actions.githubusercontent.com:sub</code> to <code class="language-plaintext highlighter-rouge">repo:org/repo:ref:refs/heads/main</code>,
+or to an environment. No secret exists anywhere. A leaked workflow log cannot leak a key because there is no key.
+This alone was worth the migration for the infrastructure repos.</p>
+
+<h2 id="a-full-example-side-by-side">A full example, side by side</h2>
+
+<p>The pipeline every infrastructure team has - fmt, validate, plan on pull requests:</p>
+
+<div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Jenkinsfile</span>
+<span class="n">pipeline</span> <span class="o">{</span>
+  <span class="n">agent</span> <span class="o">{</span> <span class="n">label</span> <span class="s1">'linux'</span> <span class="o">}</span>
+  <span class="n">options</span> <span class="o">{</span> <span class="n">timeout</span><span class="o">(</span><span class="nl">time:</span> <span class="mi">20</span><span class="o">,</span> <span class="nl">unit:</span> <span class="s1">'MINUTES'</span><span class="o">)</span> <span class="o">}</span>
+  <span class="n">stages</span> <span class="o">{</span>
+    <span class="n">stage</span><span class="o">(</span><span class="s1">'fmt'</span><span class="o">)</span>      <span class="o">{</span> <span class="n">steps</span> <span class="o">{</span> <span class="n">sh</span> <span class="s1">'tofu fmt -check -recursive'</span> <span class="o">}</span> <span class="o">}</span>
+    <span class="n">stage</span><span class="o">(</span><span class="s1">'validate'</span><span class="o">)</span> <span class="o">{</span> <span class="n">steps</span> <span class="o">{</span> <span class="n">sh</span> <span class="s1">'tofu init -backend=false &amp;&amp; tofu validate'</span> <span class="o">}</span> <span class="o">}</span>
+    <span class="n">stage</span><span class="o">(</span><span class="s1">'plan'</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">when</span> <span class="o">{</span> <span class="n">changeRequest</span><span class="o">()</span> <span class="o">}</span>
+      <span class="n">steps</span> <span class="o">{</span>
+        <span class="n">withCredentials</span><span class="o">([</span><span class="n">aws</span><span class="o">(</span><span class="nl">credentialsId:</span> <span class="s1">'aws-plan'</span><span class="o">)])</span> <span class="o">{</span>
+          <span class="n">sh</span> <span class="s1">'tofu init -input=false &amp;&amp; tofu plan -input=false'</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># .github/workflows/tofu.yml</span>
+<span class="na">name</span><span class="pi">:</span> <span class="s">tofu</span>
+<span class="na">on</span><span class="pi">:</span>
+  <span class="na">pull_request</span><span class="pi">:</span>
+  <span class="na">push</span><span class="pi">:</span>
+    <span class="na">branches</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">main</span><span class="pi">]</span>
+
+<span class="na">permissions</span><span class="pi">:</span>
+  <span class="na">id-token</span><span class="pi">:</span> <span class="s">write</span>
+  <span class="na">contents</span><span class="pi">:</span> <span class="s">read</span>
+  <span class="na">pull-requests</span><span class="pi">:</span> <span class="s">write</span>
+
+<span class="na">concurrency</span><span class="pi">:</span>
+  <span class="na">group</span><span class="pi">:</span> <span class="s">tofu-$</span>
+  <span class="na">cancel-in-progress</span><span class="pi">:</span> <span class="no">true</span>
+
+<span class="na">jobs</span><span class="pi">:</span>
+  <span class="na">check</span><span class="pi">:</span>
+    <span class="na">runs-on</span><span class="pi">:</span> <span class="s">ubuntu-latest</span>
+    <span class="na">timeout-minutes</span><span class="pi">:</span> <span class="m">20</span>
+    <span class="na">steps</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">actions/checkout@v4</span>
+      <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">opentofu/setup-opentofu@v1</span>
+      <span class="pi">-</span> <span class="na">run</span><span class="pi">:</span> <span class="s">tofu fmt -check -recursive</span>
+      <span class="pi">-</span> <span class="na">run</span><span class="pi">:</span> <span class="s">tofu init -backend=false &amp;&amp; tofu validate</span>
+
+  <span class="na">plan</span><span class="pi">:</span>
+    <span class="na">if</span><span class="pi">:</span> <span class="s">github.event_name == 'pull_request'</span>
+    <span class="na">needs</span><span class="pi">:</span> <span class="s">check</span>
+    <span class="na">runs-on</span><span class="pi">:</span> <span class="s">ubuntu-latest</span>
+    <span class="na">timeout-minutes</span><span class="pi">:</span> <span class="m">20</span>
+    <span class="na">steps</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">actions/checkout@v4</span>
+      <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">aws-actions/configure-aws-credentials@v4</span>
+        <span class="na">with</span><span class="pi">:</span>
+          <span class="na">role-to-assume</span><span class="pi">:</span> <span class="s">arn:aws:iam::123456789012:role/github-actions-plan</span>
+          <span class="na">aws-region</span><span class="pi">:</span> <span class="s">eu-central-1</span>
+      <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">./.github/actions/tofu-plan</span>
+        <span class="na">with</span><span class="pi">:</span>
+          <span class="na">working-directory</span><span class="pi">:</span> <span class="s">envs/prod</span>
+</code></pre></div></div>
+
+<p>Roughly the same length. The Actions version has the OIDC role instead of a stored credential, <code class="language-plaintext highlighter-rouge">concurrency</code> instead
+of hoping two PR builds do not race on the same state lock, and <code class="language-plaintext highlighter-rouge">needs:</code> making the dependency explicit instead of
+implied by stage order.</p>
+
+<h2 id="the-two-things-you-will-miss">The two things you will miss</h2>
+
+<p><strong>The Blue Ocean / stage view.</strong> Actions shows jobs as a graph and steps as a log. It does not show <em>stages within a
+job</em> visually, and a forty-step job is a forty-section log. You adapt by making more, smaller jobs, which also
+parallelises better, but the first week feels like flying blind.</p>
+
+<p><strong>Running the pipeline locally.</strong> A Jenkinsfile could, with effort, be replayed. Actions workflows run on GitHub,
+full stop. <code class="language-plaintext highlighter-rouge">act</code> exists and gets you most of the way for simple workflows, but OIDC, environments and anything
+touching <code class="language-plaintext highlighter-rouge">github.*</code> context behave differently. The practical answer was the same as for the logic question: put the
+real work in scripts that run with no CI at all, and keep the YAML to orchestration. If the YAML is boring enough that
+you never need to run it locally, you have done it right.</p>
+
+<h2 id="pin-your-actions">Pin your actions</h2>
+
+<p>Last thing, because it is a security issue and not a style one. <code class="language-plaintext highlighter-rouge">uses: some-org/some-action@v4</code> follows a moving tag.
+If that repository is compromised, your workflow runs the attacker’s code with your OIDC token. Pin to a commit SHA
+with the version as a comment, and let Dependabot bump it:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502</span> <span class="c1"># v4.0.2</span>
+</code></pre></div></div>
+
+<p>Jenkins had this problem too, with plugins, it just was less visible. In Actions the supply chain is in the YAML
+where you can see it, so there is no excuse.</p>
+
+  </div>
+</article>
+
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">giscus --comments</span></div>
+
+<div class="out comments">
+  <script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="catppuccin_mocha"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
+</div>
+
+
+    <footer>
+      <div class="links">
+  <a href="https://github.com/robertwe">GitHub</a>
+  <a href="https://stackoverflow.com/users/213377">StackOverflow</a>
+  <a href="https://linkedin.com/in/robertweclawski">LinkedIn</a>
+  <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</div>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>
+      <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="cur"></span></div>
+
+    </footer>
+  </div>
+</div>
+</body>
+</html>

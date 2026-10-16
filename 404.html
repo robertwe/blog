@@ -1,15 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Software Craftman; Page not Found</title>
-</head>
-<body>
-<pre>
+---
+layout: default
+title: "404"
+permalink: /404.html
+sitemap: false
+---
+{% include prompt.html cwd="~" cmd="cat $REQUEST_PATH" %}
+<pre class="out">cat: no such file or directory (HTTP 404)
+
  _____________________________________
-/ Code 404, Page not Found            \
-\ What to go back to the <a href="/">main page</a> ?  /
+/ Code 404, page not found.           \
+\ Want to go back to the <a href="{{ "/" | relative_url }}">main page</a>?  /
  -------------------------------------
         \   ^__^
          \  (oo)\_______
@@ -17,5 +17,3 @@
                 ||--WWW |
                 ||     ||
 </pre>
-</body>
-</html>

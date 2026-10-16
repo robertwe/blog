@@ -32,11 +32,11 @@ nav a:hover{background:var(--ov);border-color:var(--mauve);text-decoration:none}
 .card{border-left:2px solid var(--surf);padding:0 0 0 1rem;margin:0 0 1.8rem}
 .card h2{font-size:1.35rem;line-height:1.3;margin:0 0 .3rem;font-weight:700}
 .card h2 a{color:var(--yellow)}.card h2 a::before{content:"▸ ";color:var(--peach)}
-.meta{color:var(--sub2);font-size:.85rem}.meta a{color:var(--teal)}.meta a::before{content:"#"}
+.meta{color:var(--sub);font-size:.85rem}.meta a{color:var(--teal)}.meta a::before{content:"#"}
 .excerpt{font-family:var(--sans);font-size:.97rem;color:var(--sub)}.excerpt p{margin:.5rem 0}
 .more{color:var(--green);font-size:.9rem}
-.pagination{display:flex;gap:1.5rem;color:var(--sub2)}
-table.ls{border-collapse:collapse}table.ls td{padding:.1rem 1.5ch .1rem 0;vertical-align:top}table.ls td.d{color:var(--sub2);white-space:nowrap}
+.pagination{display:flex;gap:1.5rem;color:var(--sub)}
+table.ls{border-collapse:collapse}table.ls td{padding:.1rem 1.5ch .1rem 0;vertical-align:top}table.ls td.d{color:var(--sub);white-space:nowrap}
 
 /* post / page body */
 .post h1{font-size:1.5rem;color:var(--yellow);margin:.4rem 0 .3rem;font-weight:700;line-height:1.3}
@@ -57,7 +57,7 @@ code{font-family:var(--mono);font-size:.9em;background:var(--surf);color:var(--p
 
 /* comments, footer */
 .comments{min-height:4rem}
-footer{color:var(--sub2);font-size:.85rem;border-top:1px solid var(--surf);padding-top:1rem;margin-top:2rem}
+footer{color:var(--sub);font-size:.85rem;border-top:1px solid var(--surf);padding-top:1rem;margin-top:2rem}
 footer .links a{color:var(--sub);margin-right:1.2rem}footer .copy{margin:.3rem 0 .8rem}
 
 /* contact form (contact.md) */

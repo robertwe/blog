@@ -1,5 +1,4 @@
 title: Robert's notes
-email: robert.weclawski@mykolab.com
 excerpt_separator: "<!--more-->"
 description: >
   Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture -
@@ -19,8 +18,6 @@ wakatime:
 exclude:
   - Gemfile
   - Gemfile.lock
-  - Dockerfile
-  - nginx
   - firebase.json
   - node_modules
   - vendor

@@ -34,7 +34,7 @@
   <meta name="twitter:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
   
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
+  <script src="/assets/ga.js"></script>
   
 </head>
 <body>
@@ -66,71 +66,74 @@
   
   
   <article class="card">
-    <h2><a href="/2026/10/16/opentofu-provider-for-each-multi-region/">One module block, every region: provider for_each in OpenTofu</a></h2>
-    <div class="meta"><time datetime="2026-10-16T11:45:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a> <a href="/tags/aws/">AWS</a></div>
+    <h2><a href="/2026/10/16/jenkins-pipelines-to-github-actions-mapping/">From Jenkins pipelines to GitHub Actions - a mapping, not a migration guide</a></h2>
+    <div class="meta"><time datetime="2026-10-16T15:00:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/ci-cd/">CI/CD</a> <a href="/tags/jenkins/">Jenkins</a> <a href="/tags/github-actions/">GitHub Actions</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/aws/">AWS</a></div>
 
-    <div class="excerpt"><p>Here is a thing I wish somebody had shown me the week OpenTofu 1.9 came out. If you have ever had to deploy the same
-stack to five AWS regions, you know the ritual: five <code class="language-plaintext highlighter-rouge">provider "aws"</code> blocks with five aliases, five copies of the
-<code class="language-plaintext highlighter-rouge">module</code> block differing only in the <code class="language-plaintext highlighter-rouge">providers</code> map, and a bad feeling every time a sixth region shows up. In OpenTofu
-you can put <code class="language-plaintext highlighter-rouge">for_each</code> on the provider block itself. One provider block, one module block, regions come from a
-variable. Terraform still cannot do this.</p>
+    <div class="excerpt"><p>I have written a lot of Jenkins - shared libraries, Job DSL seed jobs, declarative pipelines, the works - and over
+the last years most of it has moved to GitHub Actions. Every migration guide I read was either “here is how to export
+your jobs” (you cannot, not meaningfully) or a sales pitch. What I actually wanted was a dictionary: I know what this
+Jenkins thing does, what is the Actions word for it, and where does the mental model break. So here is that
+dictionary, with the one place where Actions is genuinely better and the two places where you will miss Jenkins.</p>
 
 </div>
-    <a class="more" href="/2026/10/16/opentofu-provider-for-each-multi-region/">read more →</a>
+    <a class="more" href="/2026/10/16/jenkins-pipelines-to-github-actions-mapping/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2026/10/16/blog-as-a-terminal-7kb-of-css/">I turned this blog into a terminal window (and threw out the theme while I was at it)</a></h2>
-    <div class="meta"><time datetime="2026-10-16T10:30:00+02:00">2026-10-16</time> <a href="/tags/meta/">Meta</a> <a href="/tags/css/">CSS</a> <a href="/tags/jekyll/">Jekyll</a> <a href="/tags/web/">Web</a></div>
+    <h2><a href="/2026/10/16/podman-on-macos-instead-of-docker-desktop/">Podman on macOS instead of Docker Desktop - what actually changes</a></h2>
+    <div class="meta"><time datetime="2026-10-16T14:30:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/containers/">Containers</a> <a href="/tags/podman/">Podman</a> <a href="/tags/macos/">macOS</a></div>
 
-    <div class="excerpt"><p>So, new look. If you were here before you probably remember a white page with a serif font that looked like every
-other Jekyll blog from 2016 - because that is exactly what it was. I have wanted something that looks like the thing
-I stare at all day for a long time, and last evening I finally did it. This is a short note on how, mostly because
-I ended up deleting more than I added, and that part surprised me.</p>
+    <div class="excerpt"><p>My <a href="/about/">About page</a> has said “Podman / OrbStack” instead of “Docker” for a while now, and I keep getting asked
+whether that is a political statement or a practical one. Practical. Docker Desktop’s licence terms made it a
+procurement question in a lot of companies, and once you have to justify a tool you start asking what you actually
+use it for. For me the answer was: run a container, build an image, occasionally a compose file. Podman does all of
+that. This post is the list of what is different on a Mac, because the differences are real, just smaller than the
+internet makes them sound.</p>
 
 </div>
-    <a class="more" href="/2026/10/16/blog-as-a-terminal-7kb-of-css/">read more →</a>
+    <a class="more" href="/2026/10/16/podman-on-macos-instead-of-docker-desktop/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2026/10/16/claude-code-skills-in-practice/">Claude Code skills - teach the agent your workflow once, in a Markdown file</a></h2>
-    <div class="meta"><time datetime="2026-10-16T09:00:00+02:00">2026-10-16</time> <a href="/tags/ai/">AI</a> <a href="/tags/claude-code/">Claude Code</a> <a href="/tags/automation/">Automation</a> <a href="/tags/devops/">DevOps</a></div>
+    <h2><a href="/2026/10/16/go-slog-request-id-end-to-end/">Go: a request ID on every log line with log/slog, without passing a logger around</a></h2>
+    <div class="meta"><time datetime="2026-10-16T14:00:00+02:00">2026-10-16</time> <a href="/tags/programming/">Programming</a> <a href="/tags/golang/">GoLang</a> <a href="/tags/aws/">AWS</a> <a href="/tags/observability/">Observability</a></div>
 
-    <div class="excerpt"><p>Every time I opened Claude Code I was typing the same paragraph: “new post goes to <code class="language-plaintext highlighter-rouge">_posts</code>, file name starts with the date,
-front matter looks like this, build to a temp dir, don’t touch <code class="language-plaintext highlighter-rouge">docs/</code>”. Then I discovered that this paragraph has a
-proper home. It is called a skill, it is one Markdown file, and the agent loads it on its own when the task matches.
-This post is the five minute version: what a skill is, where it lives, and two examples worth copying.</p>
+    <div class="excerpt"><p>The single most useful field in a production log is the one that lets you pull every line belonging to one request.
+Most Go codebases get there by threading a <code class="language-plaintext highlighter-rouge">*slog.Logger</code> through every function signature, or by stuffing the logger
+into the context and fishing it out everywhere. There is a cleaner way that the <code class="language-plaintext highlighter-rouge">slog</code> design makes almost trivial:
+a <code class="language-plaintext highlighter-rouge">Handler</code> that reads the request ID from the <code class="language-plaintext highlighter-rouge">context.Context</code> it is given. Then every call site is just
+<code class="language-plaintext highlighter-rouge">slog.InfoContext(ctx, ...)</code>, and the ID appears on its own.</p>
 
 </div>
-    <a class="more" href="/2026/10/16/claude-code-skills-in-practice/">read more →</a>
+    <a class="more" href="/2026/10/16/go-slog-request-id-end-to-end/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/">Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example</a></h2>
-    <div class="meta"><time datetime="2026-07-22T23:30:00+02:00">2026-07-22</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/aws/">AWS</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/iac/">IaC</a> <a href="/tags/security/">Security</a> <a href="/tags/networking/">Networking</a></div>
+    <h2><a href="/2026/10/16/blocking-lambda-egress-dns-firewall/">Blocking egress from Lambda: the sequel to the EKS post</a></h2>
+    <div class="meta"><time datetime="2026-10-16T13:30:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/aws/">AWS</a> <a href="/tags/lambda/">Lambda</a> <a href="/tags/security/">Security</a> <a href="/tags/networking/">Networking</a> <a href="/tags/opentofu/">OpenTofu</a></div>
 
-    <div class="excerpt"><p>In the <a href="/2026/07/22/blocking-egress-fqdns-on-eks/">previous post</a> I compared the options for
-blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall
-is the cheapest seatbelt you can put on a VPC. Talk is cheap though, so here is the whole thing as working
-OpenTofu code: a custom blocklist, the rule group, the VPC association, fail-mode configuration and query
-logging so you can actually see what gets blocked. Tested with OpenTofu 1.12.</p>
+    <div class="excerpt"><p>After the <a href="/2026/07/22/blocking-egress-fqdns-on-eks/">EKS egress post</a> the first question I got was
+“and what about Lambda?”. Fair. A lot of the Python glue I write runs as Lambda functions, those functions call
+third-party APIs, and the supply-chain argument is identical: a compromised dependency in a function has the same
+unrestricted internet access as one in a pod. The answer is mostly the same tool, Route 53 Resolver DNS Firewall,
+with one big catch that changes the economics.</p>
 
 </div>
-    <a class="more" href="/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/">read more →</a>
+    <a class="more" href="/2026/10/16/blocking-lambda-egress-dns-firewall/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2026/07/22/blocking-egress-fqdns-on-eks/">Blocking egress to specific domains from an EKS cluster - what are the options?</a></h2>
-    <div class="meta"><time datetime="2026-07-22T21:00:00+02:00">2026-07-22</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/aws/">AWS</a> <a href="/tags/eks/">EKS</a> <a href="/tags/kubernetes/">Kubernetes</a> <a href="/tags/security/">Security</a> <a href="/tags/networking/">Networking</a></div>
+    <h2><a href="/2026/10/16/tofu-test-with-mocked-providers/">Testing an OpenTofu module without an AWS account: tofu test and mock_provider</a></h2>
+    <div class="meta"><time datetime="2026-10-16T13:00:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a> <a href="/tags/testing/">Testing</a> <a href="/tags/aws/">AWS</a></div>
 
-    <div class="excerpt"><p>A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to <code class="language-plaintext highlighter-rouge">evil-domain.com</code>”
-(or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly
-annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS.
-A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game.
-Here is a rundown of the options that actually work with FQDNs, and what each one really gives you.</p>
+    <div class="excerpt"><p>In July I published a <a href="/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/">DNS Firewall module</a>
+and admitted that “tested” meant “applied it once and looked”. That is how most infrastructure modules are tested, and it
+is why module refactors are scary. OpenTofu has had <code class="language-plaintext highlighter-rouge">tofu test</code> since 1.6 and provider mocking since 1.8, which
+together let you assert what a module does - how many rules it creates, that the action is <code class="language-plaintext highlighter-rouge">BLOCK</code>, that the wildcard
+gets added - without credentials, without a VPC, in a few seconds, in CI. Here is that module with real tests.</p>
 
 </div>
-    <a class="more" href="/2026/07/22/blocking-egress-fqdns-on-eks/">read more →</a>
+    <a class="more" href="/2026/10/16/tofu-test-with-mocked-providers/">read more →</a>
   </article>
   
 </div>
@@ -139,7 +142,7 @@ Here is a rundown of the options that actually work with FQDNs, and what each on
 
 <div class="out pagination">
   
-  <span>page 1/5</span>
+  <span>page 1/6</span>
   <a href="/posts/2/">older →</a>
 </div>
 

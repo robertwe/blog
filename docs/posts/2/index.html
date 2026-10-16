@@ -34,7 +34,7 @@
   <meta name="twitter:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
   
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
+  <script src="/assets/ga.js"></script>
   
 </head>
 <body>
@@ -66,68 +66,73 @@
   
   
   <article class="card">
-    <h2><a href="/2026/07/21/opentofu-enabled-meta-argument/">OpenTofu&#39;s enabled meta-argument - conditional resources without the count hack</a></h2>
-    <div class="meta"><time datetime="2026-07-21T21:00:00+02:00">2026-07-21</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a></div>
+    <h2><a href="/2026/10/16/opentofu-import-moved-removed-blocks/">State surgery without the CLI: import, moved and removed blocks with for_each</a></h2>
+    <div class="meta"><time datetime="2026-10-16T12:30:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a></div>
 
-    <div class="excerpt"><p>In my <a href="/2026/07/21/transition-to-opentofu/">previous post</a> I wrote about migrating from Terraform to OpenTofu
-and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that:
-a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation
-via <code class="language-plaintext highlighter-rouge">count</code>. The feature is called <code class="language-plaintext highlighter-rouge">enabled</code>, it lives in the <code class="language-plaintext highlighter-rouge">lifecycle</code> block, it shipped in OpenTofu 1.11,
-and Terraform simply does not have it.</p>
+    <div class="excerpt"><p>For about eight years, changing what is in the state meant typing <code class="language-plaintext highlighter-rouge">terraform state mv</code> and <code class="language-plaintext highlighter-rouge">terraform import</code> by hand,
+one resource at a time, in the right order, hoping nobody else ran an apply in between. Those commands still exist, but
+you should mostly stop using them. There are three declarative blocks - <code class="language-plaintext highlighter-rouge">import</code>, <code class="language-plaintext highlighter-rouge">moved</code>, <code class="language-plaintext highlighter-rouge">removed</code> - that do the same
+thing from code, show up in the plan, go through code review, and since they accept <code class="language-plaintext highlighter-rouge">for_each</code> they handle fifty
+resources as easily as one. This is in both OpenTofu and Terraform (since 1.7 on both sides), so unlike my last two
+posts this is not a “Tofu only” trick - it is a “most people still don’t use it” trick.</p>
 
 </div>
-    <a class="more" href="/2026/07/21/opentofu-enabled-meta-argument/">read more →</a>
+    <a class="more" href="/2026/10/16/opentofu-import-moved-removed-blocks/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2026/07/21/transition-to-opentofu/">From Terraform to OpenTofu - why and how we made the switch</a></h2>
-    <div class="meta"><time datetime="2026-07-21T09:00:00+02:00">2026-07-21</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/iac/">IaC</a></div>
+    <h2><a href="/2026/10/16/opentofu-state-encryption-key-rotation/">OpenTofu state encryption: encrypt an existing state and rotate the key without downtime</a></h2>
+    <div class="meta"><time datetime="2026-10-16T12:00:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a> <a href="/tags/security/">Security</a> <a href="/tags/aws/">AWS</a></div>
 
-    <div class="excerpt"><p>I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed.
-Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem,
-and recently I went through a full migration from Terraform to <a href="https://opentofu.org/">OpenTofu</a> in a few production environments.
-In this post I want to share why we did it, how it went, and what surprised me along the way.</p>
+    <div class="excerpt"><p>Your state file has your database password in it. Not a hash, not a reference, the password. Also every secret the
+AWS provider ever returned, every private key you generated with the <code class="language-plaintext highlighter-rouge">tls</code> provider, every <code class="language-plaintext highlighter-rouge">random_password</code>. S3
+bucket encryption does not help here, because anyone who can read the bucket gets the plaintext back from S3. OpenTofu
+1.7 added client-side state encryption: the state is encrypted before it leaves your machine and S3 only ever sees
+ciphertext. This post is the practical part - turning it on for an existing project, and then rotating the key - because
+the docs explain the blocks but not the sequence.</p>
 
 </div>
-    <a class="more" href="/2026/07/21/transition-to-opentofu/">read more →</a>
+    <a class="more" href="/2026/10/16/opentofu-state-encryption-key-rotation/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2024/06/11/why-go-lang/">Why GoLang</a></h2>
-    <div class="meta"><time datetime="2024-06-11T08:30:00+02:00">2024-06-11</time> <a href="/tags/programming/">Programming</a> <a href="/tags/golang/">GoLang</a></div>
+    <h2><a href="/2026/10/16/opentofu-provider-for-each-multi-region/">One module block, every region: provider for_each in OpenTofu</a></h2>
+    <div class="meta"><time datetime="2026-10-16T11:45:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a> <a href="/tags/aws/">AWS</a></div>
 
-    <div class="excerpt"><p>GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers 
-due to its simplicity, efficiency, and robustness. In this blog post, we will explore GoLang’s best features from both performance and development perspectives, 
-backed by comprehensive code examples to illustrate these advantages.</p>
+    <div class="excerpt"><p>Here is a thing I wish somebody had shown me the week OpenTofu 1.9 came out. If you have ever had to deploy the same
+stack to five AWS regions, you know the ritual: five <code class="language-plaintext highlighter-rouge">provider "aws"</code> blocks with five aliases, five copies of the
+<code class="language-plaintext highlighter-rouge">module</code> block differing only in the <code class="language-plaintext highlighter-rouge">providers</code> map, and a bad feeling every time a sixth region shows up. In OpenTofu
+you can put <code class="language-plaintext highlighter-rouge">for_each</code> on the provider block itself. One provider block, one module block, regions come from a
+variable. Terraform still cannot do this.</p>
 
 </div>
-    <a class="more" href="/2024/06/11/why-go-lang/">read more →</a>
+    <a class="more" href="/2026/10/16/opentofu-provider-for-each-multi-region/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2024/06/11/go-lang-generics/">Go Lang and interfaces and generics</a></h2>
-    <div class="meta"><time datetime="2024-06-11T03:30:00+02:00">2024-06-11</time> <a href="/tags/programming/">Programming</a> <a href="/tags/golang/">GoLang</a> <a href="/tags/generics/">Generics</a></div>
+    <h2><a href="/2026/10/16/blog-as-a-terminal-7kb-of-css/">I turned this blog into a terminal window (and threw out the theme while I was at it)</a></h2>
+    <div class="meta"><time datetime="2026-10-16T10:30:00+02:00">2026-10-16</time> <a href="/tags/meta/">Meta</a> <a href="/tags/css/">CSS</a> <a href="/tags/jekyll/">Jekyll</a> <a href="/tags/web/">Web</a></div>
 
-    <div class="excerpt"><p>Hey everyone,</p>
-
-<p>Today, I want to dive into Go language and talk about interfaces, with a specific focus on generics.
-Generics have been one of the most highly anticipated features in Go, and they are finally here with the release of Go 1.18.
-Let’s explore how interfaces and generics work together in Go and how they can make our code more flexible and reusable.</p>
+    <div class="excerpt"><p>So, new look. If you were here before you probably remember a white page with a serif font that looked like every
+other Jekyll blog from 2016 - because that is exactly what it was. I have wanted something that looks like the thing
+I stare at all day for a long time, and last evening I finally did it. This is a short note on how, mostly because
+I ended up deleting more than I added, and that part surprised me.</p>
 
 </div>
-    <a class="more" href="/2024/06/11/go-lang-generics/">read more →</a>
+    <a class="more" href="/2026/10/16/blog-as-a-terminal-7kb-of-css/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2016/11/05/introduction-to-augeas-in-puppet/">Quick introduction to Augeas in Puppet</a></h2>
-    <div class="meta"><time datetime="2016-11-05T22:30:00+01:00">2016-11-05</time> <a href="/tags/provisioning/">Provisioning</a> <a href="/tags/automation/">Automation</a> <a href="/tags/puppet/">Puppet</a></div>
+    <h2><a href="/2026/10/16/claude-code-skills-in-practice/">Claude Code skills - teach the agent your workflow once, in a Markdown file</a></h2>
+    <div class="meta"><time datetime="2026-10-16T09:00:00+02:00">2026-10-16</time> <a href="/tags/ai/">AI</a> <a href="/tags/claude-code/">Claude Code</a> <a href="/tags/automation/">Automation</a> <a href="/tags/devops/">DevOps</a></div>
 
-    <div class="excerpt"><p>Recently I came across an interesting problem. I had to install a kernel
-from the 3.10 branch on CentOS 6 and there was a need to update <code class="language-plaintext highlighter-rouge">grub.conf</code> - change the default kernel plus add a boot option.
-Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?</p>
+    <div class="excerpt"><p>Every time I opened Claude Code I was typing the same paragraph: “new post goes to <code class="language-plaintext highlighter-rouge">_posts</code>, file name starts with the date,
+front matter looks like this, build to a temp dir, don’t touch <code class="language-plaintext highlighter-rouge">docs/</code>”. Then I discovered that this paragraph has a
+proper home. It is called a skill, it is one Markdown file, and the agent loads it on its own when the task matches.
+This post is the five minute version: what a skill is, where it lives, and two examples worth copying.</p>
 
 </div>
-    <a class="more" href="/2016/11/05/introduction-to-augeas-in-puppet/">read more →</a>
+    <a class="more" href="/2026/10/16/claude-code-skills-in-practice/">read more →</a>
   </article>
   
 </div>
@@ -136,7 +141,7 @@ Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also
 
 <div class="out pagination">
   <a href="/">← newer</a>
-  <span>page 2/5</span>
+  <span>page 2/6</span>
   <a href="/posts/3/">older →</a>
 </div>
 

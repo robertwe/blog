@@ -34,7 +34,7 @@
   <meta name="twitter:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
   
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
+  <script src="/assets/ga.js"></script>
   
 </head>
 <body>
@@ -66,83 +66,70 @@
   
   
   <article class="card">
-    <h2><a href="/2015/11/03/pass-variables-to-jinja-template-in-salt/">How to pass variable to Jinja template in Salt</a></h2>
-    <div class="meta"><time datetime="2015-11-03T21:00:00+01:00">2015-11-03</time> <a href="/tags/salt/">Salt</a></div>
+    <h2><a href="/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/">Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example</a></h2>
+    <div class="meta"><time datetime="2026-07-22T23:30:00+02:00">2026-07-22</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/aws/">AWS</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/iac/">IaC</a> <a href="/tags/security/">Security</a> <a href="/tags/networking/">Networking</a></div>
 
-    <div class="excerpt"><p>Yesterday I faced a quite interesting problem.
-In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash
-from the current iteration to a Jinja template.</p>
+    <div class="excerpt"><p>In the <a href="/2026/07/22/blocking-egress-fqdns-on-eks/">previous post</a> I compared the options for
+blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall
+is the cheapest seatbelt you can put on a VPC. Talk is cheap though, so here is the whole thing as working
+OpenTofu code: a custom blocklist, the rule group, the VPC association, fail-mode configuration and query
+logging so you can actually see what gets blocked. Tested with OpenTofu 1.12.</p>
 
 </div>
-    <a class="more" href="/2015/11/03/pass-variables-to-jinja-template-in-salt/">read more →</a>
+    <a class="more" href="/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2015/04/30/add-new-key-to-apt/">Add new key to APT AKA tell APT to trust given key</a></h2>
-    <div class="meta"><time datetime="2015-04-30T08:00:03+02:00">2015-04-30</time> <a href="/tags/linux/">Linux</a></div>
+    <h2><a href="/2026/07/22/blocking-egress-fqdns-on-eks/">Blocking egress to specific domains from an EKS cluster - what are the options?</a></h2>
+    <div class="meta"><time datetime="2026-07-22T21:00:00+02:00">2026-07-22</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/aws/">AWS</a> <a href="/tags/eks/">EKS</a> <a href="/tags/kubernetes/">Kubernetes</a> <a href="/tags/security/">Security</a> <a href="/tags/networking/">Networking</a></div>
 
-    <div class="excerpt"><p>On one of my desktop boxes I recently got this message when I wanted to update it via <code class="language-plaintext highlighter-rouge">apt</code>:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Fetched 1448 B in 8s (180 B/s)
-Reading package lists... Done
-W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used.
-GPG error: http://xxxxxxx ./ Release: The following signatures couldn't be verified because
-the public key is not available: NO_PUBKEY 0000000000
-</code></pre></div></div>
+    <div class="excerpt"><p>A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to <code class="language-plaintext highlighter-rouge">evil-domain.com</code>”
+(or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly
+annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS.
+A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game.
+Here is a rundown of the options that actually work with FQDNs, and what each one really gives you.</p>
 
 </div>
-    <a class="more" href="/2015/04/30/add-new-key-to-apt/">read more →</a>
+    <a class="more" href="/2026/07/22/blocking-egress-fqdns-on-eks/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2015/03/19/why-you-shoudnt-use-kill-9/">Why you should not use kill -9</a></h2>
-    <div class="meta"><time datetime="2015-03-19T19:46:03+01:00">2015-03-19</time> <a href="/tags/linux/">Linux</a></div>
+    <h2><a href="/2026/07/21/opentofu-enabled-meta-argument/">OpenTofu&#39;s enabled meta-argument - conditional resources without the count hack</a></h2>
+    <div class="meta"><time datetime="2026-07-21T21:00:00+02:00">2026-07-21</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/iac/">IaC</a></div>
 
-    <div class="excerpt"><p>I recently found this advice given by <em>Randal Schwartz</em>.
-I think most programmers have some idea who he is.
-Anyway, if you have never had to touch Perl, here is the link to his <a href="https://en.wikipedia.org/wiki/Randal_L._Schwartz">wiki page</a>.</p>
-
-<p>Here is the advice from Randal:</p>
+    <div class="excerpt"><p>In my <a href="/2026/07/21/transition-to-opentofu/">previous post</a> I wrote about migrating from Terraform to OpenTofu
+and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that:
+a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation
+via <code class="language-plaintext highlighter-rouge">count</code>. The feature is called <code class="language-plaintext highlighter-rouge">enabled</code>, it lives in the <code class="language-plaintext highlighter-rouge">lifecycle</code> block, it shipped in OpenTofu 1.11,
+and Terraform simply does not have it.</p>
 
 </div>
-    <a class="more" href="/2015/03/19/why-you-shoudnt-use-kill-9/">read more →</a>
+    <a class="more" href="/2026/07/21/opentofu-enabled-meta-argument/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2014/11/27/temporary-disabling-bash-history/">Temporary Disabling Bash History</a></h2>
-    <div class="meta"><time datetime="2014-11-27T00:00:00+01:00">2014-11-27</time> <a href="/tags/bash/">bash</a></div>
+    <h2><a href="/2026/07/21/transition-to-opentofu/">From Terraform to OpenTofu - why and how we made the switch</a></h2>
+    <div class="meta"><time datetime="2026-07-21T09:00:00+02:00">2026-07-21</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/terraform/">Terraform</a> <a href="/tags/opentofu/">OpenTofu</a> <a href="/tags/iac/">IaC</a></div>
 
-    <div class="excerpt"><p>How to do it? It’s actually very simple.
-You can achieve this with <code class="language-plaintext highlighter-rouge">unset HISTFILE</code>. Of course, in that case we only disable history
-for the current session.
-What if we want to selectively keep some commands out of the bash history?</p>
+    <div class="excerpt"><p>I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed.
+Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem,
+and recently I went through a full migration from Terraform to <a href="https://opentofu.org/">OpenTofu</a> in a few production environments.
+In this post I want to share why we did it, how it went, and what surprised me along the way.</p>
 
 </div>
-    <a class="more" href="/2014/11/27/temporary-disabling-bash-history/">read more →</a>
+    <a class="more" href="/2026/07/21/transition-to-opentofu/">read more →</a>
   </article>
   
   <article class="card">
-    <h2><a href="/2014/07/01/add-timestamp-to-bash-history/">Add timestamp to Bash history</a></h2>
-    <div class="meta"><time datetime="2014-07-01T08:30:46+02:00">2014-07-01</time> <a href="/tags/bash/">bash</a></div>
+    <h2><a href="/2024/06/11/why-go-lang/">Why GoLang</a></h2>
+    <div class="meta"><time datetime="2024-06-11T08:30:00+02:00">2024-06-11</time> <a href="/tags/programming/">Programming</a> <a href="/tags/golang/">GoLang</a></div>
 
-    <div class="excerpt"><p>Sometimes there is a need to add a timestamp to bash history.
-At my work I found it quite useful, especially when some other developers
-have access to the same box or when you simply want to have an idea when a command from the history was executed.  
-This is how we can achieve this:</p>
+    <div class="excerpt"><p>GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers 
+due to its simplicity, efficiency, and robustness. In this blog post, we will explore GoLang’s best features from both performance and development perspectives, 
+backed by comprehensive code examples to illustrate these advantages.</p>
 
-<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">echo</span> <span class="s1">'export HISTTIMEFORMAT="%d.%m.%y %T"'</span> <span class="o">&gt;&gt;</span> ~/.profile</code></pre></figure>
-
-<p>(or <code class="language-plaintext highlighter-rouge">.bash_profile</code> if you use a RHEL based distro) and after that just re-login or reload your profile file.
-Time formatting is exactly the same as for <code class="language-plaintext highlighter-rouge">strftime</code> - please check <code class="language-plaintext highlighter-rouge">man 3 strftime</code>.</p>
-
-<p>Hint: reloading the profile can be done like this:
-<code class="language-plaintext highlighter-rouge">. .profile</code> or <code class="language-plaintext highlighter-rouge">source .profile</code></p>
-
-<p>–
-Cheers
-Robert</p>
 </div>
-    <a class="more" href="/2014/07/01/add-timestamp-to-bash-history/">read more →</a>
+    <a class="more" href="/2024/06/11/why-go-lang/">read more →</a>
   </article>
   
 </div>
@@ -151,7 +138,7 @@ Robert</p>
 
 <div class="out pagination">
   <a href="/posts/2/">← newer</a>
-  <span>page 3/5</span>
+  <span>page 3/6</span>
   <a href="/posts/4/">older →</a>
 </div>
 

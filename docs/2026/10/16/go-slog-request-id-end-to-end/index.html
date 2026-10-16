@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  
+  
+  <title>Go: a request ID on every log line with log/slog, without passing a logger around - Robert&#39;s notes</title>
+  <meta name="description" content="The single most useful field in a production log is the one that lets you pull every line belonging to one request. Most Go codebases get there by threading a *slog.Logger through every function signature, or by stuffing the logger into the context and fishing it out everywhere. There is a cleaner way that the slog design makes almost trivial: a Handler that reads the request ID from the context.Context it is given. Then every call site is just slog.InfoContext(ctx, ...), and the ID appears on its own.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181825">
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="https://roberts-notes.blog/2026/10/16/go-slog-request-id-end-to-end/">
+  <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
+  <link rel="icon"
+      type="image/png"
+      href="/favicon.png">
+<!--
+ ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
+██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
+██║  ███╗██████╔╝█████╗  █████╗     ██║   ██║██╔██╗ ██║██║  ███╗███████╗    ██║
+██║   ██║██╔══██╗██╔══╝  ██╔══╝     ██║   ██║██║╚██╗██║██║   ██║╚════██║    ╚═╝
+╚██████╔╝██║  ██║███████╗███████╗   ██║   ██║██║ ╚████║╚██████╔╝███████║    ██╗
+ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
+-->
+
+  <meta property="og:title" content="Go: a request ID on every log line with log/slog, without passing a logger around">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2026/10/16/go-slog-request-id-end-to-end/">
+  <meta property="og:description" content="The single most useful field in a production log is the one that lets you pull every line belonging to one request. Most Go codebases get there by threading a *slog.Logger through every function signature, or by stuffing the logger into the context and fishing it out everywhere. There is a cleaner way that the slog design makes almost trivial: a Handler that reads the request ID from the context.Context it is given. Then every call site is just slog.InfoContext(ctx, ...), and the ID appears on its own.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Go: a request ID on every log line with log/slog, without passing a...">
+  <meta name="twitter:description" content="The single most useful field in a production log is the one that lets you pull every line belonging to one request. Most Go codebases get there by threading a *slog.Logger through every function si...">
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
+  <script src="/assets/ga.js"></script>
+  
+</head>
+<body>
+
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>robert@notes: ~/posts — zsh</span></div>
+  <div class="term">
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">cat ~/.motd</span></div>
+
+    <div class="out motd"><a href="/">Robert&#39;s notes</a> - Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture.</div>
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls ~</span></div>
+
+    <nav class="out">
+      
+        <a href="/">Main</a>
+      
+        <a href="/archives/">Archives</a>
+      
+        <a href="/stats/">Stats</a>
+      
+        <a href="/contact/">Contact</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    
+
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">glow go-slog-request-id-end-to-end.md</span></div>
+
+<article class="post out" itemscope itemtype="http://schema.org/BlogPosting">
+  <h1 itemprop="name headline">Go: a request ID on every log line with log/slog, without passing a logger around</h1>
+  <div class="meta"><time datetime="2026-10-16T14:00:00+02:00">2026-10-16</time> <a href="/tags/programming/">Programming</a> <a href="/tags/golang/">GoLang</a> <a href="/tags/aws/">AWS</a> <a href="/tags/observability/">Observability</a></div>
+
+  <div class="body" itemprop="articleBody">
+    <p>The single most useful field in a production log is the one that lets you pull every line belonging to one request.
+Most Go codebases get there by threading a <code class="language-plaintext highlighter-rouge">*slog.Logger</code> through every function signature, or by stuffing the logger
+into the context and fishing it out everywhere. There is a cleaner way that the <code class="language-plaintext highlighter-rouge">slog</code> design makes almost trivial:
+a <code class="language-plaintext highlighter-rouge">Handler</code> that reads the request ID from the <code class="language-plaintext highlighter-rouge">context.Context</code> it is given. Then every call site is just
+<code class="language-plaintext highlighter-rouge">slog.InfoContext(ctx, ...)</code>, and the ID appears on its own.
+<!--more--></p>
+
+<h2 id="the-idea-in-one-paragraph">The idea in one paragraph</h2>
+
+<p>Every <code class="language-plaintext highlighter-rouge">slog</code> logging method has a <code class="language-plaintext highlighter-rouge">Context</code> variant, <code class="language-plaintext highlighter-rouge">slog.InfoContext(ctx, msg, attrs...)</code>, and the context is
+passed down to the handler’s <code class="language-plaintext highlighter-rouge">Handle(ctx, record)</code> method. The built-in handlers ignore it. Ours will not: it looks
+for a request ID in the context and, if there is one, appends it to the record before delegating to the real handler.
+Nobody downstream needs to know a logger exists beyond the standard package functions.</p>
+
+<h2 id="the-handler">The handler</h2>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">logging</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"context"</span>
+	<span class="s">"log/slog"</span>
+<span class="p">)</span>
+
+<span class="k">type</span> <span class="n">ctxKey</span> <span class="k">struct</span><span class="p">{}</span>
+
+<span class="c">// WithRequestID returns a context carrying the request id.</span>
+<span class="k">func</span> <span class="n">WithRequestID</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">id</span> <span class="kt">string</span><span class="p">)</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">context</span><span class="o">.</span><span class="n">WithValue</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">ctxKey</span><span class="p">{},</span> <span class="n">id</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c">// RequestID returns the request id stored in ctx, or "".</span>
+<span class="k">func</span> <span class="n">RequestID</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="n">id</span><span class="p">,</span> <span class="n">_</span> <span class="o">:=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">Value</span><span class="p">(</span><span class="n">ctxKey</span><span class="p">{})</span><span class="o">.</span><span class="p">(</span><span class="kt">string</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">id</span>
+<span class="p">}</span>
+
+<span class="c">// ctxHandler wraps another slog.Handler and adds request_id from the context.</span>
+<span class="k">type</span> <span class="n">ctxHandler</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">slog</span><span class="o">.</span><span class="n">Handler</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">NewHandler</span><span class="p">(</span><span class="n">inner</span> <span class="n">slog</span><span class="o">.</span><span class="n">Handler</span><span class="p">)</span> <span class="n">slog</span><span class="o">.</span><span class="n">Handler</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">ctxHandler</span><span class="p">{</span><span class="n">Handler</span><span class="o">:</span> <span class="n">inner</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="p">(</span><span class="n">h</span> <span class="n">ctxHandler</span><span class="p">)</span> <span class="n">Handle</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">r</span> <span class="n">slog</span><span class="o">.</span><span class="n">Record</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="n">id</span> <span class="o">:=</span> <span class="n">RequestID</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span> <span class="n">id</span> <span class="o">!=</span> <span class="s">""</span> <span class="p">{</span>
+		<span class="n">r</span><span class="o">.</span><span class="n">AddAttrs</span><span class="p">(</span><span class="n">slog</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="s">"request_id"</span><span class="p">,</span> <span class="n">id</span><span class="p">))</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">h</span><span class="o">.</span><span class="n">Handler</span><span class="o">.</span><span class="n">Handle</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c">// WithAttrs and WithGroup must return the wrapper, not the inner handler,</span>
+<span class="c">// otherwise a logger.With(...) call silently drops the request id.</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">h</span> <span class="n">ctxHandler</span><span class="p">)</span> <span class="n">WithAttrs</span><span class="p">(</span><span class="n">attrs</span> <span class="p">[]</span><span class="n">slog</span><span class="o">.</span><span class="n">Attr</span><span class="p">)</span> <span class="n">slog</span><span class="o">.</span><span class="n">Handler</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">ctxHandler</span><span class="p">{</span><span class="n">Handler</span><span class="o">:</span> <span class="n">h</span><span class="o">.</span><span class="n">Handler</span><span class="o">.</span><span class="n">WithAttrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">)}</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="p">(</span><span class="n">h</span> <span class="n">ctxHandler</span><span class="p">)</span> <span class="n">WithGroup</span><span class="p">(</span><span class="n">name</span> <span class="kt">string</span><span class="p">)</span> <span class="n">slog</span><span class="o">.</span><span class="n">Handler</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">ctxHandler</span><span class="p">{</span><span class="n">Handler</span><span class="o">:</span> <span class="n">h</span><span class="o">.</span><span class="n">Handler</span><span class="o">.</span><span class="n">WithGroup</span><span class="p">(</span><span class="n">name</span><span class="p">)}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The comment on <code class="language-plaintext highlighter-rouge">WithAttrs</code> and <code class="language-plaintext highlighter-rouge">WithGroup</code> is the one non-obvious thing. <code class="language-plaintext highlighter-rouge">slog.Handler</code> is an interface with those
+two methods, and if you embed the inner handler and do not override them, <code class="language-plaintext highlighter-rouge">logger.With("component", "db")</code> returns
+a logger whose handler is the <em>inner</em> one, and the request ID disappears for that logger only. That bug is quiet and
+annoying to find. Override both, always.</p>
+
+<p>Wire it up once in <code class="language-plaintext highlighter-rouge">main</code>:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">slog</span><span class="o">.</span><span class="n">SetDefault</span><span class="p">(</span><span class="n">slog</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">NewHandler</span><span class="p">(</span>
+	<span class="n">slog</span><span class="o">.</span><span class="n">NewJSONHandler</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">Stdout</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">slog</span><span class="o">.</span><span class="n">HandlerOptions</span><span class="p">{</span><span class="n">Level</span><span class="o">:</span> <span class="n">slog</span><span class="o">.</span><span class="n">LevelInfo</span><span class="p">}),</span>
+<span class="p">)))</span>
+</code></pre></div></div>
+
+<h2 id="http-a-middleware-that-mints-or-forwards-the-id">HTTP: a middleware that mints or forwards the ID</h2>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">RequestIDMiddleware</span><span class="p">(</span><span class="n">next</span> <span class="n">http</span><span class="o">.</span><span class="n">Handler</span><span class="p">)</span> <span class="n">http</span><span class="o">.</span><span class="n">Handler</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">http</span><span class="o">.</span><span class="n">HandlerFunc</span><span class="p">(</span><span class="k">func</span><span class="p">(</span><span class="n">w</span> <span class="n">http</span><span class="o">.</span><span class="n">ResponseWriter</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span><span class="n">http</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">id</span> <span class="o">:=</span> <span class="n">r</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="s">"X-Request-ID"</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">id</span> <span class="o">==</span> <span class="s">""</span> <span class="p">{</span>
+			<span class="k">var</span> <span class="n">b</span> <span class="p">[</span><span class="m">16</span><span class="p">]</span><span class="kt">byte</span>
+			<span class="n">rand</span><span class="o">.</span><span class="n">Read</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="o">:</span><span class="p">])</span> <span class="c">// crypto/rand; the error is always nil on supported platforms since Go 1.24</span>
+			<span class="n">id</span> <span class="o">=</span> <span class="n">hex</span><span class="o">.</span><span class="n">EncodeToString</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="o">:</span><span class="p">])</span>
+		<span class="p">}</span>
+		<span class="n">w</span><span class="o">.</span><span class="n">Header</span><span class="p">()</span><span class="o">.</span><span class="n">Set</span><span class="p">(</span><span class="s">"X-Request-ID"</span><span class="p">,</span> <span class="n">id</span><span class="p">)</span>
+		<span class="n">ctx</span> <span class="o">:=</span> <span class="n">logging</span><span class="o">.</span><span class="n">WithRequestID</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">Context</span><span class="p">(),</span> <span class="n">id</span><span class="p">)</span>
+		<span class="n">next</span><span class="o">.</span><span class="n">ServeHTTP</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">WithContext</span><span class="p">(</span><span class="n">ctx</span><span class="p">))</span>
+	<span class="p">})</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Honouring an incoming <code class="language-plaintext highlighter-rouge">X-Request-ID</code> means a request that crosses three services keeps one ID across all three logs,
+as long as each service forwards the header on outgoing calls. Returning it in the response means a user can read it
+from their browser’s network tab and paste it into a bug report, which is worth more than it sounds.</p>
+
+<p>From here on, handlers and everything they call just do:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">s</span> <span class="o">*</span><span class="n">Server</span><span class="p">)</span> <span class="n">handleOrder</span><span class="p">(</span><span class="n">w</span> <span class="n">http</span><span class="o">.</span><span class="n">ResponseWriter</span><span class="p">,</span> <span class="n">r</span> <span class="o">*</span><span class="n">http</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">ctx</span> <span class="o">:=</span> <span class="n">r</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+	<span class="n">slog</span><span class="o">.</span><span class="n">InfoContext</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="s">"order received"</span><span class="p">,</span> <span class="s">"customer"</span><span class="p">,</span> <span class="n">custID</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">s</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">Save</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">order</span><span class="p">);</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+		<span class="n">slog</span><span class="o">.</span><span class="n">ErrorContext</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="s">"saving order"</span><span class="p">,</span> <span class="s">"err"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+		<span class="n">http</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="s">"internal error"</span><span class="p">,</span> <span class="m">500</span><span class="p">)</span>
+		<span class="k">return</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">s.store.Save</code> receives the same <code class="language-plaintext highlighter-rouge">ctx</code>, logs with <code class="language-plaintext highlighter-rouge">slog.WarnContext(ctx, ...)</code> three packages deep, and the line comes
+out with the same <code class="language-plaintext highlighter-rouge">request_id</code>. No logger parameter anywhere.</p>
+
+<h2 id="lambda-the-id-already-exists">Lambda: the ID already exists</h2>
+
+<p>In a Lambda function the context handed to your handler already carries the invocation’s request ID. Pull it out and
+drop it into our context once at the top:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="s">"github.com/aws/aws-lambda-go/lambdacontext"</span>
+
+<span class="k">func</span> <span class="n">handler</span><span class="p">(</span><span class="n">ctx</span> <span class="n">context</span><span class="o">.</span><span class="n">Context</span><span class="p">,</span> <span class="n">evt</span> <span class="n">events</span><span class="o">.</span><span class="n">SQSEvent</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="n">lc</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">lambdacontext</span><span class="o">.</span><span class="n">FromContext</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
+		<span class="n">ctx</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">WithRequestID</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">lc</span><span class="o">.</span><span class="n">AwsRequestID</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">slog</span><span class="o">.</span><span class="n">InfoContext</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="s">"batch received"</span><span class="p">,</span> <span class="s">"records"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">Records</span><span class="p">))</span>
+	<span class="c">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The nice side effect: that is the same ID CloudWatch prints in its own <code class="language-plaintext highlighter-rouge">START RequestId: ...</code> and <code class="language-plaintext highlighter-rouge">REPORT</code> lines, so
+your structured lines and the runtime’s lines correlate with no extra work.</p>
+
+<h2 id="reading-it-back-in-cloudwatch">Reading it back in CloudWatch</h2>
+
+<p>Stdout from a Lambda or an ECS task lands in CloudWatch Logs as-is, one JSON object per line. Logs Insights parses
+JSON automatically, so the query to follow one request is:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fields @timestamp, level, msg, err
+| filter request_id = "4f1c0b2e9a7d4c3e8b6a5f0e1d2c3b4a"
+| sort @timestamp asc
+</code></pre></div></div>
+
+<p>And the one you actually run on a bad day, “which requests errored in the last hour and how many lines did each
+produce”:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>filter level = "ERROR"
+| stats count() as lines, min(@timestamp) as first_seen by request_id
+| sort first_seen desc
+| limit 50
+</code></pre></div></div>
+
+<p>If you want this to work for ECS as well, use the <code class="language-plaintext highlighter-rouge">awslogs</code> log driver with no special format, JSON lines are enough.</p>
+
+<h2 id="two-things-to-avoid">Two things to avoid</h2>
+
+<p><strong>Do not put the logger itself in the context.</strong> It works, but every call site becomes <code class="language-plaintext highlighter-rouge">logger.FromContext(ctx).Info(...)</code>
+and people forget, fall back to <code class="language-plaintext highlighter-rouge">slog.Info</code>, and the ID vanishes from exactly the lines you need. Putting only the
+<em>ID</em> in the context and having the handler do the work means the plain <code class="language-plaintext highlighter-rouge">slog.InfoContext</code> is the right call everywhere.</p>
+
+<p><strong>Do not forget the <code class="language-plaintext highlighter-rouge">Context</code> variants.</strong> <code class="language-plaintext highlighter-rouge">slog.Info(msg)</code> passes <code class="language-plaintext highlighter-rouge">context.Background()</code> to the handler, so no ID.
+A <code class="language-plaintext highlighter-rouge">go vet</code> style check for this does not exist in the standard tooling as far as I know; a <code class="language-plaintext highlighter-rouge">grep -rn 'slog\.\(Info\|Warn\|Error\|Debug\)('</code> in CI
+is crude and effective.</p>
+
+<p>The whole thing is forty lines, uses nothing outside the standard library and the Lambda SDK, and it is the first
+thing I add to any new Go service now. Ten minutes once, and every incident afterwards starts with a request ID
+instead of a timestamp and a guess.</p>
+
+  </div>
+</article>
+
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">giscus --comments</span></div>
+
+<div class="out comments">
+  <script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="catppuccin_mocha"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
+</div>
+
+
+    <footer>
+      <div class="links">
+  <a href="https://github.com/robertwe">GitHub</a>
+  <a href="https://stackoverflow.com/users/213377">StackOverflow</a>
+  <a href="https://linkedin.com/in/robertweclawski">LinkedIn</a>
+  <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</div>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>
+      <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="cur"></span></div>
+
+    </footer>
+  </div>
+</div>
+</body>
+</html>

@@ -7,12 +7,8 @@ group: navigation
 permalink: /contact/
 ---
 
-<script src='https://www.google.com/recaptcha/api.js'></script>
-<script type="text/javascript">
-  function enableSubmit() {
-    var btn = document.getElementById('form_submit');btn.disabled = false;btn.title = '';
-  }
-</script>
+<script src="/assets/contact.js"></script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 If you would like to contact me because of a various reasons please use form below.
 If by some chance you are a recruter or you are searching for some freelanceer please
 attach some minimal description of the project/position.

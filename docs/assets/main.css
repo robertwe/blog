@@ -181,7 +181,7 @@ nav a.on::before {
   color: var(--peach); }
 
 .meta {
-  color: var(--sub2);
+  color: var(--sub);
   font-size: .85rem; }
 
 .meta a {
@@ -205,7 +205,7 @@ nav a.on::before {
 .pagination {
   display: flex;
   gap: 1.5rem;
-  color: var(--sub2); }
+  color: var(--sub); }
 
 table.ls {
   border-collapse: collapse; }
@@ -215,7 +215,7 @@ table.ls td {
   vertical-align: top; }
 
 table.ls td.d {
-  color: var(--sub2);
+  color: var(--sub);
   white-space: nowrap; }
 
 /* post / page body */
@@ -337,7 +337,7 @@ code {
   min-height: 4rem; }
 
 footer {
-  color: var(--sub2);
+  color: var(--sub);
   font-size: .85rem;
   border-top: 1px solid var(--surf);
   padding-top: 1rem;

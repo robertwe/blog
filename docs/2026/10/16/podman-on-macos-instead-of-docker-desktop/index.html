@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  
+  
+  <title>Podman on macOS instead of Docker Desktop - what actually changes - Robert&#39;s notes</title>
+  <meta name="description" content="My About page has said “Podman / OrbStack” instead of “Docker” for a while now, and I keep getting asked whether that is a political statement or a practical one. Practical. Docker Desktop’s licence terms made it a procurement question in a lot of companies, and once you have to justify a tool you start asking what you actually use it for. For me the answer was: run a container, build an image, occasionally a compose file. Podman does all of that. This post is the list of what is different on a Mac, because the differences are real, just smaller than the internet makes them sound.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181825">
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="https://roberts-notes.blog/2026/10/16/podman-on-macos-instead-of-docker-desktop/">
+  <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
+  <link rel="icon"
+      type="image/png"
+      href="/favicon.png">
+<!--
+ ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
+██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
+██║  ███╗██████╔╝█████╗  █████╗     ██║   ██║██╔██╗ ██║██║  ███╗███████╗    ██║
+██║   ██║██╔══██╗██╔══╝  ██╔══╝     ██║   ██║██║╚██╗██║██║   ██║╚════██║    ╚═╝
+╚██████╔╝██║  ██║███████╗███████╗   ██║   ██║██║ ╚████║╚██████╔╝███████║    ██╗
+ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
+-->
+
+  <meta property="og:title" content="Podman on macOS instead of Docker Desktop - what actually changes">
+  <meta property="og:site_name" content="Robert&#39;s notes">
+  <meta property="og:url" content="https://roberts-notes.blog/2026/10/16/podman-on-macos-instead-of-docker-desktop/">
+  <meta property="og:description" content="My About page has said “Podman / OrbStack” instead of “Docker” for a while now, and I keep getting asked whether that is a political statement or a practical one. Practical. Docker Desktop’s licence terms made it a procurement question in a lot of companies, and once you have to justify a tool you start asking what you actually use it for. For me the answer was: run a container, build an image, occasionally a compose file. Podman does all of that. This post is the list of what is different on a Mac, because the differences are real, just smaller than the internet makes them sound.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Podman on macOS instead of Docker Desktop - what actually changes">
+  <meta name="twitter:description" content="My About page has said “Podman / OrbStack” instead of “Docker” for a while now, and I keep getting asked whether that is a political statement or a practical one. Practical. Docker Desktop’s licenc...">
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
+  <script src="/assets/ga.js"></script>
+  
+</head>
+<body>
+
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>robert@notes: ~/posts — zsh</span></div>
+  <div class="term">
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">cat ~/.motd</span></div>
+
+    <div class="out motd"><a href="/">Robert&#39;s notes</a> - Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture.</div>
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls ~</span></div>
+
+    <nav class="out">
+      
+        <a href="/">Main</a>
+      
+        <a href="/archives/">Archives</a>
+      
+        <a href="/stats/">Stats</a>
+      
+        <a href="/contact/">Contact</a>
+      
+        <a href="/about/">About</a>
+      
+    </nav>
+    
+
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">glow podman-on-macos-instead-of-docker-desktop.md</span></div>
+
+<article class="post out" itemscope itemtype="http://schema.org/BlogPosting">
+  <h1 itemprop="name headline">Podman on macOS instead of Docker Desktop - what actually changes</h1>
+  <div class="meta"><time datetime="2026-10-16T14:30:00+02:00">2026-10-16</time> <a href="/tags/devops/">DevOps</a> <a href="/tags/containers/">Containers</a> <a href="/tags/podman/">Podman</a> <a href="/tags/macos/">macOS</a></div>
+
+  <div class="body" itemprop="articleBody">
+    <p>My <a href="/about/">About page</a> has said “Podman / OrbStack” instead of “Docker” for a while now, and I keep getting asked
+whether that is a political statement or a practical one. Practical. Docker Desktop’s licence terms made it a
+procurement question in a lot of companies, and once you have to justify a tool you start asking what you actually
+use it for. For me the answer was: run a container, build an image, occasionally a compose file. Podman does all of
+that. This post is the list of what is different on a Mac, because the differences are real, just smaller than the
+internet makes them sound.
+<!--more--></p>
+
+<h2 id="there-is-still-a-vm-you-just-see-it">There is still a VM, you just see it</h2>
+
+<p>Containers are a Linux thing. On a Mac both Docker Desktop and Podman run them inside a Linux virtual machine. Docker
+hides that VM completely. Podman does not:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew <span class="nb">install </span>podman
+podman machine init <span class="nt">--cpus</span> 4 <span class="nt">--memory</span> 8192 <span class="nt">--disk-size</span> 60
+podman machine start
+</code></pre></div></div>
+
+<p>That creates a Fedora CoreOS VM (using Apple’s Virtualization framework on Apple silicon), and from then on the
+<code class="language-plaintext highlighter-rouge">podman</code> command on your Mac talks to the Podman service inside it over a socket. <code class="language-plaintext highlighter-rouge">podman machine stop</code> when you want
+your battery back. The upside of seeing the VM: you decide how big it is, you can <code class="language-plaintext highlighter-rouge">podman machine ssh</code> into it when
+something is weird, and you can have more than one (<code class="language-plaintext highlighter-rouge">podman machine init work</code>, <code class="language-plaintext highlighter-rouge">podman machine init play</code>).</p>
+
+<h2 id="the-docker-command-and-the-tools-that-hardcode-it">The <code class="language-plaintext highlighter-rouge">docker</code> command, and the tools that hardcode it</h2>
+
+<p>Muscle memory and third-party tools both type <code class="language-plaintext highlighter-rouge">docker</code>. Two layers fix that.</p>
+
+<p>For your shell, <code class="language-plaintext highlighter-rouge">podman</code> accepts the same subcommands and flags for the everyday stuff - <code class="language-plaintext highlighter-rouge">run</code>, <code class="language-plaintext highlighter-rouge">build</code>, <code class="language-plaintext highlighter-rouge">ps</code>,
+<code class="language-plaintext highlighter-rouge">exec</code>, <code class="language-plaintext highlighter-rouge">logs</code>, <code class="language-plaintext highlighter-rouge">pull</code>, <code class="language-plaintext highlighter-rouge">push</code>, <code class="language-plaintext highlighter-rouge">images</code>, <code class="language-plaintext highlighter-rouge">rm</code>, <code class="language-plaintext highlighter-rouge">rmi</code>. An alias is enough:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">alias </span><span class="nv">docker</span><span class="o">=</span>podman
+</code></pre></div></div>
+
+<p>For tools that talk to the Docker <em>socket</em> rather than the CLI - Testcontainers, some IDE plugins, anything using
+the Docker SDK - Podman ships a helper that puts a compatible socket at the standard path:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>podman-mac-helper <span class="nb">install
+</span>podman machine stop <span class="o">&amp;&amp;</span> podman machine start
+<span class="nb">ls</span> <span class="nt">-la</span> /var/run/docker.sock   <span class="c"># -&gt; symlink into your Podman machine's socket</span>
+</code></pre></div></div>
+
+<p>After that, software that looks for <code class="language-plaintext highlighter-rouge">/var/run/docker.sock</code> finds a Docker-API-compatible endpoint and mostly does not
+notice. “Mostly” because the API compatibility is good but not total; Testcontainers works, a few niche tools that
+rely on Docker-only API fields do not. Setting <code class="language-plaintext highlighter-rouge">DOCKER_HOST</code> to the socket path, which <code class="language-plaintext highlighter-rouge">podman machine start</code> prints,
+is the alternative when the helper is not an option.</p>
+
+<h2 id="compose">Compose</h2>
+
+<p><code class="language-plaintext highlighter-rouge">podman compose</code> exists and is a thin wrapper: it looks for <code class="language-plaintext highlighter-rouge">docker-compose</code> or <code class="language-plaintext highlighter-rouge">podman-compose</code> on your PATH and
+runs that against the Podman socket. So the realistic setup is:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>brew <span class="nb">install </span>docker-compose    <span class="c"># the Compose v2 binary, no Docker Desktop needed</span>
+podman compose up <span class="nt">-d</span>
+</code></pre></div></div>
+
+<p>Compose files I use day to day work unchanged. The things that have bitten people are <code class="language-plaintext highlighter-rouge">network_mode: host</code> (not
+meaningful on a Mac with either tool), and anything mounting the Docker socket into a container, which needs the
+Podman socket path instead.</p>
+
+<h2 id="rootless-by-default-and-what-that-means-on-a-mac">Rootless by default, and what that means on a Mac</h2>
+
+<p>Podman’s headline feature is rootless containers. On the Mac this is slightly confusing: the VM is yours, so what does
+rootless even mean? It means the Podman <em>service inside the VM</em> runs as an unprivileged user, so a container breakout
+lands in a user account inside a VM, not in root inside a VM. Practically, two consequences:</p>
+
+<ul>
+  <li>binding ports below 1024 works anyway, because the VM is configured to allow it,</li>
+  <li>a handful of images that insist on doing privileged things at start (some older database images, anything that
+wants to <code class="language-plaintext highlighter-rouge">mount</code>) fail. For those, <code class="language-plaintext highlighter-rouge">podman machine set --rootful</code> switches the machine to rootful mode, and you are
+back to Docker-equivalent behaviour.</li>
+</ul>
+
+<p>I run rootless and have flipped exactly one machine to rootful, for one project. The default is right.</p>
+
+<h2 id="volumes-and-file-sharing">Volumes and file sharing</h2>
+
+<p>Bind-mounting a directory from the Mac into a container goes Mac → VM → container, and the Mac → VM hop is the
+historically slow part, on both tools. Podman uses virtiofs for it now, which is fine for source code and config, and
+painful for the same thing it is painful for everywhere: <code class="language-plaintext highlighter-rouge">node_modules</code> with sixty thousand files, or a database
+data directory. The fix is the same as on Docker: keep heavy data in a named volume (<code class="language-plaintext highlighter-rouge">podman volume create</code>), which
+lives on the VM’s disk, and bind-mount only what you edit.</p>
+
+<h2 id="images-and-registries">Images and registries</h2>
+
+<p>Pulls from Docker Hub need the full name or a configured search list. <code class="language-plaintext highlighter-rouge">podman pull nginx</code> asks which registry you
+mean; <code class="language-plaintext highlighter-rouge">podman pull docker.io/library/nginx</code> does not. Add <code class="language-plaintext highlighter-rouge">docker.io</code> to <code class="language-plaintext highlighter-rouge">unqualified-search-registries</code> in
+<code class="language-plaintext highlighter-rouge">~/.config/containers/registries.conf</code> and short names work again. Not a Mac thing, but it is the first thing
+everyone hits.</p>
+
+<p>Builds are done by Buildah under the hood, and <code class="language-plaintext highlighter-rouge">podman build -f Dockerfile .</code> reads a Dockerfile unchanged. Multi-arch
+builds for pushing an <code class="language-plaintext highlighter-rouge">arm64</code> image to be run on <code class="language-plaintext highlighter-rouge">amd64</code> EC2 are <code class="language-plaintext highlighter-rouge">podman build --platform linux/amd64</code>, with the
+usual emulation slowness.</p>
+
+<h2 id="where-orbstack-comes-in">Where OrbStack comes in</h2>
+
+<p>OrbStack is the other name on my About page. It is a commercial macOS app (free for personal use) that provides a
+Docker-compatible engine and lightweight Linux machines, with a focus on being fast and quiet. It is what I reach for
+when I want zero friction: a project with a <code class="language-plaintext highlighter-rouge">docker-compose.yml</code> someone else maintains, where I do not want to find
+out about any difference at all. Podman is what I reach for when the environment matters - when I am going to deploy
+to Kubernetes anyway and want the same tool that produces pods (<code class="language-plaintext highlighter-rouge">podman generate kube</code>, <code class="language-plaintext highlighter-rouge">podman play kube</code>), or on a
+machine where I want everything open source. Having both installed is not a conflict, they do not share a socket
+unless you tell them to.</p>
+
+<h2 id="would-i-switch-back">Would I switch back</h2>
+
+<p>No, but not out of principle. The day-to-day commands are the same, the VM being visible is a feature once you get
+used to it, and the socket helper covers the tools that care. The friction that is left - the short-name registry
+prompt, the occasional image that wants rootful - is a one-time fix each. If your workflow is “compose up, write code,
+compose down”, the honest summary is that you will stop noticing within a week.</p>
+
+  </div>
+</article>
+
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">giscus --comments</span></div>
+
+<div class="out comments">
+  <script src="https://giscus.app/client.js"
+        data-repo="robertwe/blog"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
+        data-category="General"
+        data-category-id="DIC_kwDOAVDFiM4DBrA6"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="catppuccin_mocha"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
+<noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
+
+</div>
+
+
+    <footer>
+      <div class="links">
+  <a href="https://github.com/robertwe">GitHub</a>
+  <a href="https://stackoverflow.com/users/213377">StackOverflow</a>
+  <a href="https://linkedin.com/in/robertweclawski">LinkedIn</a>
+  <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</div>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>
+      <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="cur"></span></div>
+
+    </footer>
+  </div>
+</div>
+</body>
+</html>
