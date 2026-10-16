@@ -4,4 +4,6 @@
   {% if site.linkedin_username %}<a href="https://linkedin.com/in/{{ site.linkedin_username }}">LinkedIn</a>{% endif %}
   <a href="{{ "/feed.xml" | absolute_url }}">RSS</a>
 </div>
-<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a>
+{%- if site.data.build.commit %} &middot; <a href="https://github.com/{{ site.github_username }}/blog/commit/{{ site.data.build.full | default: site.data.build.commit }}" title="built {{ site.data.build.built }}">{{ site.data.build.commit }}</a>{% endif -%}
+</div>

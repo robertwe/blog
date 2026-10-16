@@ -32,6 +32,8 @@ jobs:
       - run: |
           bundle config set --local path vendor/bundle
           bundle install --jobs 4
+      - name: stamp the build with the commit (shown in the footer)
+        run: printf 'commit: %s\nfull: %s\nbuilt: %s\n' "${GITHUB_SHA:0:7}" "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%MZ)" > _data/build.yml
       - run: bundle exec jekyll build -d docs
         env:
           JEKYLL_ENV: production
