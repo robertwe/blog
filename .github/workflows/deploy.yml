@@ -15,11 +15,16 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: docker.io/library/ruby:3.4   # same image as the Containerfile / make build
     steps:
       - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
+      - uses: actions/cache@v4
         with:
-          bundler-cache: true   # reads .ruby-version, runs bundle install, caches gems
+          path: vendor/bundle
+          key: gems-${{ runner.os }}-${{ hashFiles('Gemfile.lock') }}
+      - run: |
+          bundle config set --local path vendor/bundle
+          bundle install --jobs 4
       - run: bundle exec jekyll build -d docs
         env:
           JEKYLL_ENV: production
