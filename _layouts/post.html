@@ -1,0 +1,20 @@
+---
+layout: default
+cwd: "~/posts"
+---
+{% assign slug = page.url | split: "/" | last %}
+{% capture cmd %}glow {{ slug }}.md{% endcapture %}
+{% include prompt.html cwd="~/posts" cmd=cmd %}
+<article class="post out" itemscope itemtype="http://schema.org/BlogPosting">
+  <h1 itemprop="name headline">{{ page.title | escape }}</h1>
+  {% include post_meta.html post=page %}
+  <div class="body" itemprop="articleBody">
+    {{ content }}
+  </div>
+</article>
+{% if site.comments == true and page.comments != false %}
+{% include prompt.html cwd="~/posts" cmd="giscus --comments" %}
+<div class="out comments">
+  {% include custom_comments_provider.html %}
+</div>
+{% endif %}

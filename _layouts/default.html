@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% assign title = page.title | default: site.title | escape %}
+  {% assign canonical = page.url | replace:'index.html','' | absolute_url %}
+  {% assign description = page.description | default: page.excerpt | default: site.description | strip_html | normalize_whitespace | strip | escape %}
+  <title>{% if page.title %}{{ page.title | escape }} - {% endif %}{{ site.title | escape }}</title>
+  <meta name="description" content="{{ description }}">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181825">
+  <link rel="stylesheet" href="{{ "/assets/main.css" | relative_url }}">
+  <link rel="canonical" href="{{ canonical }}">
+  <link rel="alternate" type="application/rss+xml" title="{{ site.title | escape }}" href="{{ "/feed.xml" | absolute_url }}">
+  {% include head_custom.html %}
+  <meta property="og:title" content="{{ title }}">
+  <meta property="og:site_name" content="{{ site.title | escape }}">
+  <meta property="og:url" content="{{ canonical }}">
+  <meta property="og:description" content="{{ description }}">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{ title | truncate: 70 }}">
+  <meta name="twitter:description" content="{{ description | truncate: 200 }}">
+  {% if site.google_analytics %}
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','{{ site.google_analytics }}');</script>
+  {% endif %}
+</head>
+<body>
+{% assign cwd = page.cwd | default: layout.cwd | default: "~" %}
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>robert@notes: {{ cwd }} — zsh</span></div>
+  <div class="term">
+    {% include prompt.html cwd=cwd cmd="cat ~/.motd" %}
+    <div class="out motd"><a href="{{ "/" | relative_url }}">{{ site.title | escape }}</a> - {{ site.description | strip | split: " - " | first }}.</div>
+    {% include prompt.html cwd=cwd cmd="ls ~" %}
+    <nav class="out">
+      {% for link in site.data.navigation.main %}
+        <a href="{{ link.url | relative_url }}"{% if page.url == link.url %} class="on"{% endif %}>{{ link.title }}</a>
+      {% endfor %}
+    </nav>
+    {{ content }}
+    <footer>
+      {% include footer_content.html %}
+      {% include prompt.html cwd=cwd cmd="" %}
+    </footer>
+  </div>
+</div>
+</body>
+</html>

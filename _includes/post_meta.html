@@ -1,0 +1,3 @@
+<div class="meta"><time datetime="{{ include.post.date | date_to_xmlschema }}">{{ include.post.date | date: "%Y-%m-%d" }}</time>
+{%- for tag in include.post.tags %}{% for archive in site.archives %}{% if archive.type == "tag" and archive.title == tag %} <a href="{{ archive.url | relative_url }}">{{ tag | escape }}</a>{% endif %}{% endfor %}{% endfor -%}
+</div>

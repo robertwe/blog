@@ -1,31 +1,7 @@
-{% if site.github_username %}
-  <div class="footer">
-    <a href="https://github.com/{{ site.github_username }}">
-      <i class="fa fa-github"></i> GitHub
-    </a>
+<div class="links">
+  {% if site.github_username %}<a href="https://github.com/{{ site.github_username }}">GitHub</a>{% endif %}
+  {% if site.stackoverflow_username %}<a href="https://stackoverflow.com/users/{{ site.stackoverflow_username }}">StackOverflow</a>{% endif %}
+  {% if site.linkedin_username %}<a href="https://linkedin.com/in/{{ site.linkedin_username }}">LinkedIn</a>{% endif %}
+  <a href="{{ "/feed.xml" | absolute_url }}">RSS</a>
 </div>
-{% endif %}
-{% if site.twitter_username %}
-<div class="footer">
-    <a href="https://twitter.com/{{ site.twitter_username }}">
-      <i class="fa fa-twitter"></i> Twitter
-    </a>
-  </div>
-{% endif %}
-{% if site.stackoverflow_username %}
-<div class="footer">
-    <a href="https://stackoverflow.com/users/{{ site.stackoverflow_username }}">
-      <i class="fa fa-stack-overflow"></i> StackOverflow
-    </a>
-  </div>
-{% endif %}
-{% if site.linkedin_username %}
-<div class="footer">
-    <a href="https://linkedin.com/in/{{ site.linkedin_username }}">
-      <i class="fa fa-linkedin"></i> LinkedIn
-    </a>
-  </div>
-{% endif %}
-<span class="footer">
-&copy; {{ site.author }} - Powered by <a href="https://jekyllrb.com">Jekyll</a> &amp; <a href="https://github.com/yous/whiteglass">whiteglass</a> - Subscribe via <a href="{{ feed_path | absolute_url }}">RSS</a>
-</span>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>

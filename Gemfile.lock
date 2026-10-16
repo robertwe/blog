@@ -34,17 +34,10 @@ GEM
     jekyll-paginate (1.1.0)
     jekyll-sass-converter (1.5.2)
       sass (~> 3.4)
-    jekyll-seo-tag (2.6.1)
-      jekyll (>= 3.3, < 5.0)
     jekyll-sitemap (1.2.0)
       jekyll (~> 3.3)
     jekyll-watch (2.2.1)
       listen (~> 3.0)
-    jekyll-whiteglass (1.11.1)
-      jekyll (>= 3.3)
-      jekyll-archives (~> 2.1)
-      jekyll-paginate (~> 1.1)
-      jekyll-sitemap (~> 1.0)
     kramdown (2.4.0)
       rexml
     kramdown-parser-gfm (1.1.0)
@@ -54,10 +47,6 @@ GEM
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
     mercenary (0.3.6)
-    minima (2.5.1)
-      jekyll (>= 3.5, < 5.0)
-      jekyll-feed (~> 0.9)
-      jekyll-seo-tag (~> 2.1)
     pathutil (0.16.2)
       forwardable-extended (~> 2.6)
     public_suffix (5.0.3)
@@ -78,10 +67,11 @@ PLATFORMS
 
 DEPENDENCIES
   jekyll (= 3.9.3)
+  jekyll-archives (~> 2.1)
   jekyll-feed
-  jekyll-whiteglass
+  jekyll-paginate (~> 1.1)
+  jekyll-sitemap (~> 1.0)
   kramdown-parser-gfm (~> 1.1)
-  minima (~> 2.0)
   tzinfo-data
 
 BUNDLED WITH

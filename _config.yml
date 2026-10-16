@@ -24,9 +24,8 @@ exclude:
   - firebase.json
   - node_modules
   - vendor
+  - docs
 comments: true
-
-theme: jekyll-whiteglass
 
 markdown: kramdown
 highlighter: rouge
@@ -35,6 +34,7 @@ plugins:
   - jekyll-archives
   - jekyll-paginate
   - jekyll-sitemap
+  - jekyll-feed
 
 permalink: /:year/:month/:day/:title/
 paginate_path: /posts/:num/

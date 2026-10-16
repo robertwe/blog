@@ -1,37 +1,237 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-  <generator uri="http://jekyllrb.com" version="3.9.3">Jekyll</generator>
-  
-  
-  <link href="https://roberts-notes.blog/feed.xml" rel="self" type="application/atom+xml" />
-  <link href="https://roberts-notes.blog/" rel="alternate" type="text/html" />
-  <updated>2026-07-23T00:07:32+02:00</updated>
-  <id>https://roberts-notes.blog//</id>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="https://roberts-notes.blog/feed.xml" rel="self" type="application/atom+xml" /><link href="https://roberts-notes.blog/" rel="alternate" type="text/html" /><updated>2026-10-16T17:33:05+02:00</updated><id>https://roberts-notes.blog/feed.xml</id><title type="html">Robert’s notes</title><subtitle>Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.
+</subtitle><entry><title type="html">This blog now looks like a terminal - and weighs 7 KB of CSS</title><link href="https://roberts-notes.blog/2026/10/16/blog-as-a-terminal-7kb-of-css/" rel="alternate" type="text/html" title="This blog now looks like a terminal - and weighs 7 KB of CSS" /><published>2026-10-16T10:30:00+02:00</published><updated>2026-10-16T10:30:00+02:00</updated><id>https://roberts-notes.blog/2026/10/16/blog-as-a-terminal-7kb-of-css</id><content type="html" xml:base="https://roberts-notes.blog/2026/10/16/blog-as-a-terminal-7kb-of-css/">&lt;p&gt;If you have been here before you noticed: the serif font and the white background are gone, the blog now renders inside
+a terminal window with a zsh prompt. This post is the short write-up of how, because the interesting part is not the
+look, it is what was removed to get there. No CSS framework, no JavaScript for the theme, no web fonts, one 7 KB
+stylesheet. Still Jekyll, still static files on Firebase Hosting.
+&lt;!--more--&gt;&lt;/p&gt;
 
-  
-    <title type="html">Robert’s notes</title>
-  
+&lt;h2 id=&quot;what-went-out&quot;&gt;What went out&lt;/h2&gt;
 
-  
-    <subtitle>Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.
-</subtitle>
-  
+&lt;p&gt;The old setup was the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jekyll-whiteglass&lt;/code&gt; theme plus Font Awesome 4.7 for three footer icons plus a Google font. That is
+a 10 KB stylesheet, a 30 KB icon CSS file with a font behind it, and a third-party font request on every page view -
+for a blog that is 95% text and code blocks.&lt;/p&gt;
 
-  
+&lt;p&gt;Now: the theme gem is gone, the layouts live in the repo (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_layouts/&lt;/code&gt;, six files, none longer than a screen), and the
+whole look is one hand-written CSS file. Fonts are the system monospace and system sans stacks, so zero font downloads.
+Icons are words. Nobody has ever been confused by the word “GitHub”.&lt;/p&gt;
 
-  
-  
-    <entry>
-      
-      <title type="html">Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example</title>
-      
-      
-      <link href="https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/" rel="alternate" type="text/html" title="Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example" />
-      
-      <published>2026-07-22T23:30:00+02:00</published>
-      <updated>2026-07-22T23:30:00+02:00</updated>
-      <id>https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/">&lt;p&gt;In the &lt;a href=&quot;/2026/07/22/blocking-egress-fqdns-on-eks/&quot;&gt;previous post&lt;/a&gt; I compared the options for
+&lt;h2 id=&quot;the-window&quot;&gt;The window&lt;/h2&gt;
+
+&lt;p&gt;The frame is one &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;div&lt;/code&gt; with a title bar. The three dots are three empty &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;i&amp;gt;&lt;/code&gt; elements coloured red, yellow and green.
+The whole page is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;max-width: 106ch&lt;/code&gt; and centred, which is roughly what a comfortable terminal window is.&lt;/p&gt;
+
+&lt;div class=&quot;language-css highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nc&quot;&gt;.win&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;position&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;relative&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;max-width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;106ch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;margin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;auto&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#1e1e2e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+     &lt;span class=&quot;nl&quot;&gt;border-radius&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;10px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;border&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1px&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;solid&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;#313244&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;box-shadow&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;20px&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;60px&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rgba&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;.5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;overflow&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;hidden&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;nc&quot;&gt;.bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#313244&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;padding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;.55rem&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1rem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;display&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;flex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;align-items&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;center&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;gap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;.45rem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;nc&quot;&gt;.bar&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;12px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;12px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;border-radius&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;50%&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;nc&quot;&gt;.bar&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;:nth-child&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#f38ba8&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;.bar&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;:nth-child&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#f9e2af&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;.bar&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;:nth-child&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#a6e3a1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The colours are &lt;a href=&quot;https://catppuccin.com/&quot;&gt;Catppuccin Mocha&lt;/a&gt;, because it is a palette most terminal emulators and editors
+already ship, and because giscus has a matching theme, so the comment box does not look like a white sticker on a dark page.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-prompt&quot;&gt;The prompt&lt;/h2&gt;
+
+&lt;p&gt;Every “section” of a page is a fake command followed by its output. The prompt is a Jekyll include with two
+parameters, the working directory and the command:&lt;/p&gt;
+
+&lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;p&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;arrow&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;➜&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;h&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;robert@notes&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;d&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;{{ include.cwd }}&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;g&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;git:(&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;arrow&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;master&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;g&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;)&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;c&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;{{ include.cmd }}&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The home page is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ls -t posts/ | head -n 5 | xargs head -n 3&lt;/code&gt;, a post is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;glow &amp;lt;slug&amp;gt;.md&lt;/code&gt;, the archive is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ls -lt&lt;/code&gt;, a
+tag page is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;grep -l &quot;tag: AWS&quot; *.md&lt;/code&gt;. It is a joke, but it is a joke that also tells you where you are.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-cursor-and-the-scanlines---css-only&quot;&gt;The cursor and the scanlines - CSS only&lt;/h2&gt;
+
+&lt;p&gt;The blinking block at the bottom is a pseudo-element with a one-step animation. The scanlines are a repeating gradient
+laid over the window with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pointer-events: none&lt;/code&gt;, so it never gets in the way of selecting text.&lt;/p&gt;
+
+&lt;div class=&quot;language-css highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nc&quot;&gt;.cur&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;::after&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&quot;▋&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;animation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bl&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1.1s&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;steps&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;infinite&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;@keyframes&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;opacity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;@media&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;prefers-reduced-motion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reduce&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;.cur&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;::after&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;animation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;none&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;.win&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;::after&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;position&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;absolute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;inset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;pointer-events&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;none&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;repeating-linear-gradient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0deg&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rgba&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;.12&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;transparent&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1px&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;3px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;prefers-reduced-motion&lt;/code&gt; line is two seconds of work and it is the difference between a nice touch and a page that
+some people cannot read.&lt;/p&gt;
+
+&lt;h2 id=&quot;monospace-where-it-is-ui-sans-where-it-is-prose&quot;&gt;Monospace where it is UI, sans where it is prose&lt;/h2&gt;
+
+&lt;p&gt;This was the one design decision that took some thought. A 100% monospace page looks the most like a terminal and is
+the hardest thing to read for two thousand words. So the chrome - prompts, nav, titles, headings, code - is monospace,
+and the post body is the system sans font at a slightly larger size. Headings keep the terminal feeling with a
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;##&lt;/code&gt; prefix drawn by CSS:&lt;/p&gt;
+
+&lt;div class=&quot;language-css highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nc&quot;&gt;.post&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;.body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;font-family&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;system-ui&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;-apple-system&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&quot;Segoe UI&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Roboto&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sans-serif&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;font-size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1.03rem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;line-height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1.7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;nc&quot;&gt;.post&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;.body&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;h2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;font-family&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ui-monospace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Menlo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Consolas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;monospace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#cba6f7&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;nc&quot;&gt;.post&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;.body&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;h2&lt;/span&gt;&lt;span class=&quot;nd&quot;&gt;::before&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&quot;## &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;#6c7086&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;what-did-not-change-honestly&quot;&gt;What did not change, honestly&lt;/h2&gt;
+
+&lt;p&gt;The theme has zero JavaScript, but the page is not script-free. Google Analytics is still there, giscus loads on post
+pages for comments, and the contact form still uses reCAPTCHA. Those are the same three third parties the old design
+had, I just did not pretend otherwise in the footer. Dropping them is a separate decision for a separate day.&lt;/p&gt;
+
+&lt;h2 id=&quot;numbers&quot;&gt;Numbers&lt;/h2&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt; &lt;/th&gt;
+      &lt;th&gt;before&lt;/th&gt;
+      &lt;th&gt;after&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;stylesheet&lt;/td&gt;
+      &lt;td&gt;10.6 KB&lt;/td&gt;
+      &lt;td&gt;7.2 KB&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;icon font CSS&lt;/td&gt;
+      &lt;td&gt;30 KB + font file&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;web font requests&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;theme JavaScript&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Not a dramatic saving in bytes, the site was already light. The win is in moving parts: no theme gem to keep in sync
+with Jekyll, no CDN that can go away, nothing to update. The whole design is 70 lines of CSS I can read in one sitting,
+which is exactly the amount of frontend I want to own.&lt;/p&gt;</content><author><name></name></author><category term="Meta" /><category term="Meta" /><category term="CSS" /><category term="Jekyll" /><category term="Web" /><summary type="html">If you have been here before you noticed: the serif font and the white background are gone, the blog now renders inside a terminal window with a zsh prompt. This post is the short write-up of how, because the interesting part is not the look, it is what was removed to get there. No CSS framework, no JavaScript for the theme, no web fonts, one 7 KB stylesheet. Still Jekyll, still static files on Firebase Hosting.</summary></entry><entry><title type="html">Claude Code skills - teach the agent your workflow once, in a Markdown file</title><link href="https://roberts-notes.blog/2026/10/16/claude-code-skills-in-practice/" rel="alternate" type="text/html" title="Claude Code skills - teach the agent your workflow once, in a Markdown file" /><published>2026-10-16T09:00:00+02:00</published><updated>2026-10-16T09:00:00+02:00</updated><id>https://roberts-notes.blog/2026/10/16/claude-code-skills-in-practice</id><content type="html" xml:base="https://roberts-notes.blog/2026/10/16/claude-code-skills-in-practice/">&lt;p&gt;Every time I opened Claude Code I was typing the same paragraph: “new post goes to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_posts&lt;/code&gt;, file name starts with the date,
+front matter looks like this, build to a temp dir, don’t touch &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;docs/&lt;/code&gt;”. Then I discovered that this paragraph has a
+proper home. It is called a skill, it is one Markdown file, and the agent loads it on its own when the task matches.
+This post is the five minute version: what a skill is, where it lives, and two examples worth copying.
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;what-a-skill-is&quot;&gt;What a skill is&lt;/h2&gt;
+
+&lt;p&gt;A skill is a directory with a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SKILL.md&lt;/code&gt; inside. The file has a small YAML front matter and then plain instructions:&lt;/p&gt;
+
+&lt;div class=&quot;language-markdown highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nn&quot;&gt;---&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;post&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Create a new blog post for this Jekyll blog. Use when asked to write, draft or scaffold a post.&lt;/span&gt;
+&lt;span class=&quot;nn&quot;&gt;---&lt;/span&gt;
+
+Create a new post in &lt;span class=&quot;sb&quot;&gt;`_posts/`&lt;/span&gt;.
+&lt;span class=&quot;p&quot;&gt;
+1.&lt;/span&gt; File name: &lt;span class=&quot;sb&quot;&gt;`YYYY-MM-DD-&amp;lt;slug&amp;gt;.markdown`&lt;/span&gt;, today's date, slug from the title.
+&lt;span class=&quot;p&quot;&gt;2.&lt;/span&gt; Front matter exactly like the existing posts: &lt;span class=&quot;sb&quot;&gt;`layout: post`&lt;/span&gt;, quoted &lt;span class=&quot;sb&quot;&gt;`title`&lt;/span&gt;,
+   &lt;span class=&quot;sb&quot;&gt;`date`&lt;/span&gt; with &lt;span class=&quot;sb&quot;&gt;`+02:00`&lt;/span&gt;, &lt;span class=&quot;sb&quot;&gt;`tag`&lt;/span&gt; as a list, single &lt;span class=&quot;sb&quot;&gt;`category`&lt;/span&gt;.
+&lt;span class=&quot;p&quot;&gt;3.&lt;/span&gt; First paragraph is the excerpt, then &lt;span class=&quot;sb&quot;&gt;`&amp;lt;!--more--&amp;gt;`&lt;/span&gt;, then the body.
+&lt;span class=&quot;p&quot;&gt;4.&lt;/span&gt; Build with &lt;span class=&quot;sb&quot;&gt;`bundle exec jekyll build -d /tmp/site`&lt;/span&gt; and report errors. Never write to &lt;span class=&quot;sb&quot;&gt;`docs/`&lt;/span&gt;.
+
+Title and topic: $ARGUMENTS
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Two things matter here. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;description&lt;/code&gt; is the trigger - Claude reads it to decide whether the skill applies, so write
+it as “what it does + when to use it”, like a search query you would type yourself. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$ARGUMENTS&lt;/code&gt; is whatever you type
+after the slash command, so &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/post Route 53 DNS Firewall with OpenTofu&lt;/code&gt; lands in the last line.&lt;/p&gt;
+
+&lt;h2 id=&quot;where-it-lives&quot;&gt;Where it lives&lt;/h2&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Location&lt;/th&gt;
+      &lt;th&gt;Scope&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.claude/skills/&amp;lt;name&amp;gt;/SKILL.md&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;you, every project&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.claude/skills/&amp;lt;name&amp;gt;/SKILL.md&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;this repository, committed, shared with the team&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;The project variant is the interesting one for teams. The runbook for “how we cut a release” or “how we review a
+module” stops being tribal knowledge in someone’s head and becomes a file in the repo that both humans and the agent
+read.&lt;/p&gt;
+
+&lt;h2 id=&quot;how-it-gets-used&quot;&gt;How it gets used&lt;/h2&gt;
+
+&lt;p&gt;Two ways. You type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/post ...&lt;/code&gt; and it runs. Or you just say “write a post about X” and Claude picks the skill because
+the description matches. Until that moment only the name and description sit in the context, the body is loaded on
+demand. That is why you can have dozens of skills without paying for them on every request.&lt;/p&gt;
+
+&lt;p&gt;If a skill is dangerous enough that you never want it auto-selected - deploy, anything touching production - add
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;disable-model-invocation: true&lt;/code&gt; to the front matter. Then only the explicit slash command triggers it.&lt;/p&gt;
+
+&lt;h2 id=&quot;supporting-files&quot;&gt;Supporting files&lt;/h2&gt;
+
+&lt;p&gt;A skill directory can hold more than &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SKILL.md&lt;/code&gt;: a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;scripts/&lt;/code&gt; folder with a shell or Python helper, a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;references/&lt;/code&gt;
+folder with a long checklist or an API cheat sheet. Reference them from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SKILL.md&lt;/code&gt; by relative path and they are read
+only when needed. Rule of thumb that worked for me: keep &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SKILL.md&lt;/code&gt; short enough to read in one screen, move anything
+longer into a reference file.&lt;/p&gt;
+
+&lt;h2 id=&quot;a-second-one-for-the-infrastructure-repo&quot;&gt;A second one for the infrastructure repo&lt;/h2&gt;
+
+&lt;p&gt;An OpenTofu review checklist, project-scoped, so every reviewer and the agent use the same list:&lt;/p&gt;
+
+&lt;div class=&quot;language-markdown highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nn&quot;&gt;---&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;tofu-review&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Review OpenTofu/Terraform changes. Use when asked to review .tf files, a module or a plan output.&lt;/span&gt;
+&lt;span class=&quot;nn&quot;&gt;---&lt;/span&gt;
+
+Review the changed &lt;span class=&quot;sb&quot;&gt;`.tf`&lt;/span&gt; files against this list and report findings as file:line bullets, worst first:
+&lt;span class=&quot;p&quot;&gt;
+-&lt;/span&gt; resources without &lt;span class=&quot;sb&quot;&gt;`lifecycle { prevent_destroy }`&lt;/span&gt; where data would be lost (RDS, S3, EBS, KMS),
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;sb&quot;&gt;`count = cond ? 1 : 0`&lt;/span&gt; on a resource that already exists in state - needs a &lt;span class=&quot;sb&quot;&gt;`moved`&lt;/span&gt; block,
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; provider versions not pinned with &lt;span class=&quot;sb&quot;&gt;`~&amp;gt;`&lt;/span&gt;,
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; IAM policies with &lt;span class=&quot;sb&quot;&gt;`&quot;Action&quot;: &quot;*&quot;`&lt;/span&gt; or &lt;span class=&quot;sb&quot;&gt;`&quot;Resource&quot;: &quot;*&quot;`&lt;/span&gt;,
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; security groups open to &lt;span class=&quot;sb&quot;&gt;`0.0.0.0/0`&lt;/span&gt; on anything but 80/443,
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; hardcoded account IDs, regions or ARNs that should be data sources or variables.
+
+Do not run &lt;span class=&quot;sb&quot;&gt;`tofu plan`&lt;/span&gt; or &lt;span class=&quot;sb&quot;&gt;`tofu apply`&lt;/span&gt;. &lt;span class=&quot;sb&quot;&gt;`tofu fmt -check`&lt;/span&gt; and &lt;span class=&quot;sb&quot;&gt;`tofu validate`&lt;/span&gt; are fine.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Nothing clever. It is the same list I would go through by hand, except now I do not forget point four at 17:55 on a
+Friday.&lt;/p&gt;
+
+&lt;h2 id=&quot;skill-claudemd-or-subagent&quot;&gt;Skill, CLAUDE.md or subagent?&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CLAUDE.md&lt;/code&gt; is loaded always. Put there what applies to every single request: coding conventions, “never run apply”,
+commit message rules. Keep it short, you pay for it every time.&lt;/li&gt;
+  &lt;li&gt;A skill is loaded when relevant. Put there a workflow, a checklist, a procedure.&lt;/li&gt;
+  &lt;li&gt;A subagent is a separate context with its own tools. Reach for it when the task is big enough to pollute your main
+conversation, like reading forty files to answer one question.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Most of what I used to stuff into &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CLAUDE.md&lt;/code&gt; turned out to be skills.&lt;/p&gt;
+
+&lt;h2 id=&quot;three-mistakes-to-skip&quot;&gt;Three mistakes to skip&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Vague description. “Helpful blog utilities” gives the model nothing to match on. “Create a new blog post for this
+Jekyll blog. Use when asked to write, draft or scaffold a post.” does.&lt;/li&gt;
+  &lt;li&gt;Skill that does too much. One skill that wrote, built, committed and deployed. Split it: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/post&lt;/code&gt; writes and builds,
+deploy is a separate skill with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;disable-model-invocation: true&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;No test. After writing a skill, ask for the task without naming the skill. If Claude does not pick it up, the
+description is wrong, not the model.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;That is the whole thing. One directory, one Markdown file, a good description.&lt;/p&gt;</content><author><name></name></author><category term="AI" /><category term="AI" /><category term="Claude Code" /><category term="Automation" /><category term="DevOps" /><summary type="html">Every time I opened Claude Code I was typing the same paragraph: “new post goes to _posts, file name starts with the date, front matter looks like this, build to a temp dir, don’t touch docs/”. Then I discovered that this paragraph has a proper home. It is called a skill, it is one Markdown file, and the agent loads it on its own when the task matches. This post is the five minute version: what a skill is, where it lives, and two examples worth copying.</summary></entry><entry><title type="html">Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example</title><link href="https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/" rel="alternate" type="text/html" title="Route 53 Resolver DNS Firewall blocklist with OpenTofu - full example" /><published>2026-07-22T23:30:00+02:00</published><updated>2026-07-22T23:30:00+02:00</updated><id>https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu</id><content type="html" xml:base="https://roberts-notes.blog/2026/07/22/route53-resolver-dns-firewall-blocklist-opentofu/">&lt;p&gt;In the &lt;a href=&quot;/2026/07/22/blocking-egress-fqdns-on-eks/&quot;&gt;previous post&lt;/a&gt; I compared the options for
 blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall
 is the cheapest seatbelt you can put on a VPC. Talk is cheap though, so here is the whole thing as working
 OpenTofu code: a custom blocklist, the rule group, the VPC association, fail-mode configuration and query
@@ -253,55 +453,7 @@ VPC stops resolving domains you’ve denylisted, with logs to prove it. As seatb
 &lt;a href=&quot;https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_resolver_firewall_rule_group&quot;&gt;provider docs&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;–
-cheers&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-        <category term="DevOps" />
-      
-
-      
-        <category term="DevOps" />
-      
-        <category term="AWS" />
-      
-        <category term="OpenTofu" />
-      
-        <category term="IaC" />
-      
-        <category term="Security" />
-      
-        <category term="Networking" />
-      
-
-      
-        <summary type="html">In the previous post I compared the options for blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall is the cheapest seatbelt you can put on a VPC. Talk is cheap though, so here is the whole thing as working OpenTofu code: a custom blocklist, the rule group, the VPC association, fail-mode configuration and query logging so you can actually see what gets blocked. Tested with OpenTofu 1.12.</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Blocking egress to specific domains from an EKS cluster - what are the options?</title>
-      
-      
-      <link href="https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks/" rel="alternate" type="text/html" title="Blocking egress to specific domains from an EKS cluster - what are the options?" />
-      
-      <published>2026-07-22T21:00:00+02:00</published>
-      <updated>2026-07-22T21:00:00+02:00</updated>
-      <id>https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks/">&lt;p&gt;A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;evil-domain.com&lt;/code&gt;”
+cheers&lt;/p&gt;</content><author><name></name></author><category term="DevOps" /><category term="DevOps" /><category term="AWS" /><category term="OpenTofu" /><category term="IaC" /><category term="Security" /><category term="Networking" /><summary type="html">In the previous post I compared the options for blocking egress to specific domains from an EKS cluster, and concluded that Route 53 Resolver DNS Firewall is the cheapest seatbelt you can put on a VPC. Talk is cheap though, so here is the whole thing as working OpenTofu code: a custom blocklist, the rule group, the VPC association, fail-mode configuration and query logging so you can actually see what gets blocked. Tested with OpenTofu 1.12.</summary></entry><entry><title type="html">Blocking egress to specific domains from an EKS cluster - what are the options?</title><link href="https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks/" rel="alternate" type="text/html" title="Blocking egress to specific domains from an EKS cluster - what are the options?" /><published>2026-07-22T21:00:00+02:00</published><updated>2026-07-22T21:00:00+02:00</updated><id>https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks</id><content type="html" xml:base="https://roberts-notes.blog/2026/07/22/blocking-egress-fqdns-on-eks/">&lt;p&gt;A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;evil-domain.com&lt;/code&gt;”
 (or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly
 annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS.
 A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game.
@@ -464,55 +616,7 @@ If you can enumerate what your workloads legitimately talk to, flip the model to
 allow only that.&lt;/p&gt;
 
 &lt;p&gt;–
-cheers&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-        <category term="DevOps" />
-      
-
-      
-        <category term="DevOps" />
-      
-        <category term="AWS" />
-      
-        <category term="EKS" />
-      
-        <category term="Kubernetes" />
-      
-        <category term="Security" />
-      
-        <category term="Networking" />
-      
-
-      
-        <summary type="html">A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to evil-domain.com” (or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS. A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game. Here is a rundown of the options that actually work with FQDNs, and what each one really gives you.</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">OpenTofu’s enabled meta-argument - conditional resources without the count hack</title>
-      
-      
-      <link href="https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument/" rel="alternate" type="text/html" title="OpenTofu's enabled meta-argument - conditional resources without the count hack" />
-      
-      <published>2026-07-21T21:00:00+02:00</published>
-      <updated>2026-07-21T21:00:00+02:00</updated>
-      <id>https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument/">&lt;p&gt;In my &lt;a href=&quot;/2026/07/21/transition-to-opentofu/&quot;&gt;previous post&lt;/a&gt; I wrote about migrating from Terraform to OpenTofu
+cheers&lt;/p&gt;</content><author><name></name></author><category term="DevOps" /><category term="DevOps" /><category term="AWS" /><category term="EKS" /><category term="Kubernetes" /><category term="Security" /><category term="Networking" /><summary type="html">A seemingly simple requirement: “pods in our EKS cluster must not be able to talk to evil-domain.com” (or the reverse - “must only be able to talk to an allowlist of domains”). Simple to say, surprisingly annoying to implement, because classic AWS network controls - security groups, NACLs - speak IP, not DNS. A domain can resolve to hundreds of rotating IPs behind a CDN, so blocking by IP is a losing game. Here is a rundown of the options that actually work with FQDNs, and what each one really gives you.</summary></entry><entry><title type="html">OpenTofu’s enabled meta-argument - conditional resources without the count hack</title><link href="https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument/" rel="alternate" type="text/html" title="OpenTofu's enabled meta-argument - conditional resources without the count hack" /><published>2026-07-21T21:00:00+02:00</published><updated>2026-07-21T21:00:00+02:00</updated><id>https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument</id><content type="html" xml:base="https://roberts-notes.blog/2026/07/21/opentofu-enabled-meta-argument/">&lt;p&gt;In my &lt;a href=&quot;/2026/07/21/transition-to-opentofu/&quot;&gt;previous post&lt;/a&gt; I wrote about migrating from Terraform to OpenTofu
 and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that:
 a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation
 via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;count&lt;/code&gt;. The feature is called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;enabled&lt;/code&gt;, it lives in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lifecycle&lt;/code&gt; block, it shipped in OpenTofu 1.11,
@@ -647,51 +751,7 @@ maintaining a pile of &lt;code class=&quot;language-plaintext highlighter-rouge&
 &lt;p&gt;Full details in the &lt;a href=&quot;https://opentofu.org/docs/language/meta-arguments/enabled/&quot;&gt;official docs&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;–
-cheers&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-        <category term="DevOps" />
-      
-
-      
-        <category term="DevOps" />
-      
-        <category term="OpenTofu" />
-      
-        <category term="Terraform" />
-      
-        <category term="IaC" />
-      
-
-      
-        <summary type="html">In my previous post I wrote about migrating from Terraform to OpenTofu and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that: a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation via count. The feature is called enabled, it lives in the lifecycle block, it shipped in OpenTofu 1.11, and Terraform simply does not have it.</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">From Terraform to OpenTofu - why and how we made the switch</title>
-      
-      
-      <link href="https://roberts-notes.blog/2026/07/21/transition-to-opentofu/" rel="alternate" type="text/html" title="From Terraform to OpenTofu - why and how we made the switch" />
-      
-      <published>2026-07-21T09:00:00+02:00</published>
-      <updated>2026-07-21T09:00:00+02:00</updated>
-      <id>https://roberts-notes.blog/2026/07/21/transition-to-opentofu</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2026/07/21/transition-to-opentofu/">&lt;p&gt;I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed.
+cheers&lt;/p&gt;</content><author><name></name></author><category term="DevOps" /><category term="DevOps" /><category term="OpenTofu" /><category term="Terraform" /><category term="IaC" /><summary type="html">In my previous post I wrote about migrating from Terraform to OpenTofu and I mentioned that OpenTofu is not just a passive fork anymore. Today I want to show you a concrete example of that: a small feature that removes one of the oldest and ugliest hacks in the Terraform world - conditional resource creation via count. The feature is called enabled, it lives in the lifecycle block, it shipped in OpenTofu 1.11, and Terraform simply does not have it.</summary></entry><entry><title type="html">From Terraform to OpenTofu - why and how we made the switch</title><link href="https://roberts-notes.blog/2026/07/21/transition-to-opentofu/" rel="alternate" type="text/html" title="From Terraform to OpenTofu - why and how we made the switch" /><published>2026-07-21T09:00:00+02:00</published><updated>2026-07-21T09:00:00+02:00</updated><id>https://roberts-notes.blog/2026/07/21/transition-to-opentofu</id><content type="html" xml:base="https://roberts-notes.blog/2026/07/21/transition-to-opentofu/">&lt;p&gt;I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed.
 Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem,
 and recently I went through a full migration from Terraform to &lt;a href=&quot;https://opentofu.org/&quot;&gt;OpenTofu&lt;/a&gt; in a few production environments.
 In this post I want to share why we did it, how it went, and what surprised me along the way.
@@ -855,51 +915,7 @@ multiple environments I have not hit a single issue that I could attribute to Op
 and the best moment is now, while the drop-in compatibility window is still wide open.&lt;/p&gt;
 
 &lt;p&gt;–
-cheers&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-        <category term="DevOps" />
-      
-
-      
-        <category term="DevOps" />
-      
-        <category term="Terraform" />
-      
-        <category term="OpenTofu" />
-      
-        <category term="IaC" />
-      
-
-      
-        <summary type="html">I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed. Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem, and recently I went through a full migration from Terraform to OpenTofu in a few production environments. In this post I want to share why we did it, how it went, and what surprised me along the way.</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Why GoLang</title>
-      
-      
-      <link href="https://roberts-notes.blog/2024/06/11/why-go-lang/" rel="alternate" type="text/html" title="Why GoLang" />
-      
-      <published>2024-06-11T08:30:00+02:00</published>
-      <updated>2024-06-11T08:30:00+02:00</updated>
-      <id>https://roberts-notes.blog/2024/06/11/why-go-lang</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2024/06/11/why-go-lang/">&lt;p&gt;GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers 
+cheers&lt;/p&gt;</content><author><name></name></author><category term="DevOps" /><category term="DevOps" /><category term="Terraform" /><category term="OpenTofu" /><category term="IaC" /><summary type="html">I have been a Terraform user since the early days - I mentioned on this blog years ago that I was an early adopter, and that has not changed. Infrastructure as Code is simply how I work. But over the last couple of years something important happened in that ecosystem, and recently I went through a full migration from Terraform to OpenTofu in a few production environments. In this post I want to share why we did it, how it went, and what surprised me along the way.</summary></entry><entry><title type="html">Why GoLang</title><link href="https://roberts-notes.blog/2024/06/11/why-go-lang/" rel="alternate" type="text/html" title="Why GoLang" /><published>2024-06-11T08:30:00+02:00</published><updated>2024-06-11T08:30:00+02:00</updated><id>https://roberts-notes.blog/2024/06/11/why-go-lang</id><content type="html" xml:base="https://roberts-notes.blog/2024/06/11/why-go-lang/">&lt;p&gt;GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers 
 due to its simplicity, efficiency, and robustness. In this blog post, we will explore GoLang’s best features from both performance and development perspectives, 
 backed by comprehensive code examples to illustrate these advantages.
 &lt;!--more--&gt;&lt;/p&gt;
@@ -1115,47 +1131,7 @@ software solutions. Whether you’re building a web server, a command-line tool,
 to succeed.&lt;/p&gt;
 
 &lt;p&gt;–
-cheers&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-        <category term="GoLang" />
-      
-
-      
-        <category term="Programming" />
-      
-        <category term="GoLang" />
-      
-
-      
-        <summary type="html">GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers due to its simplicity, efficiency, and robustness. In this blog post, we will explore GoLang’s best features from both performance and development perspectives, backed by comprehensive code examples to illustrate these advantages.</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Go Lang and interfaces and generics</title>
-      
-      
-      <link href="https://roberts-notes.blog/2024/06/11/go-lang-generics/" rel="alternate" type="text/html" title="Go Lang and interfaces and generics" />
-      
-      <published>2024-06-11T03:30:00+02:00</published>
-      <updated>2024-06-11T03:30:00+02:00</updated>
-      <id>https://roberts-notes.blog/2024/06/11/go-lang-generics</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2024/06/11/go-lang-generics/">&lt;p&gt;Hey everyone,&lt;/p&gt;
+cheers&lt;/p&gt;</content><author><name></name></author><category term="GoLang" /><category term="Programming" /><category term="GoLang" /><summary type="html">GoLang, often referred to as Go, is a statically typed, compiled programming language designed by Google. It has gained significant popularity among developers due to its simplicity, efficiency, and robustness. In this blog post, we will explore GoLang’s best features from both performance and development perspectives, backed by comprehensive code examples to illustrate these advantages.</summary></entry><entry><title type="html">Go Lang and interfaces and generics</title><link href="https://roberts-notes.blog/2024/06/11/go-lang-generics/" rel="alternate" type="text/html" title="Go Lang and interfaces and generics" /><published>2024-06-11T03:30:00+02:00</published><updated>2024-06-11T03:30:00+02:00</updated><id>https://roberts-notes.blog/2024/06/11/go-lang-generics</id><content type="html" xml:base="https://roberts-notes.blog/2024/06/11/go-lang-generics/">&lt;p&gt;Hey everyone,&lt;/p&gt;
 
 &lt;p&gt;Today, I want to dive into Go language and talk about interfaces, with a specific focus on generics.
 Generics have been one of the most highly anticipated features in Go, and they are finally here with the release of Go 1.18.
@@ -1231,49 +1207,7 @@ Let’s start by looking at a simple example of using interfaces in Go. Interfac
 
 &lt;p&gt;I hope this post has given you a good understanding of how interfaces and generics work together in Go and how they can be used to write more flexible and reusable code. If you have any questions or want to share your own experiences with Go interfaces and generics, feel free to leave a comment below.&lt;/p&gt;
 
-&lt;p&gt;Happy coding!&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-        <category term="GoLang" />
-      
-
-      
-        <category term="Programming" />
-      
-        <category term="GoLang" />
-      
-        <category term="Generics" />
-      
-
-      
-        <summary type="html">Hey everyone, Today, I want to dive into Go language and talk about interfaces, with a specific focus on generics. Generics have been one of the most highly anticipated features in Go, and they are finally here with the release of Go 1.18. Let’s explore how interfaces and generics work together in Go and how they can make our code more flexible and reusable.</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Quick introduction to Augeas in Puppet</title>
-      
-      
-      <link href="https://roberts-notes.blog/2016/11/05/introduction-to-augeas-in-puppet/" rel="alternate" type="text/html" title="Quick introduction to Augeas in Puppet" />
-      
-      <published>2016-11-05T22:30:00+01:00</published>
-      <updated>2016-11-05T22:30:00+01:00</updated>
-      <id>https://roberts-notes.blog/2016/11/05/introduction-to-augeas-in-puppet</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2016/11/05/introduction-to-augeas-in-puppet/">&lt;p&gt;Recently I came across an interesting problem. I had to install a kernel
+&lt;p&gt;Happy coding!&lt;/p&gt;</content><author><name></name></author><category term="GoLang" /><category term="Programming" /><category term="GoLang" /><category term="Generics" /><summary type="html">Hey everyone, Today, I want to dive into Go language and talk about interfaces, with a specific focus on generics. Generics have been one of the most highly anticipated features in Go, and they are finally here with the release of Go 1.18. Let’s explore how interfaces and generics work together in Go and how they can make our code more flexible and reusable.</summary></entry><entry><title type="html">Quick introduction to Augeas in Puppet</title><link href="https://roberts-notes.blog/2016/11/05/introduction-to-augeas-in-puppet/" rel="alternate" type="text/html" title="Quick introduction to Augeas in Puppet" /><published>2016-11-05T22:30:00+01:00</published><updated>2016-11-05T22:30:00+01:00</updated><id>https://roberts-notes.blog/2016/11/05/introduction-to-augeas-in-puppet</id><content type="html" xml:base="https://roberts-notes.blog/2016/11/05/introduction-to-augeas-in-puppet/">&lt;p&gt;Recently I came across an interesting problem. I had to install a kernel
 from the 3.10 branch on CentOS 6 and there was a need to update &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;grub.conf&lt;/code&gt; - change the default kernel plus add a boot option.
 Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right? &lt;!--more--&gt; 
 In the traditional approach (I saw it in many companies) I would probably
@@ -1378,49 +1312,7 @@ title[2]/ = CentOS 6 (2.6.32-504.8.1.el6.x86_64)
 You can read more about that here &lt;a href=&quot;http://augeasproviders.com/&quot;&gt;http://augeasproviders.com/&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;–
-Robert&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-        <category term="Automation" />
-      
-
-      
-        <category term="Provisioning" />
-      
-        <category term="Automation" />
-      
-        <category term="Puppet" />
-      
-
-      
-        <summary type="html">Recently I came across an interesting problem. I had to install a kernel from the 3.10 branch on CentOS 6 and there was a need to update grub.conf - change the default kernel plus add a boot option. Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">How to pass variable to Jinja template in Salt</title>
-      
-      
-      <link href="https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt/" rel="alternate" type="text/html" title="How to pass variable to Jinja template in Salt" />
-      
-      <published>2015-11-03T21:00:00+01:00</published>
-      <updated>2015-11-03T21:00:00+01:00</updated>
-      <id>https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt/">&lt;p&gt;Yesterday I faced a quite interesting problem.
+Robert&lt;/p&gt;</content><author><name></name></author><category term="Automation" /><category term="Provisioning" /><category term="Automation" /><category term="Puppet" /><summary type="html">Recently I came across an interesting problem. I had to install a kernel from the 3.10 branch on CentOS 6 and there was a need to update grub.conf - change the default kernel plus add a boot option. Both mentioned operations had to be done in Puppet 3.7 (Augeas is of course also available in higher versions of Puppet). Sounds easy, right?</summary></entry><entry><title type="html">How to pass variable to Jinja template in Salt</title><link href="https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt/" rel="alternate" type="text/html" title="How to pass variable to Jinja template in Salt" /><published>2015-11-03T21:00:00+01:00</published><updated>2015-11-03T21:00:00+01:00</updated><id>https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt</id><content type="html" xml:base="https://roberts-notes.blog/2015/11/03/pass-variables-to-jinja-template-in-salt/">&lt;p&gt;Yesterday I faced a quite interesting problem.
 In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash
 from the current iteration to a Jinja template. &lt;!--more--&gt;
 To make it more clear, let me show you the problem in the code:&lt;/p&gt;
@@ -1462,946 +1354,4 @@ Here is the final version of my sls snippet (aka the solution):&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;p&gt;Of course you can pass as many variables as you want via the context.&lt;/p&gt;
 
-&lt;p&gt;–robert&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-        <category term="Salt" />
-      
-
-      
-        <summary type="html">Yesterday I faced a quite interesting problem. In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash from the current iteration to a Jinja template.</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Add new key to APT AKA tell APT to trust given key</title>
-      
-      
-      <link href="https://roberts-notes.blog/2015/04/30/add-new-key-to-apt/" rel="alternate" type="text/html" title="Add new key to APT AKA tell APT to trust given key" />
-      
-      <published>2015-04-30T08:00:03+02:00</published>
-      <updated>2015-04-30T08:00:03+02:00</updated>
-      <id>https://roberts-notes.blog/2015/04/30/add-new-key-to-apt</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2015/04/30/add-new-key-to-apt/">&lt;p&gt;On one of my desktop boxes I recently got this message when I wanted to update it via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apt&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Fetched 1448 B in 8s (180 B/s)
-Reading package lists... Done
-W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used.
-GPG error: http://xxxxxxx ./ Release: The following signatures couldn't be verified because
-the public key is not available: NO_PUBKEY 0000000000
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;!--more--&gt;
-
-&lt;p&gt;The solution is very straightforward, but let’s write it down here since I always forget how to do it.
-Here it is:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;gpg --keyserver subkeys.pgp.net --recv-keys keyId
-gpg -a --export keyId | sudo apt-key add -
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;Of course you will need to replace &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;keyId&lt;/code&gt; with the real GPG key which is missing/unknown to APT.&lt;/p&gt;
-
-&lt;p&gt;Additional resources - &lt;a href=&quot;https://wiki.debian.org/SecureApt&quot;&gt;SecureApt Debian wiki page&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;–robert&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-        <category term="Linux" />
-      
-
-      
-        <summary type="html">On one of my desktop boxes I recently got this message when I wanted to update it via apt: Fetched 1448 B in 8s (180 B/s) Reading package lists... Done W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used. GPG error: http://xxxxxxx ./ Release: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY 0000000000</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Why you should not use kill -9</title>
-      
-      
-      <link href="https://roberts-notes.blog/2015/03/19/why-you-shoudnt-use-kill-9/" rel="alternate" type="text/html" title="Why you should not use kill -9" />
-      
-      <published>2015-03-19T19:46:03+01:00</published>
-      <updated>2015-03-19T19:46:03+01:00</updated>
-      <id>https://roberts-notes.blog/2015/03/19/why-you-shoudnt-use-kill--9</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2015/03/19/why-you-shoudnt-use-kill-9/">&lt;p&gt;I recently found this advice given by &lt;em&gt;Randal Schwartz&lt;/em&gt;.
-I think most programmers have some idea who he is.
-Anyway, if you have never had to touch Perl, here is the link to his &lt;a href=&quot;https://en.wikipedia.org/wiki/Randal_L._Schwartz&quot;&gt;wiki page&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;Here is the advice from Randal:&lt;/p&gt;
-
-&lt;!--more--&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;No no no. Don't use kill -9.    
-It doesn't give the process a chance to cleanly:    
-1) shut down socket connections    
-2) clean up temp files    
-3) inform its children that it is going away    
-4) reset its terminal characteristics    
-and so on and so on and so on.    
-Generally, send 15, and wait a second or two, and if that doesn't work, send 2, and if     
-that doesn't work, send 1. If that doesn't, REMOVE THE BINARY because the program is    
-badly behaved!    
-Don't use kill -9. Don't bring out the combine harvester just to tidy up the flower pot.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In short:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;em&gt;15&lt;/em&gt; is &lt;em&gt;SIGTERM&lt;/em&gt; (terminate),&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;2&lt;/em&gt; is &lt;em&gt;SIGINT&lt;/em&gt; (interrupt, ctrl-c),&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;1&lt;/em&gt; is &lt;em&gt;SIGHUP&lt;/em&gt; (terminal hangup, often overloaded to keep a process running but reload the config)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;For those who would like to have a full overview of all available signals, here is a snippet from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;signal.h&lt;/code&gt;:&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-c&quot; data-lang=&quot;c&quot;&gt;&lt;span class=&quot;cp&quot;&gt;#define SIGHUP           1
-#define SIGINT           2
-#define SIGQUIT          3
-#define SIGILL           4
-#define SIGTRAP          5
-#define SIGABRT          6
-#define SIGIOT           6
-#define SIGBUS           7
-#define SIGFPE           8
-#define SIGKILL          9
-#define SIGUSR1         10
-#define SIGSEGV         11
-#define SIGUSR2         12
-#define SIGPIPE         13
-#define SIGALRM         14
-#define SIGTERM         15
-#define SIGSTKFLT       16
-#define SIGCHLD         17
-#define SIGCONT         18
-#define SIGSTOP         19
-#define SIGTSTP         20
-#define SIGTTIN         21
-#define SIGTTOU         22
-#define SIGURG          23
-#define SIGXCPU         24
-#define SIGXFSZ         25
-#define SIGVTALRM       26
-#define SIGPROF         27
-#define SIGWINCH        28
-#define SIGIO           29
-#define SIGPOLL         SIGIO&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;–robert&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-        <category term="Linux" />
-      
-
-      
-        <summary type="html">I recently found this advice given by Randal Schwartz. I think most programmers have some idea who he is. Anyway, if you have never had to touch Perl, here is the link to his wiki page. Here is the advice from Randal:</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Temporary Disabling Bash History</title>
-      
-      
-      <link href="https://roberts-notes.blog/2014/11/27/temporary-disabling-bash-history/" rel="alternate" type="text/html" title="Temporary Disabling Bash History" />
-      
-      <published>2014-11-27T00:00:00+01:00</published>
-      <updated>2014-11-27T00:00:00+01:00</updated>
-      <id>https://roberts-notes.blog/2014/11/27/temporary-disabling-bash-history</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/11/27/temporary-disabling-bash-history/">&lt;p&gt;How to do it? It’s actually very simple.
-You can achieve this with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;unset HISTFILE&lt;/code&gt;. Of course, in that case we only disable history
-for the current session.
-What if we want to selectively keep some commands out of the bash history?
-&lt;!--more--&gt;
-We can do it via the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HISTCONTROL&lt;/code&gt; variable. From the Bash man page:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;HISTCONTROL
-    A colon-separated list of values controlling how commands are saved on the history list.    
-    If the list of values includes ignorespace, lines which begin with a space character are     
-    not saved  in the  history  list. A value of ignoredups causes lines matching the previous     
-    history entry to not be saved. A value of *ignoreboth* is shorthand for *ignorespace* and     
-    *ignoredups*. A value of erasedups causes all previous lines matching the current line to 
-    be removed from the history list before that line is saved. Any value not in the above 
-    list is ignored. If  HISTCONTROL is unset, or does not include a valid value, all lines 
-    read by the shell parser are saved on the history list, subject to the value of HISTIGNORE.
-    The second and subsequent lines of a multi-line compound command are not tested, and are 
-    added to the history regardless of the value of HISTCONTROL.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In my case I always use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;export HISTCONTROL=ignoreboth:erasedups&lt;/code&gt; and add it to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.bashrc&lt;/code&gt; if necessary.
-After that, whenever we want to exclude a specific command from being stored in the bash history, we call it like
-this: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;space&amp;gt;mysql -u xxxx -pxxxxx&lt;/code&gt;. Remember about the space in front of the command.&lt;/p&gt;
-
-&lt;p&gt;From what I see, on Ubuntu 14.04 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HISTCONTROL&lt;/code&gt; is set to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ignoreboth&lt;/code&gt; by default.&lt;/p&gt;
-
-&lt;p&gt;–robert&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-        <category term="bash" />
-      
-
-      
-        <summary type="html">How to do it? It’s actually very simple. You can achieve this with unset HISTFILE. Of course, in that case we only disable history for the current session. What if we want to selectively keep some commands out of the bash history?</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Add timestamp to Bash history</title>
-      
-      
-      <link href="https://roberts-notes.blog/2014/07/01/add-timestamp-to-bash-history/" rel="alternate" type="text/html" title="Add timestamp to Bash history" />
-      
-      <published>2014-07-01T08:30:46+02:00</published>
-      <updated>2014-07-01T08:30:46+02:00</updated>
-      <id>https://roberts-notes.blog/2014/07/01/add-timestamp-to-bash-history</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/07/01/add-timestamp-to-bash-history/">&lt;p&gt;Sometimes there is a need to add a timestamp to bash history.
-At my work I found it quite useful, especially when some other developers
-have access to the same box or when you simply want to have an idea when a command from the history was executed.  
-This is how we can achieve this:&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'export HISTTIMEFORMAT=&quot;%d.%m.%y %T&quot;'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; ~/.profile&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;(or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.bash_profile&lt;/code&gt; if you use a RHEL based distro) and after that just re-login or reload your profile file.
-Time formatting is exactly the same as for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;strftime&lt;/code&gt; - please check &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;man 3 strftime&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;Hint: reloading the profile can be done like this:
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;. .profile&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;source .profile&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;–
-Cheers
-Robert&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-        <category term="bash" />
-      
-
-      
-        <summary type="html">Sometimes there is a need to add a timestamp to bash history. At my work I found it quite useful, especially when some other developers have access to the same box or when you simply want to have an idea when a command from the history was executed.   This is how we can achieve this: echo 'export HISTTIMEFORMAT=&quot;%d.%m.%y %T&quot;' &amp;gt;&amp;gt; ~/.profile (or .bash_profile if you use a RHEL based distro) and after that just re-login or reload your profile file. Time formatting is exactly the same as for strftime - please check man 3 strftime. Hint: reloading the profile can be done like this: . .profile or source .profile – Cheers Robert</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">IPtables returns an error : security raw nat mangle filter FAILED</title>
-      
-      
-      <link href="https://roberts-notes.blog/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/" rel="alternate" type="text/html" title="IPtables returns an error : security raw nat mangle filter FAILED" />
-      
-      <published>2014-06-28T12:13:09+02:00</published>
-      <updated>2014-06-28T12:13:09+02:00</updated>
-      <id>https://roberts-notes.blog/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">&lt;p&gt;After setting up my new “linode” on linode.com I started configuring the firewall (iptables).
-After writing down all my rules I tried to restart iptables, but got output like this:&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;service iptables restart
-iptables: Flushing firewall rules:                         &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;  OK  &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter
-iptables: Unloading modules:                               &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;  OK  &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-iptables: Applying firewall rules:                         &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;  OK  &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;!--more--&gt;
-&lt;p&gt;After a quick research (Google) I found an answer for that:
-&lt;a href=&quot;http://www.hostvirtual.com/kb/6383/IPtables-returns-an-error--security-raw-nat-mangle-filter-FAILED.html&quot;&gt;here is the link&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;Looks like you need to add this patch to the iptables init script:&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;$&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;IPTABLES&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;: Setting chains to policy &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;: &quot;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;ret&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0
-&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;i &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$tables&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do
-    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; &quot;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt;
-+       security&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-+           &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; filter &lt;span class=&quot;nt&quot;&gt;-P&lt;/span&gt; INPUT &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-+               &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; filter &lt;span class=&quot;nt&quot;&gt;-P&lt;/span&gt; OUTPUT &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-+               &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; filter &lt;span class=&quot;nt&quot;&gt;-P&lt;/span&gt; FORWARD &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-+               &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;let &lt;/span&gt;ret+&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
-+           &lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-        raw&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; raw &lt;span class=&quot;nt&quot;&gt;-P&lt;/span&gt; PREROUTING &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-                &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$IPTABLES&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; raw &lt;span class=&quot;nt&quot;&gt;-P&lt;/span&gt; OUTPUT &lt;span class=&quot;nv&quot;&gt;$policy&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-                &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;let &lt;/span&gt;ret+&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
-            &lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;Looks like this is a known bug in CentOS 6 in virtualized environments.&lt;/p&gt;
-
-&lt;p&gt;–robert&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-
-      
-        <summary type="html">After setting up my new “linode” on linode.com I started configuring the firewall (iptables). After writing down all my rules I tried to restart iptables, but got output like this: $ service iptables restart iptables: Flushing firewall rules: [ OK ] iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter iptables: Unloading modules: [ OK ] iptables: Applying firewall rules: [ OK ]</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Hosting migration</title>
-      
-      
-      <link href="https://roberts-notes.blog/2014/06/28/hosting-migration/" rel="alternate" type="text/html" title="Hosting migration" />
-      
-      <published>2014-06-28T11:52:36+02:00</published>
-      <updated>2014-06-28T11:52:36+02:00</updated>
-      <id>https://roberts-notes.blog/2014/06/28/hosting-migration</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/06/28/hosting-migration/">&lt;p&gt;I recently noticed I actually spend a lot of money on hosting and server resources I’m not using at all.
-Such a waste. After a small research I decided to move all my Droplets from &lt;a href=&quot;https://www.digitalocean.com/&quot;&gt;DigitalOcean.com&lt;/a&gt;
-to its competitor - &lt;a href=&quot;https://www.linode.com&quot;&gt;linode.com&lt;/a&gt;. I also hosted 2 sites on a separate hosting - elastichost.com -
-which is also rather expensive.
-So in the end I sat down and calculated how many resources I need and how many resources I actually pay for.
-At the beginning I thought that maybe the best solution would be to move everything to a dedicated machine at &lt;a href=&quot;ovh.de&quot;&gt;OVH&lt;/a&gt; or
-maybe &lt;a href=&quot;hetzner.de&quot;&gt;Hetzner&lt;/a&gt;, but in both cases the cost is ~50-70€ per month minimum. Quite a lot I think, especially when my
-sites do not have significant traffic. &lt;!--more--&gt;
-I was definitely searching for something like &lt;strong&gt;digitalocean.com&lt;/strong&gt; (DO).&lt;/p&gt;
-
-&lt;h4 id=&quot;digitalocean-has-a-very-reasonable-price-and-offers-a-bunch-of-features-i-was-looking-for-but&quot;&gt;DigitalOcean has a very reasonable price and offers a bunch of features I was looking for, but:&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;when somebody tries to flood (DDoS) your droplet you are actually on your own (they do not offer any type of protection).
-Support in this case also seems to be powerless, no matter if this is a targeted attack or just a ricochet. One of my
-clients got such a case and, to be honest, I was really disappointed when I was not able to get any help from the DO Support Team,&lt;/li&gt;
-  &lt;li&gt;when your site/droplet catches some significant traffic, DO has poor performance. Yes, I know what I’m talking about.
-And I’m not talking here about 30Mb/s traffic. I even upgraded my droplet from 2G MEM to 8G MEM and it did not help much - I/O
-was still on a low level (but still, DO looks better than most VPS hosting companies),&lt;/li&gt;
-  &lt;li&gt;it’s a pity they do not offer some more extensive monitoring out of the box.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;so-why-linode&quot;&gt;So why Linode:&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;for the same price I can get a more powerful virtual machine and more disk space,&lt;/li&gt;
-  &lt;li&gt;looks like they have better I/O performance (I will try to provide some stats to prove that),&lt;/li&gt;
-  &lt;li&gt;quick and helpful support - don’t get me wrong, DO support is also damn quick, but Linode support seems to be more techie oriented,&lt;/li&gt;
-  &lt;li&gt;better monitoring out of the box - “Longview”.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;In general I don’t think DO is bad, I think it’s simply suited for other purposes, like test or dev environments.&lt;/p&gt;
-
-&lt;p&gt;After the migration, performance increased significantly.
-It was quite visible, especially on my Redmine instance and other RoR based apps.&lt;/p&gt;
-
-&lt;p&gt;Peace \o/.&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-        <category term="hosting" />
-      
-
-      
-        <summary type="html">I recently noticed I actually spend a lot of money on hosting and server resources I’m not using at all. Such a waste. After a small research I decided to move all my Droplets from DigitalOcean.com to its competitor - linode.com. I also hosted 2 sites on a separate hosting - elastichost.com - which is also rather expensive. So in the end I sat down and calculated how many resources I need and how many resources I actually pay for. At the beginning I thought that maybe the best solution would be to move everything to a dedicated machine at OVH or maybe Hetzner, but in both cases the cost is ~50-70€ per month minimum. Quite a lot I think, especially when my sites do not have significant traffic.</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Goal for the next 2-3 months</title>
-      
-      
-      <link href="https://roberts-notes.blog/2014/06/28/goal-for-the-next-2-3-months/" rel="alternate" type="text/html" title="Goal for the next 2-3 months" />
-      
-      <published>2014-06-28T11:21:42+02:00</published>
-      <updated>2014-06-28T11:21:42+02:00</updated>
-      <id>https://roberts-notes.blog/2014/06/28/goal-for-the-next-2-3-months</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/06/28/goal-for-the-next-2-3-months/">&lt;h2 id=&quot;my-goal-for-the-next-2-or-3-months&quot;&gt;My goal for the next 2 or 3 months:&lt;/h2&gt;
-&lt;p&gt;I recently found &lt;a href=&quot;http://ejohn.org/blog/write-code-every-day/&quot;&gt;this&lt;/a&gt; blog entry on the internet. Let’s see how it will go :).
-In general I think this is quite a good idea, mainly because you adapt to a “routine” of writing code (if you are not already addicted like me :D). This is definitely good training for your brain.
-Here is a link to my GitHub profile: https://github.com/robertwe
-So first I need to find a project :). I already contribute a little bit to the Jenkins CI project, but I would like to create something new.&lt;/p&gt;
-
-&lt;p&gt;Have a great day.&lt;/p&gt;
-
-&lt;p&gt;–
-Regards,
-Robert&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-
-      
-        <summary type="html">My goal for the next 2 or 3 months: I recently found this blog entry on the internet. Let’s see how it will go :). In general I think this is quite a good idea, mainly because you adapt to a “routine” of writing code (if you are not already addicted like me :D). This is definitely good training for your brain. Here is a link to my GitHub profile: https://github.com/robertwe So first I need to find a project :). I already contribute a little bit to the Jenkins CI project, but I would like to create something new. Have a great day. – Regards, Robert</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">CentOS6 “host” and “dig” commands are missing</title>
-      
-      
-      <link href="https://roberts-notes.blog/2014/05/20/centos6-host-command-is-missing/" rel="alternate" type="text/html" title="CentOS6 &quot;host&quot; and &quot;dig&quot; commands are missing" />
-      
-      <published>2014-05-20T20:39:37+02:00</published>
-      <updated>2014-05-20T20:39:37+02:00</updated>
-      <id>https://roberts-notes.blog/2014/05/20/centos6-host-command-is-missing</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/05/20/centos6-host-command-is-missing/">&lt;p&gt;Recently I configured a new machine with CentOS 6.5 on board and it turned out the &lt;em&gt;host&lt;/em&gt; command was missing.
-Here is a quick solution for that: &lt;!--more--&gt;
-yum install bind-utils&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;[robert@swordfish ~] yum install bind-utils
-Loaded plugins: fastestmirror, keys, protectbase
-Loading mirror speeds from cached hostfile
- * base: centosh2.centos.org
- * extras: mirror.nsc.liu.se
- * updates: mirror.nsc.liu.se
-0 packages excluded due to repository protections
-Setting up Install Process
-Resolving Dependencies
---&amp;gt; Running transaction check
----&amp;gt; Package bind-utils.x86_64 32:9.8.2-0.23.rc1.el6_5.1 will be installed
-...
---&amp;gt; Running transaction check
----&amp;gt; Package bind-libs.x86_64 32:9.8.2-0.23.rc1.el6_5.1 will be installed
---&amp;gt; Finished Dependency Resolution
-
-Dependencies Resolved
-...
-Install       2 Package(s)
-
-Total download size: 1.0 M
-Installed size: 2.6 M
-Is this ok [y/N]: y
-Downloading Packages:
-(1/2): bind-libs-9.8.2-0.23.rc1.el6_5.1.x86_64.rpm                                                           | 879 kB     00:00     
-(2/2): bind-utils-9.8.2-0.23.rc1.el6_5.1.x86_64.rpm                                                          | 182 kB     00:00     
-
-...
-
-Complete!
-[robert@swordfish ~] dig
-
-; &amp;lt;&amp;lt;&amp;gt;&amp;gt; DiG 9.8.2rc1-RedHat-9.8.2-0.23.rc1.el6_5.1 &amp;lt;&amp;lt;&amp;gt;&amp;gt;
-;; global options: +cmd
-;; Got answer:
-;; -&amp;gt;&amp;gt;HEADER&amp;lt;&amp;lt;- opcode: QUERY, status: NOERROR, id: 53593
-;; flags: qr rd ra; QUERY: 1, ANSWER: 13, AUTHORITY: 0, ADDITIONAL: 0
-
-;; QUESTION SECTION:
-;.				IN	NS
-
-;; ANSWER SECTION:
-.			18308	IN	NS	a.root-servers.net.
-.			18308	IN	NS	b.root-servers.net.
-.			18308	IN	NS	c.root-servers.net.
-.			18308	IN	NS	d.root-servers.net.
-.			18308	IN	NS	e.root-servers.net.
-.			18308	IN	NS	f.root-servers.net.
-.			18308	IN	NS	g.root-servers.net.
-.			18308	IN	NS	h.root-servers.net.
-.			18308	IN	NS	i.root-servers.net.
-.			18308	IN	NS	j.root-servers.net.
-.			18308	IN	NS	k.root-servers.net.
-.			18308	IN	NS	l.root-servers.net.
-.			18308	IN	NS	m.root-servers.net.
-
-;; Query time: 4 msec
-;; SERVER: 8.8.8.8#53(8.8.8.8)
-;; WHEN: Tue May 20 18:50:16 2014
-;; MSG SIZE  rcvd: 228&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;Just to keep it in one place - I always forget which package provides it.
-If you know where exactly the executable file is placed, you can use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;yum provides&lt;/code&gt; command like this:&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;$ yum provides /usr/bin/host
-Loaded plugins: fastestmirror
-
-...
-
-32:bind-utils-9.8.2-0.17.rc1.el6_4.6.x86_64 : Utilities for querying DNS name servers
-Repo        : base
-Matched from:
-Filename    : /usr/bin/host
-
-32:bind-utils-9.8.2-0.23.rc1.el6_5.1.x86_64 : Utilities for querying DNS name servers
-Repo        : updates
-Matched from:
-Filename    : /usr/bin/host
-
-32:bind-utils-9.8.2-0.23.rc1.el6_5.1.x86_64 : Utilities for querying DNS name servers
-Repo        : installed
-Matched from:
-Other       : Provides-match: /usr/bin/host
-
-
-$ yum provides /usr/bin/dig
-Loaded plugins: fastestmirror
-Loading mirror speeds from cached hostfile
-...
-32:bind-utils-9.8.2-0.17.rc1.el6_4.6.x86_64 : Utilities for querying DNS name servers
-Repo        : base
-Matched from:
-Filename    : /usr/bin/dig
-
-32:bind-utils-9.8.2-0.23.rc1.el6_5.1.x86_64 : Utilities for querying DNS name servers
-Repo        : updates
-Matched from:
-Filename    : /usr/bin/dig
-
-32:bind-utils-9.8.2-0.23.rc1.el6_5.1.x86_64 : Utilities for querying DNS name servers
-Repo        : installed
-Matched from:
-Other       : Provides-match: /usr/bin/dig&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;It will help you find most of the missing packages.&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-        <category term="CentOS" />
-      
-
-      
-
-      
-        <summary type="html">Recently I configured a new machine with CentOS 6.5 on board and it turned out the host command was missing. Here is a quick solution for that:</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Is TDD Dead ?</title>
-      
-      
-      <link href="https://roberts-notes.blog/2014/05/09/is-tdd-dead/" rel="alternate" type="text/html" title="Is TDD Dead ?" />
-      
-      <published>2014-05-09T21:24:39+02:00</published>
-      <updated>2014-05-09T21:24:39+02:00</updated>
-      <id>https://roberts-notes.blog/2014/05/09/is-tdd-dead</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/05/09/is-tdd-dead/">&lt;p&gt;Today I watched a quite interesting hangout. It was a quick (30 min) discussion.
-Attendees:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Kent Beck,&lt;/li&gt;
-  &lt;li&gt;Martin Fowler,&lt;/li&gt;
-  &lt;li&gt;David Heinemeier Hansson&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;A few days ago @DHH wrote a somewhat “controversial” &lt;a href=&quot;http://david.heinemeierhansson.com/2014/tdd-is-dead-long-live-testing.html&quot;&gt;post&lt;/a&gt; on his blog about TDD and, in general, presented his point of view on TDD.
-As a result we got a huge discussion on Twitter about TDD. Some people say that every professional should use TDD and so on.
-In response, the guys from &lt;strong&gt;ThoughtWorks&lt;/strong&gt; organized this hangout.
- &lt;/p&gt;
-
-&lt;h3 id=&quot;youtube-playlist-parts-from-1-to-6&quot;&gt;Youtube playlist (Parts from 1 to 6)&lt;/h3&gt;
-&lt;iframe width=&quot;560&quot; height=&quot;315&quot; src=&quot;//www.youtube.com/embed/videoseries?list=PLJb2p0qX8R_qSRhs14CiwKuDuzERXSU8m&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-
-      
-        <summary type="html">Today I watched a quite interesting hangout. It was a quick (30 min) discussion. Attendees: Kent Beck, Martin Fowler, David Heinemeier Hansson A few days ago @DHH wrote a somewhat “controversial” post on his blog about TDD and, in general, presented his point of view on TDD. As a result we got a huge discussion on Twitter about TDD. Some people say that every professional should use TDD and so on. In response, the guys from ThoughtWorks organized this hangout.   Youtube playlist (Parts from 1 to 6)</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">Keynote: Architecture the Lost Years by Robert Martin</title>
-      
-      
-      <link href="https://roberts-notes.blog/2014/05/03/keynote-architecture-the-lost-years-by-robert-martin/" rel="alternate" type="text/html" title="Keynote: Architecture the Lost Years by Robert Martin" />
-      
-      <published>2014-05-03T23:59:55+02:00</published>
-      <updated>2014-05-03T23:59:55+02:00</updated>
-      <id>https://roberts-notes.blog/2014/05/03/keynote-architecture-the-lost-years-by-robert-martin</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/05/03/keynote-architecture-the-lost-years-by-robert-martin/">&lt;p&gt;Here is a talk Uncle Bob gave in 2011 at &lt;strong&gt;Ruby Midwest 2011&lt;/strong&gt;. Honestly, I come back to this talk every two months or so. I must also add that I’m a great fan of &lt;strong&gt;Uncle Bob&lt;/strong&gt; (&lt;a href=&quot;https://twitter.com/unclebobmartin&quot;&gt;@unclebobmartin&lt;/a&gt;). It also contains some notes about MVC - what the true purpose of MVC is, why it was created and so on. Here it is (you need to click on &lt;strong&gt;Read more&lt;/strong&gt; to load the embedded YouTube video):&lt;/p&gt;
-
-&lt;iframe width=&quot;560&quot; height=&quot;315&quot; src=&quot;//www.youtube.com/embed/WpkDN78P884&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-
-      
-        <summary type="html">Here is a talk Uncle Bob gave in 2011 at Ruby Midwest 2011. Honestly, I come back to this talk every two months or so. I must also add that I’m a great fan of Uncle Bob (@unclebobmartin). It also contains some notes about MVC - what the true purpose of MVC is, why it was created and so on. Here it is (you need to click on Read more to load the embedded YouTube video):</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">For a good start of a working day</title>
-      
-      
-      <link href="https://roberts-notes.blog/2014/05/03/for-a-good-start-of-a-working-day/" rel="alternate" type="text/html" title="For a good start of a working day" />
-      
-      <published>2014-05-03T23:47:04+02:00</published>
-      <updated>2014-05-03T23:47:04+02:00</updated>
-      <id>https://roberts-notes.blog/2014/05/03/for-a-good-start-of-a-working-day</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/05/03/for-a-good-start-of-a-working-day/">&lt;h2 id=&quot;have-a-great-day&quot;&gt;Have a great day&lt;/h2&gt;
-
-&lt;iframe src=&quot;//player.vimeo.com/video/126929963&quot; width=&quot;500&quot; height=&quot;281&quot; frameborder=&quot;0&quot; webkitallowfullscreen=&quot;&quot; mozallowfullscreen=&quot;&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;
-&lt;p&gt;
-  &lt;a href=&quot;http://vimeo.com/126929963&quot;&gt;Swedish House Mafia - Greyhound&lt;/a&gt; on 
-  &lt;a href=&quot;https://vimeo.com&quot;&gt;Vimeo&lt;/a&gt;.
-&lt;/p&gt;
-
-&lt;p&gt;–robert&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-        <category term="test" />
-      
-
-      
-
-      
-        <summary type="html">Have a great day Swedish House Mafia - Greyhound on Vimeo. –robert</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-  
-    <entry>
-      
-      <title type="html">first post</title>
-      
-      
-      <link href="https://roberts-notes.blog/2014/05/03/first-post/" rel="alternate" type="text/html" title="first post" />
-      
-      <published>2014-05-03T22:40:03+02:00</published>
-      <updated>2014-05-03T22:40:03+02:00</updated>
-      <id>https://roberts-notes.blog/2014/05/03/first-post</id>
-      <content type="html" xml:base="https://roberts-notes.blog/2014/05/03/first-post/">&lt;h4 id=&quot;lets-write-it-down&quot;&gt;Let’s write it down.&lt;/h4&gt;
-&lt;p&gt;To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself.
-I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. It’s good if I wrote it down somewhere, put it on &lt;a href=&quot;https://gist.github.com/robertwe&quot;&gt;Gist&lt;/a&gt; or &lt;a href=&quot;http://pastebin.com/&quot;&gt;Pastebin&lt;/a&gt;, but what if I did not?
-Let’s say I just configured Nginx as a load balancer and, for example, after a year or so I need to make something exactly the same or at least similar. What then? I need to go through the Nginx documentation again or start searching on Google. Sure, in some cases I remember exactly how I solved a specific problem, but when it was some time ago then…
-This is the reason why I decided to create this simple blog. I hope it won’t evolve in any unpredictable way. You can think about this blog as my notebook. If somebody else finds my notes useful/helpful - even better. Let’s make this World better.&lt;/p&gt;
-
-&lt;p&gt;Have a great day.&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;P.S. As you probably noticed, I’m not a native speaker, so in case you find some mistakes in my posts (probably more than one), please let me know ASAP.&lt;/em&gt;&lt;/p&gt;
-
-&lt;script type=&quot;text/javascript&quot; async=&quot;&quot; src=&quot;https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML&quot;&gt;
-&lt;/script&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;RAM&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;vCPU&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;Price (€)&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;1G&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;1&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;5&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;2G&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;10&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;4G&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;4&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;30&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;8G&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;6&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;60&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;12G&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;8&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;120&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;16G&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;10&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;160&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;24G&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;12&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;240&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;32G&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;16&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;320&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;hr /&gt;
-
-&lt;h3 id=&quot;our-universe-in-si-units&quot;&gt;Our universe (in SI units):&lt;/h3&gt;
-
-\[\begin{align*}
-  \frac{\partial\mathcal{D}}{\partial t} \quad &amp;amp; = \quad \nabla\times\mathcal{H},   &amp;amp; \quad \text{(Faraday's law)} \\[5pt]
-  \frac{\partial\mathcal{B}}{\partial t} \quad &amp;amp; = \quad -\nabla\times\mathcal{E},  &amp;amp; \quad \text{(Ampère's circuital law)}   \\[5pt]
-  \nabla\cdot\mathcal{B}                 \quad &amp;amp; = \quad 0,                         &amp;amp; \quad \text{(Gauss's law for magnetism)}   \\[5pt]
-  \nabla\cdot\mathcal{D}                 \quad &amp;amp; = \quad 0.                         &amp;amp; \quad \text{(Coulomb's Law)}
-  \end{align*}\]
-
-&lt;hr /&gt;
-
-&lt;p&gt;\(\begin{align*}
-  &amp;amp; \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right)
-  = \sum_{i=1}^n \sum_{j=1}^n x_i y_j \phi(e_i, e_j) = \\
-  &amp;amp; (x_1, \ldots, x_n) \left( \begin{array}{ccc}
-      \phi(e_1, e_1) &amp;amp; \cdots &amp;amp; \phi(e_1, e_n) \\
-      \vdots &amp;amp; \ddots &amp;amp; \vdots \\
-      \phi(e_n, e_1) &amp;amp; \cdots &amp;amp; \phi(e_n, e_n)
-    \end{array} \right)
-  \left( \begin{array}{c}
-      y_1 \\
-      \vdots \\
-      y_n
-    \end{array} \right)
-\end{align*}\)&lt;/p&gt;
-&lt;hr /&gt;
-
-\[\begin{array}{c|lcr}
-n &amp;amp; \text{Left} &amp;amp; \text{Center} &amp;amp; \text{Right} \\
-\hline
-1 &amp;amp; 0.24 &amp;amp; 1 &amp;amp; 125 \\
-2 &amp;amp; -1 &amp;amp; 189 &amp;amp; -8 \\
-3 &amp;amp; -20 &amp;amp; 2000 &amp;amp; 1+10i
-\end{array}\]
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;show&lt;/span&gt;
-  &lt;span class=&quot;vi&quot;&gt;@widget&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;Widget&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;respond_to&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;html&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;# show.html.erb&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;json&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;render&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;json: &lt;/span&gt;&lt;span class=&quot;vi&quot;&gt;@widget&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;interfaces&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-	&lt;span class=&quot;s&quot;&gt;&quot;io&quot;&lt;/span&gt;
-	&lt;span class=&quot;s&quot;&gt;&quot;os&quot;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;//PipeExample function&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PipeExample&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;error&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;w&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Pipe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-
-	&lt;span class=&quot;k&quot;&gt;go&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-		&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;test&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-		&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-	&lt;span class=&quot;p&quot;&gt;}()&lt;/span&gt;
-
-	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Stdout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-		&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;
-	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-go&quot; data-lang=&quot;go&quot;&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;interfaces&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-	&lt;span class=&quot;s&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
-	&lt;span class=&quot;s&quot;&gt;&quot;io&quot;&lt;/span&gt;
-	&lt;span class=&quot;s&quot;&gt;&quot;os&quot;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;// Copy data from std in to std out&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ReadSeeker&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;out&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Writer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;error&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-	&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MultiWriter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Stdout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Copy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-		&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;
-	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-	&lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Seek&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-	&lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([]&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;64&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CopyBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;w&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;buf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-		&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt;
-	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-	&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;–robert&lt;/p&gt;</content>
-
-      
-      
-      
-      
-      
-
-      
-
-      
-
-      
-        <category term="First Post" />
-      
-
-      
-        <summary type="html">Let’s write it down. To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself. I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. It’s good if I wrote it down somewhere, put it on Gist or Pastebin, but what if I did not? Let’s say I just configured Nginx as a load balancer and, for example, after a year or so I need to make something exactly the same or at least similar. What then? I need to go through the Nginx documentation again or start searching on Google. Sure, in some cases I remember exactly how I solved a specific problem, but when it was some time ago then… This is the reason why I decided to create this simple blog. I hope it won’t evolve in any unpredictable way. You can think about this blog as my notebook. If somebody else finds my notes useful/helpful - even better. Let’s make this World better. Have a great day. P.S. As you probably noticed, I’m not a native speaker, so in case you find some mistakes in my posts (probably more than one), please let me know ASAP. RAM vCPU Price (€) 1G 1 5 2G 2 10 4G 4 30 8G 6 60 12G 8 120 16G 10 160 24G 12 240 32G 16 320 Our universe (in SI units): \[\begin{align*} \frac{\partial\mathcal{D}}{\partial t} \quad &amp;amp; = \quad \nabla\times\mathcal{H}, &amp;amp; \quad \text{(Faraday's law)} \\[5pt] \frac{\partial\mathcal{B}}{\partial t} \quad &amp;amp; = \quad -\nabla\times\mathcal{E}, &amp;amp; \quad \text{(Ampère's circuital law)} \\[5pt] \nabla\cdot\mathcal{B} \quad &amp;amp; = \quad 0, &amp;amp; \quad \text{(Gauss's law for magnetism)} \\[5pt] \nabla\cdot\mathcal{D} \quad &amp;amp; = \quad 0. &amp;amp; \quad \text{(Coulomb's Law)} \end{align*}\] \(\begin{align*} &amp;amp; \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right) = \sum_{i=1}^n \sum_{j=1}^n x_i y_j \phi(e_i, e_j) = \\ &amp;amp; (x_1, \ldots, x_n) \left( \begin{array}{ccc} \phi(e_1, e_1) &amp;amp; \cdots &amp;amp; \phi(e_1, e_n) \\ \vdots &amp;amp; \ddots &amp;amp; \vdots \\ \phi(e_n, e_1) &amp;amp; \cdots &amp;amp; \phi(e_n, e_n) \end{array} \right) \left( \begin{array}{c} y_1 \\ \vdots \\ y_n \end{array} \right) \end{align*}\) \[\begin{array}{c|lcr} n &amp;amp; \text{Left} &amp;amp; \text{Center} &amp;amp; \text{Right} \\ \hline 1 &amp;amp; 0.24 &amp;amp; 1 &amp;amp; 125 \\ 2 &amp;amp; -1 &amp;amp; 189 &amp;amp; -8 \\ 3 &amp;amp; -20 &amp;amp; 2000 &amp;amp; 1+10i \end{array}\] def show @widget = Widget(params[:id]) respond_to do |format| format.html # show.html.erb format.json { render json: @widget } end end package interfaces import ( &quot;io&quot; &quot;os&quot; ) //PipeExample function func PipeExample() error { r, w := io.Pipe() go func() { w.Write([]byte(&quot;test\n&quot;)) w.Close() }() if _, err := io.Copy(os.Stdout, r); err != nil { return err } return nil } package interfaces import ( &quot;fmt&quot; &quot;io&quot; &quot;os&quot; ) // Copy data from std in to std out func Copy(in io.ReadSeeker, out io.Writer) error { w := io.MultiWriter(out, os.Stdout) if _, err := io.Copy(w, in); err != nil { return err } in.Seek(0, 0) buf := make([]byte, 64) if _, err := io.CopyBuffer(w, in, buf); err != nil { return err } fmt.Println() return nil } –robert</summary>
-      
-
-      
-      
-    </entry>
-  
-  
-</feed>
+&lt;p&gt;–robert&lt;/p&gt;</content><author><name></name></author><category term="Salt" /><summary type="html">Yesterday I faced a quite interesting problem. In my SLS definition I was iterating over a hash of hashes and wanted to pass the hash from the current iteration to a Jinja template.</summary></entry></feed>

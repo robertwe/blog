@@ -1,28 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-
-  <head>
+<head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   
   
   
-  <title>Add timestamp to Bash history</title>
+  <title>Add timestamp to Bash history - Robert&#39;s notes</title>
   <meta name="description" content="Sometimes there is a need to add a timestamp to bash history. At my work I found it quite useful, especially when some other developers have access to the same box or when you simply want to have an idea when a command from the history was executed.   This is how we can achieve this: echo &#39;export HISTTIMEFORMAT=&quot;%d.%m.%y %T&quot;&#39; &amp;gt;&amp;gt; ~/.profile (or .bash_profile if you use a RHEL based distro) and after that just re-login or reload your profile file. Time formatting is exactly the same as for strftime - please check man 3 strftime. Hint: reloading the profile can be done like this: . .profile or source .profile – Cheers Robert">
-  
-
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181825">
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="https://roberts-notes.blog/2014/07/01/add-timestamp-to-bash-history/">
-  
-  
   <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
-
   <link rel="icon"
       type="image/png"
       href="/favicon.png">
-<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 <!--
  ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
 ██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
@@ -32,147 +25,50 @@
  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
 -->
 
-
-  
   <meta property="og:title" content="Add timestamp to Bash history">
   <meta property="og:site_name" content="Robert&#39;s notes">
   <meta property="og:url" content="https://roberts-notes.blog/2014/07/01/add-timestamp-to-bash-history/">
   <meta property="og:description" content="Sometimes there is a need to add a timestamp to bash history. At my work I found it quite useful, especially when some other developers have access to the same box or when you simply want to have an idea when a command from the history was executed.   This is how we can achieve this: echo &#39;export HISTTIMEFORMAT=&quot;%d.%m.%y %T&quot;&#39; &amp;gt;&amp;gt; ~/.profile (or .bash_profile if you use a RHEL based distro) and after that just re-login or reload your profile file. Time formatting is exactly the same as for strftime - please check man 3 strftime. Hint: reloading the profile can be done like this: . .profile or source .profile – Cheers Robert">
-  
-  
   <meta name="twitter:card" content="summary">
-  
   <meta name="twitter:title" content="Add timestamp to Bash history">
   <meta name="twitter:description" content="Sometimes there is a need to add a timestamp to bash history. At my work I found it quite useful, especially when some other developers have access to the same box or when you simply want to have a...">
   
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
   
-
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
-
-  
-  
-  
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-WY8Y4X9RJF');
-    </script>
-  
-
-
 </head>
+<body>
 
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>robert@notes: ~/posts — zsh</span></div>
+  <div class="term">
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">cat ~/.motd</span></div>
 
-  <body>
+    <div class="out motd"><a href="/">Robert&#39;s notes</a> - Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture.</div>
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls ~</span></div>
 
-    <header class="site-header">
-
-  <div class="wrapper">
-
-    <a class="site-title" href="/">Robert&#39;s notes</a>
-
-    <nav class="site-nav">
+    <nav class="out">
       
-        
-        <a class="page-link" href="/">Main</a>
+        <a href="/">Main</a>
       
-        
-        <a class="page-link" href="/archives/">Archives</a>
+        <a href="/archives/">Archives</a>
       
-        
-        <a class="page-link" href="/stats/">Stats</a>
+        <a href="/stats/">Stats</a>
       
-        
-        <a class="page-link" href="/contact/">Contact</a>
+        <a href="/contact/">Contact</a>
       
-        
-        <a class="page-link" href="/about/">About</a>
+        <a href="/about/">About</a>
       
     </nav>
+    
 
-  </div>
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">glow add-timestamp-to-bash-history.md</span></div>
 
-</header>
+<article class="post out" itemscope itemtype="http://schema.org/BlogPosting">
+  <h1 itemprop="name headline">Add timestamp to Bash history</h1>
+  <div class="meta"><time datetime="2014-07-01T08:30:46+02:00">2014-07-01</time> <a href="/tags/bash/">bash</a></div>
 
-
-    <main class="page-content" aria-label="Content">
-      <div class="wrapper">
-        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-
-  <header class="post-header">
-    
-      <h1 class="post-title" itemprop="name headline">Add timestamp to Bash history</h1>
-    
-    <p class="post-meta"><time datetime="2014-07-01T08:30:46+02:00" itemprop="datePublished">Jul 1, 2014</time>
-
- •
-  
-    
-    
-      
-    
-      
-    
-      
-        <a href="/tags/bash/">bash</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-
-</p>
-  </header>
-
-  <div class="post-content" itemprop="articleBody">
+  <div class="body" itemprop="articleBody">
     <p>Sometimes there is a need to add a timestamp to bash history.
 At my work I found it quite useful, especially when some other developers
 have access to the same box or when you simply want to have an idea when a command from the history was executed.  
@@ -191,13 +87,12 @@ Cheers
 Robert</p>
 
   </div>
+</article>
 
-  
-    <div class="post-comments" itemprop="comment">
-      <hr />
-<h1>Comments</h1>
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">giscus --comments</span></div>
 
-<script src="https://giscus.app/client.js"
+<div class="out comments">
+  <script src="https://giscus.app/client.js"
         data-repo="robertwe/blog"
         data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
         data-category="General"
@@ -207,51 +102,28 @@ Robert</p>
         data-reactions-enabled="1"
         data-emit-metadata="0"
         data-input-position="bottom"
-        data-theme="light"
+        data-theme="catppuccin_mocha"
         data-lang="en"
         crossorigin="anonymous"
         async>
 </script>
 <noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
 
-    </div>
-  
-
-</article>
-
-      </div>
-    </main>
-
-    <footer class="site-footer">
-    <div class="wrapper">
-        
-  <div class="footer">
-    <a href="https://github.com/robertwe">
-      <i class="fa fa-github"></i> GitHub
-    </a>
 </div>
 
 
+    <footer>
+      <div class="links">
+  <a href="https://github.com/robertwe">GitHub</a>
+  <a href="https://stackoverflow.com/users/213377">StackOverflow</a>
+  <a href="https://linkedin.com/in/robertweclawski">LinkedIn</a>
+  <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</div>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>
+      <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="cur"></span></div>
 
-<div class="footer">
-    <a href="https://stackoverflow.com/users/213377">
-      <i class="fa fa-stack-overflow"></i> StackOverflow
-    </a>
+    </footer>
   </div>
-
-
-<div class="footer">
-    <a href="https://linkedin.com/in/robertweclawski">
-      <i class="fa fa-linkedin"></i> LinkedIn
-    </a>
-  </div>
-
-<span class="footer">
-&copy;  - Powered by <a href="https://jekyllrb.com">Jekyll</a> &amp; <a href="https://github.com/yous/whiteglass">whiteglass</a> - Subscribe via <a href="https://roberts-notes.blog/feed.xml">RSS</a>
-</span>
-    </div>
-  </footer>
-
-  </body>
-
+</div>
+</body>
 </html>

@@ -1,28 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-
-  <head>
+<head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   
   
   
-  <title>Keynote: Architecture the Lost Years by Robert Martin</title>
+  <title>Keynote: Architecture the Lost Years by Robert Martin - Robert&#39;s notes</title>
   <meta name="description" content="Here is a talk Uncle Bob gave in 2011 at Ruby Midwest 2011. Honestly, I come back to this talk every two months or so. I must also add that I’m a great fan of Uncle Bob (@unclebobmartin). It also contains some notes about MVC - what the true purpose of MVC is, why it was created and so on. Here it is (you need to click on Read more to load the embedded YouTube video):">
-  
-
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181825">
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="https://roberts-notes.blog/2014/05/03/keynote-architecture-the-lost-years-by-robert-martin/">
-  
-  
   <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
-
   <link rel="icon"
       type="image/png"
       href="/favicon.png">
-<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 <!--
  ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
 ██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
@@ -32,99 +25,61 @@
  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
 -->
 
-
-  
   <meta property="og:title" content="Keynote: Architecture the Lost Years by Robert Martin">
   <meta property="og:site_name" content="Robert&#39;s notes">
   <meta property="og:url" content="https://roberts-notes.blog/2014/05/03/keynote-architecture-the-lost-years-by-robert-martin/">
   <meta property="og:description" content="Here is a talk Uncle Bob gave in 2011 at Ruby Midwest 2011. Honestly, I come back to this talk every two months or so. I must also add that I’m a great fan of Uncle Bob (@unclebobmartin). It also contains some notes about MVC - what the true purpose of MVC is, why it was created and so on. Here it is (you need to click on Read more to load the embedded YouTube video):">
-  
-  
   <meta name="twitter:card" content="summary">
-  
   <meta name="twitter:title" content="Keynote: Architecture the Lost Years by Robert Martin">
   <meta name="twitter:description" content="Here is a talk Uncle Bob gave in 2011 at Ruby Midwest 2011. Honestly, I come back to this talk every two months or so. I must also add that I’m a great fan of Uncle Bob (@unclebobmartin). It also c...">
   
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
   
-
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
-
-  
-  
-  
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-WY8Y4X9RJF');
-    </script>
-  
-
-
 </head>
+<body>
 
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>robert@notes: ~/posts — zsh</span></div>
+  <div class="term">
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">cat ~/.motd</span></div>
 
-  <body>
+    <div class="out motd"><a href="/">Robert&#39;s notes</a> - Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture.</div>
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls ~</span></div>
 
-    <header class="site-header">
-
-  <div class="wrapper">
-
-    <a class="site-title" href="/">Robert&#39;s notes</a>
-
-    <nav class="site-nav">
+    <nav class="out">
       
-        
-        <a class="page-link" href="/">Main</a>
+        <a href="/">Main</a>
       
-        
-        <a class="page-link" href="/archives/">Archives</a>
+        <a href="/archives/">Archives</a>
       
-        
-        <a class="page-link" href="/stats/">Stats</a>
+        <a href="/stats/">Stats</a>
       
-        
-        <a class="page-link" href="/contact/">Contact</a>
+        <a href="/contact/">Contact</a>
       
-        
-        <a class="page-link" href="/about/">About</a>
+        <a href="/about/">About</a>
       
     </nav>
-
-  </div>
-
-</header>
-
-
-    <main class="page-content" aria-label="Content">
-      <div class="wrapper">
-        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-
-  <header class="post-header">
     
-      <h1 class="post-title" itemprop="name headline">Keynote: Architecture the Lost Years by Robert Martin</h1>
-    
-    <p class="post-meta"><time datetime="2014-05-03T23:59:55+02:00" itemprop="datePublished">May 3, 2014</time></p>
-  </header>
 
-  <div class="post-content" itemprop="articleBody">
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">glow keynote-architecture-the-lost-years-by-robert-martin.md</span></div>
+
+<article class="post out" itemscope itemtype="http://schema.org/BlogPosting">
+  <h1 itemprop="name headline">Keynote: Architecture the Lost Years by Robert Martin</h1>
+  <div class="meta"><time datetime="2014-05-03T23:59:55+02:00">2014-05-03</time></div>
+
+  <div class="body" itemprop="articleBody">
     <p>Here is a talk Uncle Bob gave in 2011 at <strong>Ruby Midwest 2011</strong>. Honestly, I come back to this talk every two months or so. I must also add that I’m a great fan of <strong>Uncle Bob</strong> (<a href="https://twitter.com/unclebobmartin">@unclebobmartin</a>). It also contains some notes about MVC - what the true purpose of MVC is, why it was created and so on. Here it is (you need to click on <strong>Read more</strong> to load the embedded YouTube video):</p>
 
 <iframe width="560" height="315" src="//www.youtube.com/embed/WpkDN78P884" frameborder="0" allowfullscreen=""></iframe>
 
   </div>
+</article>
 
-  
-    <div class="post-comments" itemprop="comment">
-      <hr />
-<h1>Comments</h1>
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">giscus --comments</span></div>
 
-<script src="https://giscus.app/client.js"
+<div class="out comments">
+  <script src="https://giscus.app/client.js"
         data-repo="robertwe/blog"
         data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
         data-category="General"
@@ -134,51 +89,28 @@
         data-reactions-enabled="1"
         data-emit-metadata="0"
         data-input-position="bottom"
-        data-theme="light"
+        data-theme="catppuccin_mocha"
         data-lang="en"
         crossorigin="anonymous"
         async>
 </script>
 <noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
 
-    </div>
-  
-
-</article>
-
-      </div>
-    </main>
-
-    <footer class="site-footer">
-    <div class="wrapper">
-        
-  <div class="footer">
-    <a href="https://github.com/robertwe">
-      <i class="fa fa-github"></i> GitHub
-    </a>
 </div>
 
 
+    <footer>
+      <div class="links">
+  <a href="https://github.com/robertwe">GitHub</a>
+  <a href="https://stackoverflow.com/users/213377">StackOverflow</a>
+  <a href="https://linkedin.com/in/robertweclawski">LinkedIn</a>
+  <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</div>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>
+      <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="cur"></span></div>
 
-<div class="footer">
-    <a href="https://stackoverflow.com/users/213377">
-      <i class="fa fa-stack-overflow"></i> StackOverflow
-    </a>
+    </footer>
   </div>
-
-
-<div class="footer">
-    <a href="https://linkedin.com/in/robertweclawski">
-      <i class="fa fa-linkedin"></i> LinkedIn
-    </a>
-  </div>
-
-<span class="footer">
-&copy;  - Powered by <a href="https://jekyllrb.com">Jekyll</a> &amp; <a href="https://github.com/yous/whiteglass">whiteglass</a> - Subscribe via <a href="https://roberts-notes.blog/feed.xml">RSS</a>
-</span>
-    </div>
-  </footer>
-
-  </body>
-
+</div>
+</body>
 </html>

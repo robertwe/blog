@@ -1,0 +1,16 @@
+---
+layout: default
+cwd: "~/posts"
+---
+{% include prompt.html cwd="~/posts" cmd="ls -lt" %}
+<div class="out">
+  {{ content }}
+  <table class="ls">
+    {% for post in site.posts %}
+    <tr>
+      <td class="d"><time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y-%m-%d" }}</time></td>
+      <td><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>

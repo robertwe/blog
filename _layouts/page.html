@@ -1,0 +1,12 @@
+---
+layout: default
+---
+{% assign slug = page.url | split: "/" | last %}
+{% capture cmd %}cat {{ slug }}.md{% endcapture %}
+{% include prompt.html cwd="~" cmd=cmd %}
+<article class="post out">
+  <h1>{{ page.title | escape }}</h1>
+  <div class="body">
+    {{ content }}
+  </div>
+</article>

@@ -1,0 +1,24 @@
+---
+layout: default
+cwd: "~"
+---
+{% include prompt.html cwd="~" cmd="ls -t posts/ | head -n 5 | xargs head -n 3" %}
+<div class="out">
+  {{ content }}
+  {% for post in paginator.posts %}
+  <article class="card">
+    <h2><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h2>
+    {% include post_meta.html post=post %}
+    <div class="excerpt">{{ post.excerpt }}</div>
+    <a class="more" href="{{ post.url | relative_url }}">read more →</a>
+  </article>
+  {% endfor %}
+</div>
+{% if paginator.total_pages > 1 %}
+{% include prompt.html cwd="~" cmd="ls -t posts/ | sed -n" %}
+<div class="out pagination">
+  {% if paginator.previous_page %}<a href="{{ paginator.previous_page_path | relative_url }}">← newer</a>{% endif %}
+  <span>page {{ paginator.page }}/{{ paginator.total_pages }}</span>
+  {% if paginator.next_page %}<a href="{{ paginator.next_page_path | relative_url }}">older →</a>{% endif %}
+</div>
+{% endif %}

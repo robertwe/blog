@@ -1,28 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-
-  <head>
+<head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   
   
   
-  <title>Automation</title>
+  <title>Automation - Robert&#39;s notes</title>
   <meta name="description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
-  
-
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181825">
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="https://roberts-notes.blog/tags/automation/">
-  
-  
   <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
-
   <link rel="icon"
       type="image/png"
       href="/favicon.png">
-<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 <!--
  ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
 ██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
@@ -32,371 +25,72 @@
  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
 -->
 
-
-  
   <meta property="og:title" content="Automation">
   <meta property="og:site_name" content="Robert&#39;s notes">
   <meta property="og:url" content="https://roberts-notes.blog/tags/automation/">
   <meta property="og:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
-  
-  
   <meta name="twitter:card" content="summary">
-  
   <meta name="twitter:title" content="Automation">
   <meta name="twitter:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
   
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
   
-
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
-
-  
-  
-  
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-WY8Y4X9RJF');
-    </script>
-  
-
-
 </head>
+<body>
 
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>robert@notes: ~/posts — zsh</span></div>
+  <div class="term">
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">cat ~/.motd</span></div>
 
-  <body>
+    <div class="out motd"><a href="/">Robert&#39;s notes</a> - Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture.</div>
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls ~</span></div>
 
-    <header class="site-header">
-
-  <div class="wrapper">
-
-    <a class="site-title" href="/">Robert&#39;s notes</a>
-
-    <nav class="site-nav">
+    <nav class="out">
       
-        
-        <a class="page-link" href="/">Main</a>
+        <a href="/">Main</a>
       
-        
-        <a class="page-link" href="/archives/">Archives</a>
+        <a href="/archives/">Archives</a>
       
-        
-        <a class="page-link" href="/stats/">Stats</a>
+        <a href="/stats/">Stats</a>
       
-        
-        <a class="page-link" href="/contact/">Contact</a>
+        <a href="/contact/">Contact</a>
       
-        
-        <a class="page-link" href="/about/">About</a>
+        <a href="/about/">About</a>
       
     </nav>
+    
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">grep -l "tag: Automation" *.md</span></div>
 
-  </div>
-
-</header>
-
-
-    <main class="page-content" aria-label="Content">
-      <div class="wrapper">
-        <div class="home">
-
-  
-  
-  
-  <h1 class="page-heading">Archive of tag &#39;Automation&#39;</h1>
-
-  
-
-  <ul class="post-archives">
-    
-      
-      
-
-      <li>
-        <span class="post-meta">
-          Nov 5, 2016
-          
-             •
-  
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-        <a href="/categories/automation/">Automation</a>
-      
-    
-      
-    
-      
-    
-  
-
-
- •
-  
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-        <a href="/tags/provisioning/">Provisioning</a>,
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-        <a href="/tags/automation/">Automation</a>,
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-    
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-        <a href="/tags/puppet/">Puppet</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-
-
-          
-          
-        </span>
-
-        <h2>
-          
-            <a class="post-link" href="/2016/11/05/introduction-to-augeas-in-puppet/">Quick introduction to Augeas in Puppet</a>
-          
-        </h2>
-      </li>
-    
-  </ul>
-
+<div class="out">
+  <table class="ls">
+    
+    <tr>
+      <td class="d"><time datetime="2026-10-16T09:00:00+02:00">2026-10-16</time></td>
+      <td><a href="/2026/10/16/claude-code-skills-in-practice/">Claude Code skills - teach the agent your workflow once, in a Markdown file</a></td>
+    </tr>
+    
+    <tr>
+      <td class="d"><time datetime="2016-11-05T22:30:00+01:00">2016-11-05</time></td>
+      <td><a href="/2016/11/05/introduction-to-augeas-in-puppet/">Quick introduction to Augeas in Puppet</a></td>
+    </tr>
+    
+  </table>
 </div>
 
-      </div>
-    </main>
-
-    <footer class="site-footer">
-    <div class="wrapper">
-        
-  <div class="footer">
-    <a href="https://github.com/robertwe">
-      <i class="fa fa-github"></i> GitHub
-    </a>
+    <footer>
+      <div class="links">
+  <a href="https://github.com/robertwe">GitHub</a>
+  <a href="https://stackoverflow.com/users/213377">StackOverflow</a>
+  <a href="https://linkedin.com/in/robertweclawski">LinkedIn</a>
+  <a href="https://roberts-notes.blog/feed.xml">RSS</a>
 </div>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>
+      <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="cur"></span></div>
 
-
-
-<div class="footer">
-    <a href="https://stackoverflow.com/users/213377">
-      <i class="fa fa-stack-overflow"></i> StackOverflow
-    </a>
+    </footer>
   </div>
-
-
-<div class="footer">
-    <a href="https://linkedin.com/in/robertweclawski">
-      <i class="fa fa-linkedin"></i> LinkedIn
-    </a>
-  </div>
-
-<span class="footer">
-&copy;  - Powered by <a href="https://jekyllrb.com">Jekyll</a> &amp; <a href="https://github.com/yous/whiteglass">whiteglass</a> - Subscribe via <a href="https://roberts-notes.blog/feed.xml">RSS</a>
-</span>
-    </div>
-  </footer>
-
-  </body>
-
+</div>
+</body>
 </html>

@@ -1,28 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-
-  <head>
+<head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   
   
   
-  <title>first post</title>
+  <title>first post - Robert&#39;s notes</title>
   <meta name="description" content="Let’s write it down. To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself. I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. It’s good if I wrote it down somewhere, put it on Gist or Pastebin, but what if I did not? Let’s say I just configured Nginx as a load balancer and, for example, after a year or so I need to make something exactly the same or at least similar. What then? I need to go through the Nginx documentation again or start searching on Google. Sure, in some cases I remember exactly how I solved a specific problem, but when it was some time ago then… This is the reason why I decided to create this simple blog. I hope it won’t evolve in any unpredictable way. You can think about this blog as my notebook. If somebody else finds my notes useful/helpful - even better. Let’s make this World better. Have a great day. P.S. As you probably noticed, I’m not a native speaker, so in case you find some mistakes in my posts (probably more than one), please let me know ASAP. RAM vCPU Price (€) 1G 1 5 2G 2 10 4G 4 30 8G 6 60 12G 8 120 16G 10 160 24G 12 240 32G 16 320 Our universe (in SI units): \[\begin{align*} \frac{\partial\mathcal{D}}{\partial t} \quad &amp;amp; = \quad \nabla\times\mathcal{H}, &amp;amp; \quad \text{(Faraday&#39;s law)} \\[5pt] \frac{\partial\mathcal{B}}{\partial t} \quad &amp;amp; = \quad -\nabla\times\mathcal{E}, &amp;amp; \quad \text{(Ampère&#39;s circuital law)} \\[5pt] \nabla\cdot\mathcal{B} \quad &amp;amp; = \quad 0, &amp;amp; \quad \text{(Gauss&#39;s law for magnetism)} \\[5pt] \nabla\cdot\mathcal{D} \quad &amp;amp; = \quad 0. &amp;amp; \quad \text{(Coulomb&#39;s Law)} \end{align*}\] \(\begin{align*} &amp;amp; \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right) = \sum_{i=1}^n \sum_{j=1}^n x_i y_j \phi(e_i, e_j) = \\ &amp;amp; (x_1, \ldots, x_n) \left( \begin{array}{ccc} \phi(e_1, e_1) &amp;amp; \cdots &amp;amp; \phi(e_1, e_n) \\ \vdots &amp;amp; \ddots &amp;amp; \vdots \\ \phi(e_n, e_1) &amp;amp; \cdots &amp;amp; \phi(e_n, e_n) \end{array} \right) \left( \begin{array}{c} y_1 \\ \vdots \\ y_n \end{array} \right) \end{align*}\) \[\begin{array}{c|lcr} n &amp;amp; \text{Left} &amp;amp; \text{Center} &amp;amp; \text{Right} \\ \hline 1 &amp;amp; 0.24 &amp;amp; 1 &amp;amp; 125 \\ 2 &amp;amp; -1 &amp;amp; 189 &amp;amp; -8 \\ 3 &amp;amp; -20 &amp;amp; 2000 &amp;amp; 1+10i \end{array}\] def show @widget = Widget(params[:id]) respond_to do |format| format.html # show.html.erb format.json { render json: @widget } end end package interfaces import ( &quot;io&quot; &quot;os&quot; ) //PipeExample function func PipeExample() error { r, w := io.Pipe() go func() { w.Write([]byte(&quot;test\n&quot;)) w.Close() }() if _, err := io.Copy(os.Stdout, r); err != nil { return err } return nil } package interfaces import ( &quot;fmt&quot; &quot;io&quot; &quot;os&quot; ) // Copy data from std in to std out func Copy(in io.ReadSeeker, out io.Writer) error { w := io.MultiWriter(out, os.Stdout) if _, err := io.Copy(w, in); err != nil { return err } in.Seek(0, 0) buf := make([]byte, 64) if _, err := io.CopyBuffer(w, in, buf); err != nil { return err } fmt.Println() return nil } –robert">
-  
-
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181825">
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="https://roberts-notes.blog/2014/05/03/first-post/">
-  
-  
   <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
-
   <link rel="icon"
       type="image/png"
       href="/favicon.png">
-<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 <!--
  ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
 ██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
@@ -32,147 +25,50 @@
  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
 -->
 
-
-  
   <meta property="og:title" content="first post">
   <meta property="og:site_name" content="Robert&#39;s notes">
   <meta property="og:url" content="https://roberts-notes.blog/2014/05/03/first-post/">
   <meta property="og:description" content="Let’s write it down. To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself. I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. It’s good if I wrote it down somewhere, put it on Gist or Pastebin, but what if I did not? Let’s say I just configured Nginx as a load balancer and, for example, after a year or so I need to make something exactly the same or at least similar. What then? I need to go through the Nginx documentation again or start searching on Google. Sure, in some cases I remember exactly how I solved a specific problem, but when it was some time ago then… This is the reason why I decided to create this simple blog. I hope it won’t evolve in any unpredictable way. You can think about this blog as my notebook. If somebody else finds my notes useful/helpful - even better. Let’s make this World better. Have a great day. P.S. As you probably noticed, I’m not a native speaker, so in case you find some mistakes in my posts (probably more than one), please let me know ASAP. RAM vCPU Price (€) 1G 1 5 2G 2 10 4G 4 30 8G 6 60 12G 8 120 16G 10 160 24G 12 240 32G 16 320 Our universe (in SI units): \[\begin{align*} \frac{\partial\mathcal{D}}{\partial t} \quad &amp;amp; = \quad \nabla\times\mathcal{H}, &amp;amp; \quad \text{(Faraday&#39;s law)} \\[5pt] \frac{\partial\mathcal{B}}{\partial t} \quad &amp;amp; = \quad -\nabla\times\mathcal{E}, &amp;amp; \quad \text{(Ampère&#39;s circuital law)} \\[5pt] \nabla\cdot\mathcal{B} \quad &amp;amp; = \quad 0, &amp;amp; \quad \text{(Gauss&#39;s law for magnetism)} \\[5pt] \nabla\cdot\mathcal{D} \quad &amp;amp; = \quad 0. &amp;amp; \quad \text{(Coulomb&#39;s Law)} \end{align*}\] \(\begin{align*} &amp;amp; \phi(x,y) = \phi \left(\sum_{i=1}^n x_ie_i, \sum_{j=1}^n y_je_j \right) = \sum_{i=1}^n \sum_{j=1}^n x_i y_j \phi(e_i, e_j) = \\ &amp;amp; (x_1, \ldots, x_n) \left( \begin{array}{ccc} \phi(e_1, e_1) &amp;amp; \cdots &amp;amp; \phi(e_1, e_n) \\ \vdots &amp;amp; \ddots &amp;amp; \vdots \\ \phi(e_n, e_1) &amp;amp; \cdots &amp;amp; \phi(e_n, e_n) \end{array} \right) \left( \begin{array}{c} y_1 \\ \vdots \\ y_n \end{array} \right) \end{align*}\) \[\begin{array}{c|lcr} n &amp;amp; \text{Left} &amp;amp; \text{Center} &amp;amp; \text{Right} \\ \hline 1 &amp;amp; 0.24 &amp;amp; 1 &amp;amp; 125 \\ 2 &amp;amp; -1 &amp;amp; 189 &amp;amp; -8 \\ 3 &amp;amp; -20 &amp;amp; 2000 &amp;amp; 1+10i \end{array}\] def show @widget = Widget(params[:id]) respond_to do |format| format.html # show.html.erb format.json { render json: @widget } end end package interfaces import ( &quot;io&quot; &quot;os&quot; ) //PipeExample function func PipeExample() error { r, w := io.Pipe() go func() { w.Write([]byte(&quot;test\n&quot;)) w.Close() }() if _, err := io.Copy(os.Stdout, r); err != nil { return err } return nil } package interfaces import ( &quot;fmt&quot; &quot;io&quot; &quot;os&quot; ) // Copy data from std in to std out func Copy(in io.ReadSeeker, out io.Writer) error { w := io.MultiWriter(out, os.Stdout) if _, err := io.Copy(w, in); err != nil { return err } in.Seek(0, 0) buf := make([]byte, 64) if _, err := io.CopyBuffer(w, in, buf); err != nil { return err } fmt.Println() return nil } –robert">
-  
-  
   <meta name="twitter:card" content="summary">
-  
   <meta name="twitter:title" content="first post">
   <meta name="twitter:description" content="Let’s write it down. To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself. I realized that from tim...">
   
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
   
-
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
-
-  
-  
-  
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-WY8Y4X9RJF');
-    </script>
-  
-
-
 </head>
+<body>
 
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>robert@notes: ~/posts — zsh</span></div>
+  <div class="term">
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">cat ~/.motd</span></div>
 
-  <body>
+    <div class="out motd"><a href="/">Robert&#39;s notes</a> - Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture.</div>
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls ~</span></div>
 
-    <header class="site-header">
-
-  <div class="wrapper">
-
-    <a class="site-title" href="/">Robert&#39;s notes</a>
-
-    <nav class="site-nav">
+    <nav class="out">
       
-        
-        <a class="page-link" href="/">Main</a>
+        <a href="/">Main</a>
       
-        
-        <a class="page-link" href="/archives/">Archives</a>
+        <a href="/archives/">Archives</a>
       
-        
-        <a class="page-link" href="/stats/">Stats</a>
+        <a href="/stats/">Stats</a>
       
-        
-        <a class="page-link" href="/contact/">Contact</a>
+        <a href="/contact/">Contact</a>
       
-        
-        <a class="page-link" href="/about/">About</a>
+        <a href="/about/">About</a>
       
     </nav>
+    
 
-  </div>
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">glow first-post.md</span></div>
 
-</header>
+<article class="post out" itemscope itemtype="http://schema.org/BlogPosting">
+  <h1 itemprop="name headline">first post</h1>
+  <div class="meta"><time datetime="2014-05-03T22:40:03+02:00">2014-05-03</time> <a href="/tags/first-post/">First Post</a></div>
 
-
-    <main class="page-content" aria-label="Content">
-      <div class="wrapper">
-        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-
-  <header class="post-header">
-    
-      <h1 class="post-title" itemprop="name headline">first post</h1>
-    
-    <p class="post-meta"><time datetime="2014-05-03T22:40:03+02:00" itemprop="datePublished">May 3, 2014</time>
-
- •
-  
-    
-    
-      
-        <a href="/tags/first-post/">First Post</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-
-</p>
-  </header>
-
-  <div class="post-content" itemprop="articleBody">
+  <div class="body" itemprop="articleBody">
     <h4 id="lets-write-it-down">Let’s write it down.</h4>
 <p>To be honest, I don’t remember when I actually started thinking about writing down most of the solutions I found on the internet or implemented myself.
 I realized that from time to time I go back to solutions, code snippets or config files I created or modified to fulfill some specific requirements. It’s good if I wrote it down somewhere, put it on <a href="https://gist.github.com/robertwe">Gist</a> or <a href="http://pastebin.com/">Pastebin</a>, but what if I did not?
@@ -331,13 +227,12 @@ n &amp; \text{Left} &amp; \text{Center} &amp; \text{Right} \\
 <p>–robert</p>
 
   </div>
+</article>
 
-  
-    <div class="post-comments" itemprop="comment">
-      <hr />
-<h1>Comments</h1>
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">giscus --comments</span></div>
 
-<script src="https://giscus.app/client.js"
+<div class="out comments">
+  <script src="https://giscus.app/client.js"
         data-repo="robertwe/blog"
         data-repo-id="MDEwOlJlcG9zaXRvcnkyMjA3MDY2NA=="
         data-category="General"
@@ -347,51 +242,28 @@ n &amp; \text{Left} &amp; \text{Center} &amp; \text{Right} \\
         data-reactions-enabled="1"
         data-emit-metadata="0"
         data-input-position="bottom"
-        data-theme="light"
+        data-theme="catppuccin_mocha"
         data-lang="en"
         crossorigin="anonymous"
         async>
 </script>
 <noscript>Please enable JavaScript to view the comments powered by <a href="https://giscus.app">giscus</a>.</noscript>
 
-    </div>
-  
-
-</article>
-
-      </div>
-    </main>
-
-    <footer class="site-footer">
-    <div class="wrapper">
-        
-  <div class="footer">
-    <a href="https://github.com/robertwe">
-      <i class="fa fa-github"></i> GitHub
-    </a>
 </div>
 
 
+    <footer>
+      <div class="links">
+  <a href="https://github.com/robertwe">GitHub</a>
+  <a href="https://stackoverflow.com/users/213377">StackOverflow</a>
+  <a href="https://linkedin.com/in/robertweclawski">LinkedIn</a>
+  <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</div>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>
+      <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~/posts</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="cur"></span></div>
 
-<div class="footer">
-    <a href="https://stackoverflow.com/users/213377">
-      <i class="fa fa-stack-overflow"></i> StackOverflow
-    </a>
+    </footer>
   </div>
-
-
-<div class="footer">
-    <a href="https://linkedin.com/in/robertweclawski">
-      <i class="fa fa-linkedin"></i> LinkedIn
-    </a>
-  </div>
-
-<span class="footer">
-&copy;  - Powered by <a href="https://jekyllrb.com">Jekyll</a> &amp; <a href="https://github.com/yous/whiteglass">whiteglass</a> - Subscribe via <a href="https://roberts-notes.blog/feed.xml">RSS</a>
-</span>
-    </div>
-  </footer>
-
-  </body>
-
+</div>
+</body>
 </html>

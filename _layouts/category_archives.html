@@ -1,0 +1,16 @@
+---
+layout: default
+cwd: "~/posts"
+---
+{% capture cmd %}grep -l "{{ page.type }}: {{ page.title }}" *.md{% endcapture %}
+{% include prompt.html cwd="~/posts" cmd=cmd %}
+<div class="out">
+  <table class="ls">
+    {% for post in page.posts %}
+    <tr>
+      <td class="d"><time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y-%m-%d" }}</time></td>
+      <td><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>

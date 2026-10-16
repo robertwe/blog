@@ -1,28 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-
-  <head>
+<head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   
   
   
   <title>Robert&#39;s notes</title>
   <meta name="description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
-  
-
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#181825">
   <link rel="stylesheet" href="/assets/main.css">
   <link rel="canonical" href="https://roberts-notes.blog/posts/3/">
-  
-  
   <link rel="alternate" type="application/rss+xml" title="Robert&#39;s notes" href="https://roberts-notes.blog/feed.xml">
-
   <link rel="icon"
       type="image/png"
       href="/favicon.png">
-<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 <!--
  ██████╗ ██████╗ ███████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ███████╗    ██╗
 ██╔════╝ ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ██╔════╝    ██║
@@ -32,262 +25,95 @@
  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    ╚═╝
 -->
 
-
-  
   <meta property="og:title" content="Robert&#39;s notes">
   <meta property="og:site_name" content="Robert&#39;s notes">
   <meta property="og:url" content="https://roberts-notes.blog/posts/3/">
   <meta property="og:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
-  
-  
   <meta name="twitter:card" content="summary">
-  
   <meta name="twitter:title" content="Robert&#39;s notes">
   <meta name="twitter:description" content="Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture - written by Robert, a software developer automating things since 2011.">
   
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WY8Y4X9RJF');</script>
   
-
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
-
-  
-  
-  
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WY8Y4X9RJF"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-WY8Y4X9RJF');
-    </script>
-  
-
-
 </head>
+<body>
 
+<div class="win">
+  <div class="bar"><i></i><i></i><i></i><span>robert@notes: ~ — zsh</span></div>
+  <div class="term">
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">cat ~/.motd</span></div>
 
-  <body>
+    <div class="out motd"><a href="/">Robert&#39;s notes</a> - Notes on Go, Kubernetes, Terraform/OpenTofu, AWS and DevOps culture.</div>
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls ~</span></div>
 
-    <header class="site-header">
-
-  <div class="wrapper">
-
-    <a class="site-title" href="/">Robert&#39;s notes</a>
-
-    <nav class="site-nav">
+    <nav class="out">
       
-        
-        <a class="page-link" href="/">Main</a>
+        <a href="/">Main</a>
       
-        
-        <a class="page-link" href="/archives/">Archives</a>
+        <a href="/archives/">Archives</a>
       
-        
-        <a class="page-link" href="/stats/">Stats</a>
+        <a href="/stats/">Stats</a>
       
-        
-        <a class="page-link" href="/contact/">Contact</a>
+        <a href="/contact/">Contact</a>
       
-        
-        <a class="page-link" href="/about/">About</a>
+        <a href="/about/">About</a>
       
     </nav>
+    <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls -t posts/ | head -n 5 | xargs head -n 3</span></div>
 
-  </div>
-
-</header>
-
-
-    <main class="page-content" aria-label="Content">
-      <div class="wrapper">
-        <div class="home">
-
+<div class="out">
   
-
   
+  <article class="card">
+    <h2><a href="/2015/04/30/add-new-key-to-apt/">Add new key to APT AKA tell APT to trust given key</a></h2>
+    <div class="meta"><time datetime="2015-04-30T08:00:03+02:00">2015-04-30</time> <a href="/tags/linux/">Linux</a></div>
 
-  <ul class="post-list">
-    
-      
-      
+    <div class="excerpt"><p>On one of my desktop boxes I recently got this message when I wanted to update it via <code class="language-plaintext highlighter-rouge">apt</code>:</p>
 
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2014/11/27/temporary-disabling-bash-history/">Temporary Disabling Bash History</a>
-            
-          </h1>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Fetched 1448 B in 8s (180 B/s)
+Reading package lists... Done
+W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used.
+GPG error: http://xxxxxxx ./ Release: The following signatures couldn't be verified because
+the public key is not available: NO_PUBKEY 0000000000
+</code></pre></div></div>
 
-          <p class="post-meta">
-            Nov 27, 2014
-            
-              
-
- •
+</div>
+    <a class="more" href="/2015/04/30/add-new-key-to-apt/">read more →</a>
+  </article>
   
-    
-    
-      
-    
-      
-    
-      
-        <a href="/tags/bash/">bash</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
+  <article class="card">
+    <h2><a href="/2015/03/19/why-you-shoudnt-use-kill-9/">Why you should not use kill -9</a></h2>
+    <div class="meta"><time datetime="2015-03-19T19:46:03+01:00">2015-03-19</time> <a href="/tags/linux/">Linux</a></div>
+
+    <div class="excerpt"><p>I recently found this advice given by <em>Randal Schwartz</em>.
+I think most programmers have some idea who he is.
+Anyway, if you have never had to touch Perl, here is the link to his <a href="https://en.wikipedia.org/wiki/Randal_L._Schwartz">wiki page</a>.</p>
+
+<p>Here is the advice from Randal:</p>
+
+</div>
+    <a class="more" href="/2015/03/19/why-you-shoudnt-use-kill-9/">read more →</a>
+  </article>
   
+  <article class="card">
+    <h2><a href="/2014/11/27/temporary-disabling-bash-history/">Temporary Disabling Bash History</a></h2>
+    <div class="meta"><time datetime="2014-11-27T00:00:00+01:00">2014-11-27</time> <a href="/tags/bash/">bash</a></div>
 
-
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <p>How to do it? It’s actually very simple.
+    <div class="excerpt"><p>How to do it? It’s actually very simple.
 You can achieve this with <code class="language-plaintext highlighter-rouge">unset HISTFILE</code>. Of course, in that case we only disable history
 for the current session.
 What if we want to selectively keep some commands out of the bash history?</p>
 
-
-        </div>
-        
-          <p class="post-continue">
-            <a href="/2014/11/27/temporary-disabling-bash-history/">Read on &rarr;</a>
-          </p>
-        
-      </li>
-    
-      
-      
-
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2014/07/01/add-timestamp-to-bash-history/">Add timestamp to Bash history</a>
-            
-          </h1>
-
-          <p class="post-meta">
-            Jul 1, 2014
-            
-              
-
- •
+</div>
+    <a class="more" href="/2014/11/27/temporary-disabling-bash-history/">read more →</a>
+  </article>
   
-    
-    
-      
-    
-      
-    
-      
-        <a href="/tags/bash/">bash</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
+  <article class="card">
+    <h2><a href="/2014/07/01/add-timestamp-to-bash-history/">Add timestamp to Bash history</a></h2>
+    <div class="meta"><time datetime="2014-07-01T08:30:46+02:00">2014-07-01</time> <a href="/tags/bash/">bash</a></div>
 
-
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <p>Sometimes there is a need to add a timestamp to bash history.
+    <div class="excerpt"><p>Sometimes there is a need to add a timestamp to bash history.
 At my work I found it quite useful, especially when some other developers
 have access to the same box or when you simply want to have an idea when a command from the history was executed.  
 This is how we can achieve this:</p>
@@ -303,31 +129,15 @@ Time formatting is exactly the same as for <code class="language-plaintext highl
 <p>–
 Cheers
 Robert</p>
+</div>
+    <a class="more" href="/2014/07/01/add-timestamp-to-bash-history/">read more →</a>
+  </article>
+  
+  <article class="card">
+    <h2><a href="/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">IPtables returns an error : security raw nat mangle filter FAILED</a></h2>
+    <div class="meta"><time datetime="2014-06-28T12:13:09+02:00">2014-06-28</time></div>
 
-        </div>
-        
-      </li>
-    
-      
-      
-
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">IPtables returns an error : security raw nat mangle filter FAILED</a>
-            
-          </h1>
-
-          <p class="post-meta">
-            Jun 28, 2014
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <p>After setting up my new “linode” on linode.com I started configuring the firewall (iptables).
+    <div class="excerpt"><p>After setting up my new “linode” on linode.com I started configuring the firewall (iptables).
 After writing down all my rules I tried to restart iptables, but got output like this:</p>
 
 <figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>service iptables restart
@@ -336,199 +146,33 @@ iptables: Setting chains to policy ACCEPT: security raw nat[FAILED]filter
 iptables: Unloading modules:                               <span class="o">[</span>  OK  <span class="o">]</span>
 iptables: Applying firewall rules:                         <span class="o">[</span>  OK  <span class="o">]</span></code></pre></figure>
 
-
-        </div>
-        
-          <p class="post-continue">
-            <a href="/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">Read on &rarr;</a>
-          </p>
-        
-      </li>
-    
-      
-      
-
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2014/06/28/hosting-migration/">Hosting migration</a>
-            
-          </h1>
-
-          <p class="post-meta">
-            Jun 28, 2014
-            
-              
-
- •
+</div>
+    <a class="more" href="/2014/06/28/iptables-returns-an-error-security-raw-nat-mangle-filter-failed/">read more →</a>
+  </article>
   
-    
-    
-      
-    
-      
-        <a href="/tags/hosting/">hosting</a>
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-  
-
-
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <p>I recently noticed I actually spend a lot of money on hosting and server resources I’m not using at all.
-Such a waste. After a small research I decided to move all my Droplets from <a href="https://www.digitalocean.com/">DigitalOcean.com</a>
-to its competitor - <a href="https://www.linode.com">linode.com</a>. I also hosted 2 sites on a separate hosting - elastichost.com -
-which is also rather expensive.
-So in the end I sat down and calculated how many resources I need and how many resources I actually pay for.
-At the beginning I thought that maybe the best solution would be to move everything to a dedicated machine at <a href="ovh.de">OVH</a> or
-maybe <a href="hetzner.de">Hetzner</a>, but in both cases the cost is ~50-70€ per month minimum. Quite a lot I think, especially when my
-sites do not have significant traffic.</p>
-
-
-        </div>
-        
-          <p class="post-continue">
-            <a href="/2014/06/28/hosting-migration/">Read on &rarr;</a>
-          </p>
-        
-      </li>
-    
-      
-      
-
-      <li>
-        <header class="post-header">
-          <h1 class="post-title">
-            
-              <a class="post-link" href="/2014/06/28/goal-for-the-next-2-3-months/">Goal for the next 2-3 months</a>
-            
-          </h1>
-
-          <p class="post-meta">
-            Jun 28, 2014
-            
-            
-          </p>
-        </header>
-
-        <div class="post-content">
-          <h2 id="my-goal-for-the-next-2-or-3-months">My goal for the next 2 or 3 months:</h2>
-<p>I recently found <a href="http://ejohn.org/blog/write-code-every-day/">this</a> blog entry on the internet. Let’s see how it will go :).
-In general I think this is quite a good idea, mainly because you adapt to a “routine” of writing code (if you are not already addicted like me :D). This is definitely good training for your brain.
-Here is a link to my GitHub profile: https://github.com/robertwe
-So first I need to find a project :). I already contribute a little bit to the Jenkins CI project, but I would like to create something new.</p>
-
-<p>Have a great day.</p>
-
-<p>–
-Regards,
-Robert</p>
-
-        </div>
-        
-      </li>
-    
-  </ul>
-
-  
-  <div class="pagination">
-    
-      <a class="previous" href="/posts/4/">&laquo; Older</a>
-    
-
-    
-      <a class="next" href="/posts/2/">Newer &raquo;</a>
-    
-  </div>
-
-
-
 </div>
 
-      </div>
-    </main>
+<div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="c">ls -t posts/ | sed -n</span></div>
 
-    <footer class="site-footer">
-    <div class="wrapper">
-        
-  <div class="footer">
-    <a href="https://github.com/robertwe">
-      <i class="fa fa-github"></i> GitHub
-    </a>
+<div class="out pagination">
+  <a href="/posts/2/">← newer</a>
+  <span>page 3/5</span>
+  <a href="/posts/4/">older →</a>
 </div>
 
 
+    <footer>
+      <div class="links">
+  <a href="https://github.com/robertwe">GitHub</a>
+  <a href="https://stackoverflow.com/users/213377">StackOverflow</a>
+  <a href="https://linkedin.com/in/robertweclawski">LinkedIn</a>
+  <a href="https://roberts-notes.blog/feed.xml">RSS</a>
+</div>
+<div class="copy">&copy; Robert &middot; static site built with <a href="https://jekyllrb.com">Jekyll</a></div>
+      <div class="p"><span class="arrow">➜</span> <span class="h">robert@notes</span> <span class="d">~</span> <span class="g">git:(</span><span class="arrow">master</span><span class="g">)</span> <span class="cur"></span></div>
 
-<div class="footer">
-    <a href="https://stackoverflow.com/users/213377">
-      <i class="fa fa-stack-overflow"></i> StackOverflow
-    </a>
+    </footer>
   </div>
-
-
-<div class="footer">
-    <a href="https://linkedin.com/in/robertweclawski">
-      <i class="fa fa-linkedin"></i> LinkedIn
-    </a>
-  </div>
-
-<span class="footer">
-&copy;  - Powered by <a href="https://jekyllrb.com">Jekyll</a> &amp; <a href="https://github.com/yous/whiteglass">whiteglass</a> - Subscribe via <a href="https://roberts-notes.blog/feed.xml">RSS</a>
-</span>
-    </div>
-  </footer>
-
-  </body>
-
+</div>
+</body>
 </html>
