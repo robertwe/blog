@@ -59,7 +59,7 @@ code{font-family:var(--mono);font-size:.9em;background:var(--surf);color:var(--p
 .highlight .p,.highlight .o{color:var(--sky)}.highlight .nv,.highlight .nb{color:var(--red)}.highlight .nf{color:var(--blue)}
 
 /* comments, footer */
-.comments{min-height:4rem}
+.comments .feedback{color:var(--sub);margin:0}
 footer{color:var(--sub);font-size:.85rem;border-top:1px solid var(--surf);padding-top:1rem;margin-top:2rem}
 footer .links a{color:var(--sub);margin-right:1.2rem}footer .copy{margin:.3rem 0 .8rem}
 

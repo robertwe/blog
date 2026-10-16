@@ -48,8 +48,7 @@ The three dots in the title bar are three empty `<i>` tags with a background col
 SVG for that, nope.
 
 Colours are [Catppuccin Mocha](https://catppuccin.com/). Not a deep decision - it is everywhere already, it is easy on
-the eyes, and giscus has a theme with the same name, so the comments box below the posts does not look like someone
-glued a white sticker on a dark screen.
+the eyes, and every editor and terminal I use ships it, so the blog matches the rest of my screen.
 
 ## The prompt thing
 
@@ -103,10 +102,11 @@ version is one CSS rule away.
 
 ## A small confession
 
-The theme has no JavaScript, but the page does. Google Analytics is still here, the comments are giscus (so that is an
-iframe plus a script on post pages), and the contact form still has reCAPTCHA in front of it. Same three third parties
-as before, I just moved the furniture around them. I did briefly have "no JS, no cookies" in the footer, noticed it was
-a lie, and took it out. Whether to actually go cookie-free is a question for another evening.
+The theme has no JavaScript, but the page does. Google Analytics is still here, and the contact form still has
+reCAPTCHA in front of it. The comment widget is gone - it had been silently broken for a while, nobody noticed, which
+answered the question of whether anyone needed it. Under each post there is now a plain link to GitHub Discussions
+instead. I did briefly have "no JS, no cookies" in the footer, noticed it was a lie, and took it out. Whether to
+actually go cookie-free is a question for another evening.
 
 ## Was it worth it
 

@@ -13,7 +13,7 @@ cwd: "~/posts"
   </div>
 </article>
 {% if site.comments == true and page.comments != false %}
-{% include prompt.html cwd="~/posts" cmd="giscus --comments" %}
+{% include prompt.html cwd="~/posts" cmd="cat FEEDBACK" %}
 <div class="out comments">
   {% include custom_comments_provider.html %}
 </div>

@@ -39,13 +39,13 @@ You can find me on [GitHub](https://github.com/robertwe) and
 
 ## Privacy
 
-This is a static site - Jekyll, no theme gem, one CSS file, no JavaScript of its own. Three things load from
+This is a static site - Jekyll, no theme gem, one CSS file, no JavaScript of its own. No comment widget either;
+if you want to discuss a post, GitHub Discussions and email are linked under every post. Two things load from
 somewhere else, nothing more:
 
 | What | Where | Why |
 |---|---|---|
 | Google Analytics 4 | every page | visitor counts. Sets `_ga` cookies. |
-| giscus | post pages | comments, stored as GitHub Discussions on the [blog repo](https://github.com/robertwe/blog). Runs in an iframe. |
 | reCAPTCHA + a form backend | contact page only | spam filtering for the form. |
 
 The stats page additionally embeds a GitHub contribution chart and a Wakatime chart as images. If any of this
