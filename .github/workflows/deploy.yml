@@ -8,6 +8,8 @@ on:
     # Friday 21:17 UTC = 22:17 CET / 23:17 CEST. Publishes posts whose date has passed
     # (Jekyll skips future-dated posts), so scheduled posts are dated Friday 22:00 local.
     - cron: '17 21 * * 5'
+    # Daily 06:17 UTC = 08:17 CEST / 07:17 CET, for posts scheduled for a morning.
+    - cron: '17 6 * * *'
   workflow_dispatch:
 
 permissions:
