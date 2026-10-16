@@ -1,3 +1,6 @@
-<p class="feedback">Questions, corrections, war stories? Open a
-<a href="https://github.com/{{ site.github_username }}/blog/discussions">discussion on GitHub</a>
-or <a href="{{ "/about/" | relative_url }}">write to me</a>. No comment widget here, on purpose.</p>
+{%- assign repo = "https://github.com/" | append: site.github_username | append: "/blog" -%}
+{%- capture body %}Re: {{ page.url | absolute_url }}{% endcapture -%}
+<p class="feedback">Questions, corrections, war stories?
+<a href="{{ repo }}/discussions/new?category=general&amp;title={{ page.title | url_encode }}&amp;body={{ body | url_encode }}">Start a discussion on GitHub</a>
+(or <a href="{{ repo }}/discussions">browse existing ones</a>), or <a href="{{ "/about/" | relative_url }}">write to me</a>.
+No comment widget here, on purpose.</p>
