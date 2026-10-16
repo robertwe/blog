@@ -8,8 +8,9 @@
   {% assign description = page.description | default: page.excerpt | default: site.description | strip_html | normalize_whitespace | strip | escape %}
   <title>{% if page.title %}{{ page.title | escape }} - {% endif %}{{ site.title | escape }}</title>
   <meta name="description" content="{{ description }}">
-  <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#181825">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#181825">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#e6e9ef">
   <link rel="stylesheet" href="{{ "/assets/main.css" | relative_url }}">
   <link rel="canonical" href="{{ canonical }}">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title | escape }}" href="{{ "/feed.xml" | absolute_url }}">

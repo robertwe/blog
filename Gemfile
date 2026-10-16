@@ -8,7 +8,7 @@ source "https://rubygems.org"
 #
 # This will help ensure the proper Jekyll version is running.
 # Happy Jekylling!
-gem "jekyll", "3.9.3"
+gem "jekyll", "~> 4.3"
 
 # No theme gem - layouts and CSS live in this repo (_layouts, _includes, assets/main.scss).
 gem "jekyll-archives", "~> 2.1"
@@ -28,5 +28,6 @@ end
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 
-# Added at 2023-09-05 21:10:59 +0200 by robertwe:
 gem "kramdown-parser-gfm", "~> 1.1"
+# `jekyll serve` on Ruby 3 needs webrick explicitly
+gem "webrick", "~> 1.8"

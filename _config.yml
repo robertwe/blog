@@ -26,6 +26,8 @@ comments: true
 
 markdown: kramdown
 highlighter: rouge
+sass:
+  style: compressed
 
 plugins:
   - jekyll-archives
